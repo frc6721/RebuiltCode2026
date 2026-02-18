@@ -11,7 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import frc.robot.HardwareConstants;
+import frc.robot.Constants;
 import frc.robot.subsystems.feeder.FeederConstants;
 
 public class RealFeederIO implements FeederIO {
@@ -22,8 +22,7 @@ public class RealFeederIO implements FeederIO {
   }
 
   public void configFeederMotor() {
-    // TODO: Update CAN ID in HardwareConstants
-    _feederMotor = new SparkMax(HardwareConstants.CanIds.FEEDER_MOTOR_ID, MotorType.kBrushless);
+    _feederMotor = new SparkMax(Constants.CanIds.FEEDER_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config

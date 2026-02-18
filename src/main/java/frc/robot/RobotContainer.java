@@ -198,21 +198,21 @@ public class RobotContainer {
       // Register robot with FuelSim for collision detection
       // Robot pushes fuel out of the way when driving
       fuelSim.registerRobot(
-          RobotDimensions.ROBOT_WIDTH.in(Meters),
-          RobotDimensions.ROBOT_LENGTH.in(Meters),
-          RobotDimensions.BUMPER_HEIGHT.in(Meters),
+          Constants.Dimensions.ROBOT_WIDTH.in(Meters),
+          Constants.Dimensions.ROBOT_LENGTH.in(Meters),
+          Constants.Dimensions.BUMPER_HEIGHT.in(Meters),
           drive::getPose,
           drive::getFieldRelativeSpeeds);
 
       // Register intake with FuelSim
       // Fuel inside the bounding box will be "collected" when canIntakeFuel() returns true
       fuelSim.registerIntake(
-          RobotDimensions.ROBOT_WIDTH
+          Constants.Dimensions.ROBOT_WIDTH
               .div(2)
               .unaryMinus()
               .minus(IntakeConstants.FuelSim.WIDTH.div(2))
               .in(Meters),
-          -RobotDimensions.ROBOT_WIDTH.div(2).in(Meters), // Offset intake box to back of robot
+          -Constants.Dimensions.ROBOT_WIDTH.div(2).in(Meters), // Offset intake box to back of robot
           -IntakeConstants.FuelSim.LENGTH.div(2).in(Meters),
           IntakeConstants.FuelSim.LENGTH.div(2).in(Meters),
           intake::canIntakeFuel, // BooleanSupplier - checks if intake can collect

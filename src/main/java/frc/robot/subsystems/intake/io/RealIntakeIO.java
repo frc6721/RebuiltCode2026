@@ -15,7 +15,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.HardwareConstants;
+import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 
 public class RealIntakeIO implements IntakeIO {
@@ -31,8 +31,7 @@ public class RealIntakeIO implements IntakeIO {
 
   public void configPivotMotors() {
     // Configure right (leader) pivot motor
-    _rightPivotMotor =
-        new SparkMax(HardwareConstants.CanIds.RIGHT_PIVOT_MOTOR_ID, MotorType.kBrushless);
+    _rightPivotMotor = new SparkMax(Constants.CanIds.RIGHT_PIVOT_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig rightConfig = new SparkMaxConfig();
     rightConfig
@@ -60,8 +59,7 @@ public class RealIntakeIO implements IntakeIO {
     _pivotEncoder = _rightPivotMotor.getAbsoluteEncoder();
 
     // Configure left (follower) pivot motor
-    _leftPivotMotor =
-        new SparkMax(HardwareConstants.CanIds.LEFT_PIVOT_MOTOR_ID, MotorType.kBrushless);
+    _leftPivotMotor = new SparkMax(Constants.CanIds.LEFT_PIVOT_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig leftConfig = new SparkMaxConfig();
     leftConfig
@@ -82,7 +80,7 @@ public class RealIntakeIO implements IntakeIO {
   }
 
   public void configRollerMotor() {
-    _rollerMotor = new SparkMax(HardwareConstants.CanIds.ROLLER_MOTOR_ID, MotorType.kBrushless);
+    _rollerMotor = new SparkMax(Constants.CanIds.ROLLER_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config

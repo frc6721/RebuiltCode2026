@@ -16,7 +16,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.HardwareConstants;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 
 public class RealShooterIO implements ShooterIO {
@@ -27,7 +27,7 @@ public class RealShooterIO implements ShooterIO {
   }
 
   public void configFlywheelMotor() {
-    _flywheelMotor = new SparkMax(HardwareConstants.CanIds.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
+    _flywheelMotor = new SparkMax(Constants.CanIds.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config
