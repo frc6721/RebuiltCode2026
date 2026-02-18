@@ -40,6 +40,10 @@ import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.io.FeederIO;
 import frc.robot.subsystems.feeder.io.RealFeederIO;
 import frc.robot.subsystems.feeder.io.SimFeederIO;
+import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.io.HopperIO;
+import frc.robot.subsystems.hopper.io.RealHopperIO;
+import frc.robot.subsystems.hopper.io.SimHopperIO;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakePosition;
 import frc.robot.subsystems.intake.IntakeConstants;
@@ -67,6 +71,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Intake intake;
   private final Feeder feeder;
+  private final Hopper hopper;
   private final Shooter shooter;
   private final Vision vision;
 
@@ -92,6 +97,7 @@ public class RobotContainer {
         intake = new Intake(new RealIntakeIO());
         shooter = new Shooter(new RealShooterIO());
         feeder = new Feeder(new RealFeederIO());
+        hopper = new Hopper(new RealHopperIO());
         vision =
             new Vision(
                 drive::addVisionMeasurement,
@@ -110,6 +116,7 @@ public class RobotContainer {
         intake = new Intake(new SimIntakeIO());
         shooter = new Shooter(new SimShooterIO());
         feeder = new Feeder(new SimFeederIO());
+        hopper = new Hopper(new SimHopperIO());
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
         // vision =
@@ -131,6 +138,7 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         shooter = new Shooter(new ShooterIO() {});
         feeder = new Feeder(new FeederIO() {});
+        hopper = new Hopper(new HopperIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
     }
@@ -158,9 +166,9 @@ public class RobotContainer {
     configureButtonBindings();
 
     SmartDashboard.putData(
-        "Stow Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.STOW));
+        "Retract Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
     SmartDashboard.putData(
-        "Deploy Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.PICKUP));
+        "Extend Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
     // Configure FuelSim for game piece visualization
     configureFuelSim();
@@ -276,11 +284,13 @@ public class RobotContainer {
         .whileTrue(IntakeCommands.runIntakeRollers(intake))
         .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
-    // A button: Move intake to PICKUP position (down)
-    controller.a().whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.PICKUP));
+    // A button: Move intake to EXTENDED position (out)
+    controller.a().whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
-    // B button: Move intake to STOW position (up)
-    controller.b().whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.STOW));
+    // B button: Move intake to RETRACTED position (in)
+    controller
+        .b()
+        .whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
 
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));

@@ -6,14 +6,14 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -22,33 +22,27 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.subsystems.shooter.ShooterConstants;
 
 /**
- * Simulation implementation of ShooterIO that uses physics simulation for realistic flywheel
- * behavior.
+ * Simulation implementation of ShooterIO using two SparkFlex motors in leader-follower
+ * configuration.
  *
  * <p>This class simulates:
  *
  * <ul>
  *   <li><b>Flywheel:</b> Uses WPILib's FlywheelSim for realistic flywheel physics
- *   <li><b>Motor:</b> Uses REV SparkMaxSim for realistic motor behavior
+ *   <li><b>Motors:</b> Uses REV SparkFlexSim for realistic motor behavior
  *   <li><b>Velocity Control:</b> On-controller PID for velocity targeting
- * </ul>
- *
- * <p>The simulation includes:
- *
- * <ul>
- *   <li>Moment of inertia from ShooterConstants
- *   <li>Gear ratio effects
- *   <li>Battery voltage simulation
- *   <li>Realistic spin-up and spin-down behavior
+ *   <li><b>Leader-follower:</b> Right motor follows left motor inverted
  * </ul>
  */
 public class SimShooterIO implements ShooterIO {
 
-  // Simulated motor
-  private final SparkMax _flywheelMotor;
+  // Simulated motors
+  private final SparkFlex _leftFlywheelMotor;
+  private final SparkFlex _rightFlywheelMotor;
 
-  // REV simulation wrapper
-  private final SparkMaxSim _flywheelSim;
+  // REV simulation wrappers
+  private final SparkFlexSim _leftFlywheelSim;
+  private final SparkFlexSim _rightFlywheelSim;
 
   // WPILib physics simulation for the flywheel
   private final FlywheelSim _flywheelPhysicsSim;
@@ -61,33 +55,43 @@ public class SimShooterIO implements ShooterIO {
   /**
    * Creates a new SimShooterIO with physics simulation.
    *
-   * <p>Initializes simulated motor and the flywheel physics simulation using constants from
+   * <p>Initializes simulated motors and the flywheel physics simulation using constants from
    * ShooterConstants.
    */
   public SimShooterIO() {
-    // Create simulated motor (using arbitrary CAN ID since it doesn't matter in sim)
-    _flywheelMotor = new SparkMax(60, MotorType.kBrushless);
+    // Create simulated motors (using arbitrary CAN IDs since they don't matter in sim)
+    _leftFlywheelMotor = new SparkFlex(60, MotorType.kBrushless);
+    _rightFlywheelMotor = new SparkFlex(61, MotorType.kBrushless);
 
-    // Configure the flywheel motor
-    SparkMaxConfig config = new SparkMaxConfig();
-    config
+    // ── Configure the left flywheel motor (leader) ──
+    SparkFlexConfig leftConfig = new SparkFlexConfig();
+    leftConfig
         .inverted(ShooterConstants.Mechanical.INVERTED)
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
         .voltageCompensation(12.0);
 
     // Configure PID for velocity control (using simulation PID values)
-    config.closedLoop.pidf(
+    leftConfig.closedLoop.pidf(
         ShooterConstants.getFlywheelKP(),
         ShooterConstants.getFlywheelKI(),
         ShooterConstants.getFlywheelKD(),
         ShooterConstants.getFlywheelFF());
 
-    _flywheelMotor.configure(
-        config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    _leftFlywheelMotor.configure(
+        leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    // Create REV simulation wrapper
-    _flywheelSim = new SparkMaxSim(_flywheelMotor, ShooterConstants.Mechanical.MOTOR);
+    // ── Configure the right flywheel motor (follower, inverted relative to leader) ──
+    SparkFlexConfig rightConfig = new SparkFlexConfig();
+    rightConfig.idleMode(IdleMode.kCoast).voltageCompensation(12.0);
+    rightConfig.follow(_leftFlywheelMotor, true);
+
+    _rightFlywheelMotor.configure(
+        rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    // Create REV simulation wrappers
+    _leftFlywheelSim = new SparkFlexSim(_leftFlywheelMotor, ShooterConstants.Mechanical.MOTOR);
+    _rightFlywheelSim = new SparkFlexSim(_rightFlywheelMotor, ShooterConstants.Mechanical.MOTOR);
 
     // Create the flywheel physics simulation
     _flywheelPhysicsSim =
@@ -102,7 +106,6 @@ public class SimShooterIO implements ShooterIO {
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
     // --- Calculate applied voltage ---
-
     if (_velocityControlActive) {
       // Manually calculate feedforward: V = kS * sign(velocity) + kV * velocity
       double kS = ShooterConstants.getFlywheelKS();
@@ -118,29 +121,36 @@ public class SimShooterIO implements ShooterIO {
     }
 
     // --- Update the flywheel physics simulation ---
-
-    // Set the input voltage to the simulation
     _flywheelPhysicsSim.setInputVoltage(_appliedVoltage);
-
-    // Step the simulation forward (20ms = 0.02s)
     _flywheelPhysicsSim.update(0.02);
 
     // Update battery simulation based on current draw
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(_flywheelPhysicsSim.getCurrentDrawAmps()));
 
-    // Update the SparkMax simulation with the physics results
-    _flywheelSim.setBusVoltage(RoboRioSim.getVInVoltage());
-    _flywheelSim.iterate(
+    // Update both SparkFlex simulations with the physics results
+    _leftFlywheelSim.setBusVoltage(RoboRioSim.getVInVoltage());
+    _leftFlywheelSim.iterate(
+        _flywheelPhysicsSim.getAngularVelocityRPM(), RoboRioSim.getVInVoltage(), 0.02);
+
+    _rightFlywheelSim.setBusVoltage(RoboRioSim.getVInVoltage());
+    _rightFlywheelSim.iterate(
         _flywheelPhysicsSim.getAngularVelocityRPM(), RoboRioSim.getVInVoltage(), 0.02);
 
     // --- Read back the simulated sensor values ---
-
-    inputs._flywheelMotorTemperature = Celsius.of(45.0); // Simulated constant temp
-    inputs._flywheelMotorVelocity =
+    // Left flywheel motor (leader)
+    inputs._leftFlywheelMotorTemperature = Celsius.of(45.0);
+    inputs._leftFlywheelMotorVelocity =
         RotationsPerSecond.of(_flywheelPhysicsSim.getAngularVelocityRPM() / 60.0);
-    inputs._flywheelMotorVoltage = Volts.of(_appliedVoltage);
-    inputs._flywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps());
+    inputs._leftFlywheelMotorVoltage = Volts.of(_appliedVoltage);
+    inputs._leftFlywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps() / 2.0);
+
+    // Right flywheel motor (follower) - same speed, split current
+    inputs._rightFlywheelMotorTemperature = Celsius.of(45.0);
+    inputs._rightFlywheelMotorVelocity =
+        RotationsPerSecond.of(_flywheelPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._rightFlywheelMotorVoltage = Volts.of(_appliedVoltage);
+    inputs._rightFlywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps() / 2.0);
   }
 
   @Override
@@ -149,7 +159,7 @@ public class SimShooterIO implements ShooterIO {
     _targetVelocityRPM = speed.in(RotationsPerSecond) * 60.0;
 
     // Also set through the actual motor controller for completeness
-    _flywheelMotor
+    _leftFlywheelMotor
         .getClosedLoopController()
         .setReference(_targetVelocityRPM, ControlType.kVelocity);
   }
@@ -158,7 +168,7 @@ public class SimShooterIO implements ShooterIO {
   public void setFlyWheelDutyCycle(double output) {
     _velocityControlActive = false;
     _appliedVoltage = output * 12.0;
-    _flywheelMotor.set(output);
+    _leftFlywheelMotor.set(output);
   }
 
   @Override
@@ -166,7 +176,7 @@ public class SimShooterIO implements ShooterIO {
     _velocityControlActive = false;
     _targetVelocityRPM = 0.0;
     _appliedVoltage = 0.0;
-    _flywheelMotor.stopMotor();
+    _leftFlywheelMotor.stopMotor();
   }
 
   @Override

@@ -10,11 +10,17 @@ public interface ShooterIO {
 
   @AutoLog
   public static class ShooterIOInputs {
-    // Flywheel motor
-    public Temperature _flywheelMotorTemperature;
-    public AngularVelocity _flywheelMotorVelocity;
-    public Voltage _flywheelMotorVoltage;
-    public Current _flywheelMotorCurrent;
+    // Left flywheel motor (leader)
+    public Temperature _leftFlywheelMotorTemperature;
+    public AngularVelocity _leftFlywheelMotorVelocity;
+    public Voltage _leftFlywheelMotorVoltage;
+    public Current _leftFlywheelMotorCurrent;
+
+    // Right flywheel motor (follower)
+    public Temperature _rightFlywheelMotorTemperature;
+    public AngularVelocity _rightFlywheelMotorVelocity;
+    public Voltage _rightFlywheelMotorVoltage;
+    public Current _rightFlywheelMotorCurrent;
   }
 
   public default void updateInputs(ShooterIOInputs inputs) {}

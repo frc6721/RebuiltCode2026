@@ -14,18 +14,29 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants;
 import frc.robot.subsystems.feeder.FeederConstants;
 
+/**
+ * Real hardware implementation of FeederIO using two SparkMax motor controllers in a
+ * leader-follower configuration.
+ *
+ * <p>The left motor is the leader and the right motor follows it inverted, so both feed wheels
+ * physically spin the same direction.
+ */
 public class RealFeederIO implements FeederIO {
-  private SparkMax _feederMotor;
+  private final SparkMax _leftFeederMotor;
+  private final SparkMax _rightFeederMotor;
 
   public RealFeederIO() {
-    configFeederMotor();
+    _leftFeederMotor = new SparkMax(Constants.CanIds.FEEDER_LEFT_MOTOR_ID, MotorType.kBrushless);
+    _rightFeederMotor = new SparkMax(Constants.CanIds.FEEDER_RIGHT_MOTOR_ID, MotorType.kBrushless);
+
+    configFeederMotors();
   }
 
-  public void configFeederMotor() {
-    _feederMotor = new SparkMax(Constants.CanIds.FEEDER_MOTOR_ID, MotorType.kBrushless);
-
-    SparkMaxConfig config = new SparkMaxConfig();
-    config
+  /** Configures both feeder motors. Left is leader, right follows inverted. */
+  public void configFeederMotors() {
+    // ── Left motor (leader) ──
+    SparkMaxConfig leftConfig = new SparkMaxConfig();
+    leftConfig
         .inverted(FeederConstants.Motor.INVERTED)
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
@@ -33,24 +44,49 @@ public class RealFeederIO implements FeederIO {
         .voltageCompensation(12.0);
 
     tryUntilOk(
-        _feederMotor,
+        _leftFeederMotor,
         5,
         () ->
-            _feederMotor.configure(
-                config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+            _leftFeederMotor.configure(
+                leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+
+    // ── Right motor (follower, inverted relative to leader) ──
+    SparkMaxConfig rightConfig = new SparkMaxConfig();
+    rightConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
+        .secondaryCurrentLimit(FeederConstants.CurrentLimits.SECONDARY_CURRENT_LIMIT)
+        .voltageCompensation(12.0);
+
+    // Follow the left motor, inverted so both wheels physically spin the same direction
+    rightConfig.follow(_leftFeederMotor, true);
+
+    tryUntilOk(
+        _rightFeederMotor,
+        5,
+        () ->
+            _rightFeederMotor.configure(
+                rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
   public void updateInputs(FeederIOInputs inputs) {
-    // Feeder motor
-    inputs._feederMotorTemperature = Celsius.of(_feederMotor.getMotorTemperature());
-    inputs._feederMotorVoltage =
-        Volts.of(_feederMotor.getAppliedOutput() * _feederMotor.getBusVoltage());
-    inputs._feederMotorCurrent = Amps.of(_feederMotor.getOutputCurrent());
+    // Left feeder motor (leader)
+    inputs._leftFeederMotorTemperature = Celsius.of(_leftFeederMotor.getMotorTemperature());
+    inputs._leftFeederMotorVoltage =
+        Volts.of(_leftFeederMotor.getAppliedOutput() * _leftFeederMotor.getBusVoltage());
+    inputs._leftFeederMotorCurrent = Amps.of(_leftFeederMotor.getOutputCurrent());
+
+    // Right feeder motor (follower)
+    inputs._rightFeederMotorTemperature = Celsius.of(_rightFeederMotor.getMotorTemperature());
+    inputs._rightFeederMotorVoltage =
+        Volts.of(_rightFeederMotor.getAppliedOutput() * _rightFeederMotor.getBusVoltage());
+    inputs._rightFeederMotorCurrent = Amps.of(_rightFeederMotor.getOutputCurrent());
   }
 
   @Override
   public void setMotorSpeed(double speed) {
-    _feederMotor.set(speed);
+    // Only set on leader; follower follows automatically
+    _leftFeederMotor.set(speed);
   }
 }

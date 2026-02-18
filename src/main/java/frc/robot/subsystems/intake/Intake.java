@@ -1,7 +1,6 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.VirtualHopper;
 import frc.robot.subsystems.intake.io.IntakeIO;
@@ -11,22 +10,21 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
- * The Intake subsystem controls the robot's slap-down game piece intake mechanism.
+ * The Intake subsystem controls the robot's linear slide intake mechanism.
  *
- * <p><b>Hardware:</b> Two NEO motors for pivot control (leader-follower), AM Sport Gearboxes (16:1)
- * for rollers, REV Through Bore Encoder for absolute position, and ~25 Thrifty Squish Wheels on
- * belt-driven roller shafts.
+ * <p><b>Hardware:</b> A NEO motor drives a linear slide on a rail. A separate NEO motor drives
+ * rollers to acquire game pieces. Position is tracked via the linear motor's internal encoder.
  *
- * <p><b>How It Works:</b> The intake pivots down to PICKUP position, roller shafts spin to pull in
- * game pieces, then pivots back up to STOW. A PID controller with gravity feedforward (cosine of
- * angle) maintains the pivot position.
+ * <p><b>How It Works:</b> The linear motor extends the roller assembly out from the robot frame.
+ * The intake starts fully retracted (position 0). Positive position = extending out. A PID
+ * controller running on the roboRIO maintains the target position using the motor's internal
+ * encoder.
  *
  * <p><b>Software Features:</b>
  *
  * <ul>
- *   <li>Closed-loop (PID) position control with gravity feedforward
- *   <li>Predefined positions (STOW, PICKUP) via enum
- *   <li>Mechanism2d visualization for AdvantageScope
+ *   <li>Closed-loop (PID) position control using internal encoder
+ *   <li>Predefined positions (RETRACTED, EXTENDED) via enum
  *   <li>FuelSim virtual intake integration
  * </ul>
  */
@@ -35,66 +33,67 @@ public class Intake extends SubsystemBase {
   private final IntakeIO _intakeIO;
   private final IntakeIOInputsAutoLogged _intakeInputs = new IntakeIOInputsAutoLogged();
   private IntakePosition _intakePosition;
-  private PIDController _pivotPIDController;
+  private final PIDController _linearPIDController;
   private final IntakeVisualizer _visualizer;
 
   /**
-   * Enum representing predefined positions for the intake pivot. Actual angles are defined in
+   * Enum representing predefined positions for the linear slide. Actual positions are defined in
    * {@link IntakeConstants.Positions} as LoggedNetworkNumbers (tunable from dashboard).
    */
   public enum IntakePosition {
-    STOW(IntakeConstants.Positions.STOW),
-    PICKUP(IntakeConstants.Positions.PICKUP);
+    RETRACTED(IntakeConstants.Positions.RETRACTED),
+    EXTENDED(IntakeConstants.Positions.EXTENDED);
 
-    private final LoggedNetworkNumber _angle;
+    private final LoggedNetworkNumber _position;
+
     /**
-     * @param angle The angle for this position (from IntakeConstants)
+     * @param position The position value for this state (from IntakeConstants)
      */
-    private IntakePosition(LoggedNetworkNumber angle) {
-      this._angle = angle;
+    private IntakePosition(LoggedNetworkNumber position) {
+      this._position = position;
     }
 
     /**
-     * Returns the angle for this intake position as a Rotation2d.
+     * Returns the target position for this intake state (in output rotations).
      *
-     * @return The angle for this position
+     * @return The position setpoint
      */
-    public Rotation2d getAngle() {
-      return Rotation2d.fromDegrees(this._angle.get());
+    public double getPosition() {
+      return this._position.get();
     }
   }
 
   /**
    * Creates a new Intake subsystem.
    *
-   * <p>Initializes position to STOW, creates a PID controller with mode-selected gains (different
-   * for sim vs real), and sets up the Mechanism2d visualizer.
+   * <p>Initializes position to RETRACTED (0), creates a PID controller with mode-selected gains,
+   * and resets the internal encoder so position 0 = current (fully retracted) position.
    *
-   * @param intakeIO The hardware interface for intake control (motors and sensors)
+   * @param intakeIO The hardware interface for intake control (motors and encoder)
    */
   public Intake(IntakeIO intakeIO) {
     this._intakeIO = intakeIO;
 
-    // assume that the intake is all the way up when first turned on
-    _intakePosition = IntakePosition.STOW;
+    // Assume intake starts fully retracted
+    _intakePosition = IntakePosition.RETRACTED;
 
     // Use mode-selected PID constants (different values for sim vs real)
-    _pivotPIDController =
+    _linearPIDController =
         new PIDController(
-            IntakeConstants.getPivotKP(),
-            IntakeConstants.getPivotKI(),
-            IntakeConstants.getPivotKD());
+            IntakeConstants.getLinearKP(),
+            IntakeConstants.getLinearKI(),
+            IntakeConstants.getLinearKD());
+
+    // Reset the internal encoder so 0 = fully retracted
+    _intakeIO.resetLinearEncoder();
 
     // Initialize the visualizer for Mechanism2d and 3D pose output
     _visualizer = new IntakeVisualizer("Intake");
   }
 
   /**
-   * Periodic method called every 20ms. Reads sensors, logs position data, runs PID control loop
-   * with gravity feedforward (cosine of angle), and updates the Mechanism2d visualization.
-   *
-   * <p>Gravity feedforward uses cosine because torque needed is maximum at horizontal (cos(0)=1)
-   * and zero at vertical (cos(90)=0).
+   * Periodic method called every 20ms. Reads sensors, logs position data, and runs PID control loop
+   * to maintain the linear slide position.
    */
   @Override
   public void periodic() {
@@ -102,62 +101,46 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", _intakeInputs);
 
     // LOGGING
-    Logger.recordOutput(
-        "Intake/PivotAngle/Current_deg", _intakeInputs._intakeRightPivotMotorPosition.getDegrees());
-    Logger.recordOutput("Intake/PivotAngle/Desired_deg", _intakePosition.getAngle().getDegrees());
-    Logger.recordOutput(
-        "Intake/PivotAngle/RawCurrent_deg",
-        _intakeInputs._intakeRightPivotMotorPosition.plus(
-            IntakeConstants.Hardware.PIVOT_ZERO_ROTATION));
-    Logger.recordOutput(
-        "Intake/PivotAngle/RawDesired_deg",
-        _intakePosition.getAngle().plus(IntakeConstants.Hardware.PIVOT_ZERO_ROTATION));
+    Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
+    Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
 
-    // Run PID control
-    _pivotPIDController.setSetpoint(_intakePosition.getAngle().getDegrees());
-    double pivotVoltage =
-        _pivotPIDController.calculate(_intakeInputs._intakeRightPivotMotorPosition.getDegrees());
+    // Run PID control for linear slide position
+    _linearPIDController.setSetpoint(_intakePosition.getPosition());
+    double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
 
-    // Apply feedforward for gravity compensation (uses mode-selected constant)
-    double feedforward =
-        IntakeConstants.getPivotFeedforward()
-            * Math.cos(Math.toRadians(_intakePosition.getAngle().getDegrees()));
+    _intakeIO.setLinearMotorVoltage(linearVoltage);
 
-    _intakeIO.setPivotMotorVoltage(pivotVoltage + feedforward);
-
-    // Update visualization with current state
+    // Check if at target
     boolean atGoal =
-        Math.abs(
-                _intakeInputs._intakeRightPivotMotorPosition.getDegrees()
-                    - _intakePosition.getAngle().getDegrees())
-            < IntakeConstants.Software.PIVOT_DEADBAND;
+        Math.abs(_intakeInputs._linearMotorPosition - _intakePosition.getPosition())
+            < IntakeConstants.Software.POSITION_DEADBAND;
 
-    Logger.recordOutput("Intake/Pivot/AtGoal", atGoal);
+    Logger.recordOutput("Intake/Linear/AtGoal", atGoal);
 
-    _visualizer.update(
-        _intakeInputs._intakeRightPivotMotorPosition, _intakePosition.getAngle(), atGoal);
+    // Update the Mechanism2d and Pose3d visualization
+    _visualizer.update(_intakeInputs._linearMotorPosition, _intakePosition.getPosition(), atGoal);
   }
 
   /**
-   * Sets the intake pivot to a desired position. The actual movement is handled by the PID
+   * Sets the intake slide to a desired position. The actual movement is handled by the PID
    * controller in {@link #periodic()}.
    *
-   * @param position The desired intake position (STOW or PICKUP)
+   * @param position The desired intake position (RETRACTED or EXTENDED)
    */
   public void setIntakePosition(IntakePosition position) {
     _intakePosition = position;
   }
 
   /**
-   * Manually controls the intake pivot with a duty cycle output, bypassing PID control.
+   * Manually controls the linear slide with a duty cycle output, bypassing PID control.
    *
    * <p><b>Warning:</b> For testing/setup only. Use {@link #setIntakePosition(IntakePosition)} for
    * normal operation.
    *
-   * @param output The duty cycle output (-1.0 to +1.0) for the pivot motor
+   * @param output The duty cycle output (-1.0 to +1.0) for the linear motor
    */
-  public void setIntakePivotDutyCycleOutput(double output) {
-    _intakeIO.setIntakePivotDutyCycleOutput(output);
+  public void setLinearMotorDutyCycleOutput(double output) {
+    _intakeIO.setLinearMotorDutyCycle(output);
   }
 
   /**
@@ -173,6 +156,11 @@ public class Intake extends SubsystemBase {
     _intakeIO.setRollerMotorOutput(0.0);
   }
 
+  /** Resets the linear encoder to zero (use when intake is known to be fully retracted). */
+  public void resetEncoder() {
+    _intakeIO.resetLinearEncoder();
+  }
+
   // ==================== FUEL SIM INTEGRATION ====================
 
   /**
@@ -180,7 +168,6 @@ public class Intake extends SubsystemBase {
    * bounding box, if the hopper has capacity.
    */
   public void simIntakeFuel() {
-    // Check if we have room in the hopper
     if (VirtualHopper.getInstance().getFuelCount() < ShooterConstants.FuelSim.MAX_HOPPER_CAPACITY) {
       VirtualHopper.getInstance().addFuel();
       Logger.recordOutput("Intake/FuelSim/IntakedFuel", true);
@@ -188,26 +175,26 @@ public class Intake extends SubsystemBase {
   }
 
   /**
-   * Returns true if the intake is deployed (in PICKUP position). Used by FuelSim to determine if
+   * Returns true if the intake is deployed (in EXTENDED position). Used by FuelSim to determine if
    * the intake can collect fuel.
    *
-   * @return true if intake is in PICKUP position
+   * @return true if intake is in EXTENDED position
    */
   public boolean isDeployed() {
-    return _intakePosition == IntakePosition.PICKUP;
+    return _intakePosition == IntakePosition.EXTENDED;
   }
 
   /**
-   * Returns true if the intake pivot is within {@link IntakeConstants.Software#PIVOT_DEADBAND} of
-   * its target position.
+   * Returns true if the intake linear slide is within {@link
+   * IntakeConstants.Software#POSITION_DEADBAND} of its target position.
    *
-   * @return true if the intake pivot is at target
+   * @return true if the intake is at target
    */
   public boolean isAtTarget() {
-    double currentAngle = _intakeInputs._intakeRightPivotMotorPosition.getDegrees();
-    double targetAngle = _intakePosition.getAngle().getDegrees();
-    double error = Math.abs(currentAngle - targetAngle);
-    return error < IntakeConstants.Software.PIVOT_DEADBAND;
+    double currentPosition = _intakeInputs._linearMotorPosition;
+    double targetPosition = _intakePosition.getPosition();
+    double error = Math.abs(currentPosition - targetPosition);
+    return error < IntakeConstants.Software.POSITION_DEADBAND;
   }
 
   /**

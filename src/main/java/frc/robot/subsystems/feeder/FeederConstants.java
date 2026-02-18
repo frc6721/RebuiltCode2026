@@ -10,13 +10,16 @@ public class FeederConstants {
     /** Gear ratio from motor to feeder mechanism (motor rotations per mechanism rotation) */
     public static final double GEAR_RATIO = 4.0; // 4:1 AM Sport Gearbox
 
-    /** Motor type for the feeder (1x NEO) */
+    /** Motor type for the feeder (1x NEO per side) */
     public static final DCMotor MOTOR = DCMotor.getNEO(1);
   }
 
   /** Motor configuration for the feeder. */
   public static class Motor {
-    /** Motor inversion */
+    /**
+     * Base motor inversion flag. The left motor uses this value, the right motor is always inverted
+     * relative to the left so that both feed wheels physically spin the same direction.
+     */
     public static final boolean INVERTED = false;
   }
 

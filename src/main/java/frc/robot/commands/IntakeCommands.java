@@ -12,11 +12,12 @@ import frc.robot.subsystems.intake.Intake.IntakePosition;
 public class IntakeCommands {
 
   /**
-   * Creates a command to set the intake pivot to a target position. Sets position once and finishes
-   * immediately - the PID controller in {@link Intake#periodic()} handles the actual movement.
+   * Creates a command to set the intake linear slide to a target position. Sets position once and
+   * finishes immediately - the PID controller in {@link Intake#periodic()} handles the actual
+   * movement.
    *
    * @param intake The intake subsystem
-   * @param position The target position (IntakePosition.STOW or IntakePosition.PICKUP)
+   * @param position The target position (IntakePosition.RETRACTED or IntakePosition.EXTENDED)
    * @return A command that sets the intake target position and finishes immediately
    */
   public static Command setIntakeGoalPosition(Intake intake, IntakePosition position) {
@@ -42,19 +43,19 @@ public class IntakeCommands {
   }
 
   /**
-   * Creates a command for manual duty cycle control of the intake pivot, bypassing PID.
+   * Creates a command for manual duty cycle control of the intake linear slide, bypassing PID.
    *
    * <p><b>Warning:</b> For testing/setup only. Use {@link #setIntakeGoalPosition} for normal
    * operation.
    *
    * @param intake The intake subsystem
    * @param output The duty cycle output (-1.0 to +1.0)
-   * @return A command that manually controls the intake pivot
+   * @return A command that manually controls the intake linear slide
    */
-  public static Command setIntakPivotDutyCycle(Intake intake, double output) {
+  public static Command setIntakeLinearDutyCycle(Intake intake, double output) {
     return Commands.run(
         () -> {
-          intake.setIntakePivotDutyCycleOutput(output);
+          intake.setLinearMotorDutyCycleOutput(output);
         },
         intake);
   }

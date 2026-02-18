@@ -1,140 +1,119 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+/**
+ * Constants for the Intake subsystem.
+ *
+ * <p>The intake is a linear slide mechanism with a roller motor. The linear motor extends/retracts
+ * the roller assembly on a rail. Position is tracked using the linear motor's internal encoder
+ * (starts at 0 = fully retracted, positive = extending out).
+ */
 public class IntakeConstants {
 
-  /** Hardware configuration for encoders and motor inversions. */
+  /** Hardware configuration for motor inversions. */
   public static class Hardware {
-    /** Absolute encoder zero position (intake fully stowed position) */
-    public static final Rotation2d PIVOT_ZERO_ROTATION = new Rotation2d(Degrees.of(-140));
+    /** Linear slide motor inversion */
+    public static final boolean LINEAR_MOTOR_INVERTED = false;
 
-    /** Absolute encoder configuration */
-    public static final boolean PIVOT_ENCODER_INVERTED = true;
-
-    public static final double PIVOT_ENCODER_POSITION_FACTOR = 2 * Math.PI; // Rotations -> Radians
-    public static final double PIVOT_ENCODER_VELOCITY_FACTOR =
-        (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
-
-    /** Motor inversions */
-    public static final boolean RIGHT_PIVOT_INVERTED = true;
-
+    /** Roller motor inversion */
     public static final boolean ROLLER_INVERTED = false;
   }
 
   /** Physical/mechanical properties of the intake. */
   public static class Mechanical {
-    /** Gear ratios - motor rotations per mechanism rotation */
-    public static final double PIVOT_GEAR_RATIO = 16.0; // 16:1 reduction
+    /** Gear ratio for the linear slide motor (motor rotations per unit of travel) */
+    public static final double LINEAR_GEAR_RATIO = 16.0;
 
-    public static final double ROLLER_GEAR_RATIO = 1.0; // Direct drive
-
-    /** Arm length from pivot point to center of mass (13 inches) */
-    public static final Distance ARM_LENGTH = Inches.of(13.0);
+    /** Roller gear ratio */
+    public static final double ROLLER_GEAR_RATIO = 1.0;
 
     /**
-     * Moment of inertia for the intake arm. Calculated for ~15 lbs (6.8 kg) concentrated at end of
-     * 13" (0.33m) arm. MOI = m * r^2 = 6.8 * 0.33^2 ≈ 0.74 kg⋅m²
+     * Position conversion factor for the internal encoder. Converts motor rotations to linear
+     * position in rotations at the output. Adjust this based on your lead screw pitch or belt/gear
+     * ratio so that the encoder position reads in meaningful units.
      */
-    public static final MomentOfInertia PIVOT_MOI = KilogramSquareMeters.of(0.74);
+    public static final double LINEAR_POSITION_CONVERSION_FACTOR = 1.0;
 
-    /** Angle limits - Zero degrees is stowed (up), positive is towards ground */
-    public static final double MIN_ANGLE_DEGREES = -1.0;
+    /**
+     * Velocity conversion factor for the internal encoder. Converts motor RPM to output velocity.
+     */
+    public static final double LINEAR_VELOCITY_CONVERSION_FACTOR = 1.0 / 60.0;
 
-    public static final double MAX_ANGLE_DEGREES = 91.0;
-    public static final double STARTING_ANGLE_DEGREES = 0.0; // Starts stowed
-
-    /** Motor type for the pivot (2x NEO in leader-follower) */
-    public static final DCMotor PIVOT_MOTOR = DCMotor.getNEO(2);
+    /** Motor type for the linear slide (1x NEO) */
+    public static final DCMotor LINEAR_MOTOR = DCMotor.getNEO(1);
 
     /** Motor type for the roller (1x NEO) */
     public static final DCMotor ROLLER_MOTOR = DCMotor.getNEO(1);
   }
 
-  /** Position setpoints for the intake pivot. */
+  /**
+   * Position setpoints for the linear slide.
+   *
+   * <p>Position 0 = fully retracted (in). Positive values = extending out. Units are in output
+   * rotations (after gear ratio). Tune these to match your hardware.
+   */
   public static class Positions {
-    /**
-     * Position setpoints in degrees. Larger angle is towards the ground, smaller angle is towards
-     * the robot.
-     */
-    public static final LoggedNetworkNumber PICKUP =
-        new LoggedNetworkNumber("Intake/Position/Pickup", 88);
+    /** Fully retracted (stowed) position */
+    public static final LoggedNetworkNumber RETRACTED =
+        new LoggedNetworkNumber("Intake/Position/Retracted", 0.0);
 
-    public static final LoggedNetworkNumber STOW =
-        new LoggedNetworkNumber("Intake/Position/Stow", 0);
+    /** Fully extended (deployed) position */
+    public static final LoggedNetworkNumber EXTENDED =
+        new LoggedNetworkNumber("Intake/Position/Extended", 10.0);
   }
 
-  /** PID and feedforward tuning constants. */
+  /** PID tuning constants for the linear slide position control. */
   public static class PID {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Real/kP", 0.03);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 0.1);
 
       public static final LoggedNetworkNumber KI =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Real/kI", 0.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Real/kD", 0.0);
-
-      /**
-       * Feedforward voltage multiplied by cos(angle) to compensate for gravity. When horizontal
-       * (0°), full feedforward applies. When vertical (90°), no feedforward needed.
-       */
-      public static final double FEEDFORWARD = 0.0;
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 0.0);
     }
 
     /** Simulation PID values - tuned for physics simulation */
     public static class Sim {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Sim/kP", 0.2);
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kP", 0.5);
 
       public static final LoggedNetworkNumber KI =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Sim/kI", 0.0002);
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Intake/Pivot/PID/Sim/kD", 0.0015);
-
-      /** Simulation feedforward for gravity compensation */
-      public static final double FEEDFORWARD = 2;
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kD", 0.01);
     }
   }
 
   /** Returns the appropriate PID kP based on current mode */
-  public static double getPivotKP() {
+  public static double getLinearKP() {
     return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.KP.get() : PID.Real.KP.get();
   }
 
   /** Returns the appropriate PID kI based on current mode */
-  public static double getPivotKI() {
+  public static double getLinearKI() {
     return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.KI.get() : PID.Real.KI.get();
   }
 
   /** Returns the appropriate PID kD based on current mode */
-  public static double getPivotKD() {
+  public static double getLinearKD() {
     return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.KD.get() : PID.Real.KD.get();
-  }
-
-  /** Returns the appropriate feedforward based on current mode */
-  public static double getPivotFeedforward() {
-    return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.FEEDFORWARD : PID.Real.FEEDFORWARD;
   }
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
-    public static final int PIVOT_SMART = 40;
-    public static final double PIVOT_SECONDARY = 55;
+    public static final int LINEAR_SMART = 40;
+    public static final double LINEAR_SECONDARY = 55;
     public static final int ROLLER_SMART = 50;
     public static final double ROLLER_SECONDARY = 60;
   }
@@ -150,54 +129,59 @@ public class IntakeConstants {
 
   /** Software tuning settings. */
   public static class Software {
-    /** Deadband for considering pivot "at position" in degrees */
-    public static final double PIVOT_DEADBAND = 4.0;
+    /** Deadband for considering linear slide "at position" (in output rotations) */
+    public static final double POSITION_DEADBAND = 0.5;
   }
 
-  /** 3D visualization constants for AdvantageScope. */
+  /**
+   * Visualization constants for Mechanism2d and AdvantageScope 3D output.
+   *
+   * <p>The intake slide is fixed at {@link #SLIDE_ANGLE_DEGREES}° below horizontal. The roller
+   * assembly translates along this axis for up to {@link #MAX_TRAVEL_INCHES} inches.
+   */
   public static class Visualization {
     /**
-     * 3D offset from robot origin to intake pivot point. TODO: Update these values based on CAD or
-     * measurements. X = forward/back, Y = up/down, Z = left/right (meters)
+     * Fixed angle of the slide rail below horizontal (degrees). Positive = below horizontal. In
+     * WPILib robot frame this corresponds to a negative pitch rotation.
      */
-    public static final Translation3d OFFSET =
-        new Translation3d(
-            Inches.of(-8.5).in(Meters), Inches.of(0).in(Meters), Inches.of(10).in(Meters));
+    public static final double SLIDE_ANGLE_DEGREES = 20.0;
 
-    public static final Rotation3d ROTATION = new Rotation3d(0, -Math.PI / 2, Math.PI);
+    /** Total linear travel of the slide in inches. */
+    public static final double MAX_TRAVEL_INCHES = 11.0;
 
-    /** Visualization arm length in meters for Mechanism2d display */
-    public static final double ARM_LENGTH = Mechanical.ARM_LENGTH.in(Meters);
+    /** Total linear travel converted to meters for Pose3d math. */
+    public static final double MAX_TRAVEL_METERS =
+        edu.wpi.first.units.Units.Inches.of(MAX_TRAVEL_INCHES).in(Meters);
+
+    /**
+     * Translation3d of the slide's retracted (zero) position in the robot frame. Adjust X/Y/Z to
+     * match where the intake rail starts on your robot. X = forward, Y = left, Z = up (all in
+     * meters).
+     */
+    public static final Translation3d BASE_OFFSET = new Translation3d(0.3, 0.0, 0.1);
   }
 
   /** FuelSim bounding box constants for intake pickup simulation. */
   public static class FuelSim {
-    /** Intake bounding box dimensions (10" deep, 20" wide). */
-    public static final Distance WIDTH = Inches.of(10.0);
+    /** Intake bounding box dimensions */
+    public static final edu.wpi.first.units.measure.Distance WIDTH = Inches.of(10.0);
 
-    public static final Distance LENGTH = Inches.of(20.0);
+    public static final edu.wpi.first.units.measure.Distance LENGTH = Inches.of(20.0);
   }
 
   // Logging
   static {
-    // Pivot angle limits
-    Logger.recordOutput("Constants/Intake/PivotAngle/Min_deg", Mechanical.MIN_ANGLE_DEGREES);
-    Logger.recordOutput("Constants/Intake/PivotAngle/Max_deg", Mechanical.MAX_ANGLE_DEGREES);
-
     // Gear ratios
-    Logger.recordOutput("Constants/Intake/GearRatio/Pivot", Mechanical.PIVOT_GEAR_RATIO);
+    Logger.recordOutput("Constants/Intake/GearRatio/Linear", Mechanical.LINEAR_GEAR_RATIO);
     Logger.recordOutput("Constants/Intake/GearRatio/Roller", Mechanical.ROLLER_GEAR_RATIO);
 
-    // Mechanical properties
-    Logger.recordOutput("Constants/Intake/ArmLength_m", Mechanical.ARM_LENGTH.in(Meters));
-    Logger.recordOutput(
-        "Constants/Intake/PivotMOI_kgm2", Mechanical.PIVOT_MOI.in(KilogramSquareMeters));
-    Logger.recordOutput("Constants/Intake/Deadband_deg", Software.PIVOT_DEADBAND);
+    // Deadband
+    Logger.recordOutput("Constants/Intake/PositionDeadband", Software.POSITION_DEADBAND);
 
     // Current limits
-    Logger.recordOutput("Constants/Intake/CurrentLimit/PivotSmart_A", CurrentLimits.PIVOT_SMART);
+    Logger.recordOutput("Constants/Intake/CurrentLimit/LinearSmart_A", CurrentLimits.LINEAR_SMART);
     Logger.recordOutput(
-        "Constants/Intake/CurrentLimit/PivotSecondary_A", CurrentLimits.PIVOT_SECONDARY);
+        "Constants/Intake/CurrentLimit/LinearSecondary_A", CurrentLimits.LINEAR_SECONDARY);
     Logger.recordOutput("Constants/Intake/CurrentLimit/RollerSmart_A", CurrentLimits.ROLLER_SMART);
     Logger.recordOutput(
         "Constants/Intake/CurrentLimit/RollerSecondary_A", CurrentLimits.ROLLER_SECONDARY);
@@ -205,5 +189,11 @@ public class IntakeConstants {
     // FuelSim constants
     Logger.recordOutput("Constants/Intake/FuelSim/BoundingBoxWidth_m", FuelSim.WIDTH.in(Meters));
     Logger.recordOutput("Constants/Intake/FuelSim/BoundingBoxLength_m", FuelSim.LENGTH.in(Meters));
+
+    // Visualization constants
+    Logger.recordOutput(
+        "Constants/Intake/Visualization/SlideAngle_deg", Visualization.SLIDE_ANGLE_DEGREES);
+    Logger.recordOutput(
+        "Constants/Intake/Visualization/MaxTravel_m", Visualization.MAX_TRAVEL_METERS);
   }
 }

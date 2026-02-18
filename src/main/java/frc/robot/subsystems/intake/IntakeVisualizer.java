@@ -1,218 +1,192 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
-
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 /**
- * Visualizes the intake pivot mechanism using Mechanism2d and logs a Pose3d for AdvantageScope 3D
- * visualization.
+ * Visualizes the linear slide intake mechanism using Mechanism2d and logs a Pose3d for
+ * AdvantageScope 3D visualization.
  *
- * <p>The visualization shows:
+ * <p><b>Physical geometry:</b> The intake slides outward at a fixed angle of 20° below horizontal
+ * (negative pitch in the WPILib robot coordinate frame, since X = forward). Total travel is {@link
+ * IntakeConstants.Visualization#MAX_TRAVEL_INCHES} inches.
+ *
+ * <p>The Mechanism2d canvas shows the slide as a horizontal bar that extends left-to-right, where:
  *
  * <ul>
- *   <li><b>Green arm:</b> Current measured position
- *   <li><b>Yellow arm:</b> Trajectory/setpoint position (where PID is targeting)
- *   <li><b>Red arm:</b> Goal position (final target)
- *   <li><b>White lines:</b> Min and max angle limits
- *   <li><b>Background:</b> Green when at goal, black otherwise
+ *   <li>0 (left) = fully retracted
+ *   <li>MAX_TRAVEL (right) = fully extended
  * </ul>
+ *
+ * <p>Three overlapping bars are drawn:
+ *
+ * <ul>
+ *   <li><b>Green:</b> Current measured position
+ *   <li><b>Yellow:</b> Goal / target position
+ *   <li><b>White lines:</b> Min/max travel bounds
+ * </ul>
+ *
+ * <p>The Pose3d output shows the roller assembly moving along the slide axis in 3D space for
+ * AdvantageScope's 3D robot viewer.
  */
 public class IntakeVisualizer {
 
-  // Mechanism2d canvas dimensions
-  private static final double WIDTH = 1.0;
-  private static final double HEIGHT = 1.0;
+  // ---------- Mechanism2d canvas ----------
+  private static final double CANVAS_WIDTH = 1.2; // meters (extra space past max travel)
+  private static final double CANVAS_HEIGHT = 0.4; // meters (tall enough to see the bars)
+  private static final double ROOT_X = 0.05; // root X on canvas (left edge, slightly inset)
+  private static final double ROOT_Y = 0.2; // root Y on canvas (vertical center)
 
-  // Visualization components
-  private final LoggedMechanism2d mechanism;
-  private final LoggedMechanismLigament2d measuredArm;
-  private final LoggedMechanismLigament2d setpointArm;
-  private final LoggedMechanismLigament2d goalArm;
-  private final LoggedMechanismLigament2d lowerBound;
-  private final LoggedMechanismLigament2d upperBound;
+  // Mechanism2d components
+  private final LoggedMechanism2d _mechanism;
+  private final LoggedMechanismLigament2d _measuredBar;
+  private final LoggedMechanismLigament2d _goalBar;
+  private final LoggedMechanismLigament2d _minBound;
+  private final LoggedMechanismLigament2d _maxBound;
 
-  // Configuration
-  private final String name;
-  private final double armLength;
-  private final Pose3d baseOffset;
+  // ---------- Config ----------
+  private final String _name;
 
   /**
    * Creates a new IntakeVisualizer.
    *
-   * @param name The name for logging (e.g., "Intake")
+   * @param name The name used for logging keys (e.g., "Intake")
    */
   public IntakeVisualizer(String name) {
-    this.name = name;
-    this.armLength = IntakeConstants.Visualization.ARM_LENGTH;
-    this.baseOffset =
-        new Pose3d(IntakeConstants.Visualization.OFFSET, IntakeConstants.Visualization.ROTATION);
+    _name = name;
 
-    // Create the Mechanism2d canvas
-    mechanism = new LoggedMechanism2d(WIDTH, HEIGHT, new Color8Bit(Color.kBlack));
+    // Scale: map max travel (inches) to canvas width (leave room for the bound marker)
+    // Use [0, maxTravelMeters] mapped onto [ROOT_X, ROOT_X + maxTravelMeters_canvas]
 
-    // Create the root at center of canvas
-    LoggedMechanismRoot2d root =
-        mechanism.getRoot(name + "_Root", baseOffset.getX(), baseOffset.getY());
+    _mechanism = new LoggedMechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT, new Color8Bit(Color.kBlack));
 
-    // Create min/max angle boundary indicators
-    // Transform from robot frame to Mechanism2d frame
-    double minAngleMech2d =
-        90.0 - IntakeConstants.Mechanical.MAX_ANGLE_DEGREES; // Note: min robot = max visual
-    double maxAngleMech2d =
-        90.0 - IntakeConstants.Mechanical.MIN_ANGLE_DEGREES; // Note: max robot = min visual
+    // Root is at the retracted end (left side) of the slide
+    LoggedMechanismRoot2d root = _mechanism.getRoot(name + "_Root", ROOT_X, ROOT_Y);
 
-    lowerBound =
+    // Min bound indicator (zero travel) — just a short vertical tick at root
+    _minBound =
         new LoggedMechanismLigament2d(
-            name + "_LowerBound", armLength, minAngleMech2d, 2, new Color8Bit(Color.kWhite));
+            name + "_MinBound",
+            0.02, // very short marker
+            90.0, // vertical
+            3,
+            new Color8Bit(Color.kWhite));
 
-    upperBound =
+    // Max bound indicator — a short tick at the maximum travel distance
+    LoggedMechanismRoot2d maxRoot =
+        _mechanism.getRoot(
+            name + "_MaxRoot", ROOT_X + IntakeConstants.Visualization.MAX_TRAVEL_METERS, ROOT_Y);
+    _maxBound =
         new LoggedMechanismLigament2d(
-            name + "_UpperBound", armLength, maxAngleMech2d, 2, new Color8Bit(Color.kWhite));
+            name + "_MaxBound", 0.02, 90.0, 3, new Color8Bit(Color.kWhite));
 
-    // Create the measured position arm (what the encoder reads)
-    measuredArm =
+    // Goal bar (yellow, slightly thinner — drawn first so measured draws on top)
+    _goalBar =
         new LoggedMechanismLigament2d(
-            name + "_Measured",
-            armLength,
-            90.0
-                - IntakeConstants.Mechanical
-                    .STARTING_ANGLE_DEGREES, // Transform to Mechanism2d frame
-            6,
-            new Color8Bit(Color.kGreen));
-
-    // Create the setpoint arm (where PID is currently targeting)
-    setpointArm =
-        new LoggedMechanismLigament2d(
-            name + "_Setpoint",
-            armLength * 0.9, // Slightly shorter to see both
-            90.0
-                - IntakeConstants.Mechanical
-                    .STARTING_ANGLE_DEGREES, // Transform to Mechanism2d frame
+            name + "_Goal",
+            0.0, // length updated each loop
+            0.0, // horizontal (0° = right)
             4,
             new Color8Bit(Color.kYellow));
 
-    // Create the goal arm (final target position)
-    goalArm =
+    // Measured bar (green, thicker)
+    _measuredBar =
         new LoggedMechanismLigament2d(
-            name + "_Goal",
-            armLength * 0.8, // Even shorter to see all three
-            90.0
-                - IntakeConstants.Mechanical
-                    .STARTING_ANGLE_DEGREES, // Transform to Mechanism2d frame
-            3,
-            new Color8Bit(Color.kRed));
+            name + "_Measured",
+            0.0, // length updated each loop
+            0.0, // horizontal
+            6,
+            new Color8Bit(Color.kGreen));
 
-    // Attach all ligaments to the root
-    root.append(lowerBound);
-    root.append(upperBound);
-    root.append(measuredArm);
-    root.append(setpointArm);
-    root.append(goalArm);
+    // Attach to roots
+    root.append(_minBound);
+    root.append(_goalBar);
+    root.append(_measuredBar);
+    maxRoot.append(_maxBound);
   }
 
   /**
-   * Updates the visualizer with the current state.
+   * Updates the visualizer with the current mechanism state.
    *
-   * @param measuredAngle The current measured angle from the encoder (in robot frame: 0° =
-   *     vertical)
-   * @param setpointAngle The current PID setpoint (optional - empty if not in position control)
-   * @param goalAngle The goal position (optional - empty if not targeting a position)
-   * @param atGoal Whether the mechanism is at the goal position
+   * <p>Call this from {@link frc.robot.subsystems.intake.Intake#periodic()}.
+   *
+   * @param currentPosition The current linear slide position in encoder output rotations (0 =
+   *     retracted)
+   * @param goalPosition The goal / setpoint position in the same units
+   * @param atGoal Whether the mechanism is within the deadband of its goal
    */
-  public void update(
-      Rotation2d measuredAngle,
-      Optional<Rotation2d> setpointAngle,
-      Optional<Rotation2d> goalAngle,
-      boolean atGoal) {
+  public void update(double currentPosition, double goalPosition, boolean atGoal) {
+    // Convert encoder rotations → meters of linear travel for display
+    double currentMeters = positionToMeters(currentPosition);
+    double goalMeters = positionToMeters(goalPosition);
 
-    // Transform from robot frame (0° = vertical) to Mechanism2d frame (0° = horizontal)
-    // Transformation: mechanism_angle = 90° - robot_angle
-    double measuredAngleMech2d = 90.0 - measuredAngle.getDegrees();
+    // Clamp to valid travel range for display
+    currentMeters =
+        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Visualization.MAX_TRAVEL_METERS));
+    goalMeters =
+        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Visualization.MAX_TRAVEL_METERS));
 
-    // Update measured arm angle
-    measuredArm.setAngle(measuredAngleMech2d);
+    // Update bar lengths (Mechanism2d length = how far the ligament extends from root)
+    _measuredBar.setLength(currentMeters);
+    _goalBar.setLength(goalMeters);
 
-    // Update setpoint arm (hide if no setpoint)
-    if (setpointAngle.isPresent()) {
-      setpointArm.setLength(armLength * 0.9);
-      double setpointAngleMech2d = 90.0 - setpointAngle.get().getDegrees();
-      setpointArm.setAngle(setpointAngleMech2d);
-    } else {
-      setpointArm.setLength(0); // Hide by setting length to 0
-    }
+    // Background color: dark green when at goal, black otherwise
+    _mechanism.setBackgroundColor(
+        atGoal ? new Color8Bit(Color.kDarkGreen) : new Color8Bit(Color.kBlack));
 
-    // Update goal arm (hide if no goal)
-    if (goalAngle.isPresent()) {
-      goalArm.setLength(armLength * 0.8);
-      double goalAngleMech2d = 90.0 - goalAngle.get().getDegrees();
-      goalArm.setAngle(goalAngleMech2d);
-    } else {
-      goalArm.setLength(0); // Hide by setting length to 0
-    }
+    // Publish Mechanism2d to SmartDashboard and AdvantageKit
+    SmartDashboard.putData(_name + " Visualizer", _mechanism);
+    Logger.recordOutput(_name + "/Visualizer/Mechanism2d", _mechanism);
 
-    // Update background color based on at-goal status
-    if (atGoal) {
-      mechanism.setBackgroundColor(new Color8Bit(Color.kDarkGreen));
-    } else {
-      mechanism.setBackgroundColor(new Color8Bit(Color.kBlack));
-    }
+    // --- 3D Pose ---
+    // The slide is fixed at -20° pitch (20° below horizontal, pitched down from front of robot).
+    // The roller assembly translates along the slide axis (forward-and-down direction).
+    //
+    // WPILib robot frame: X = forward, Y = left, Z = up
+    // Rotation3d pitch of -20° means the slide axis points forward-and-down.
+    // Translation is along X of the slide frame, converted back to robot frame:
+    //   dX_robot = currentMeters * cos(-20°) = currentMeters * cos(20°)
+    //   dZ_robot = currentMeters * sin(-20°) = -currentMeters * sin(20°)
+    double pitchRad = Math.toRadians(IntakeConstants.Visualization.SLIDE_ANGLE_DEGREES);
+    double dx = currentMeters * Math.cos(pitchRad);
+    double dz = -currentMeters * Math.sin(pitchRad); // negative = downward
 
-    // Publish to SmartDashboard for Glass/AdvantageScope Mechanism2d view
-    SmartDashboard.putData(name + " Visualizer", mechanism);
-    Logger.recordOutput(name + "/Visualizer/Mechanism2d", mechanism);
-
-    // Log the 3D pose for AdvantageScope 3D visualization
-    // The rotation is around the Y axis (pitch) since the arm pivots up/down
-    // Keep the base position fixed, only change the rotation
-    Pose3d pose3d =
+    Translation3d baseTranslation = IntakeConstants.Visualization.BASE_OFFSET;
+    Pose3d rollerPose =
         new Pose3d(
-            baseOffset.getTranslation(),
-            new Rotation3d(
-                Radians.of(baseOffset.getRotation().getX()),
-                Radians.of(baseOffset.getRotation().getY())
-                    .plus(Degrees.of(measuredAngle.getDegrees())),
-                Radians.of(baseOffset.getRotation().getZ())));
+            new Translation3d(
+                baseTranslation.getX() + dx, baseTranslation.getY(), baseTranslation.getZ() + dz),
+            // Fixed rotation: the roller assembly is always at -20° pitch (angled down)
+            new Rotation3d(0.0, -pitchRad, 0.0));
 
-    Logger.recordOutput(name + "/Visualizer/Pose3d", pose3d);
-    Logger.recordOutput(name + "/Visualizer/MeasuredAngle_deg", measuredAngle.getDegrees());
+    Logger.recordOutput(_name + "/Visualizer/Pose3d", rollerPose);
 
-    if (setpointAngle.isPresent()) {
-      Logger.recordOutput(name + "/Visualizer/SetpointAngle_deg", setpointAngle.get().getDegrees());
-    }
-    if (goalAngle.isPresent()) {
-      Logger.recordOutput(name + "/Visualizer/GoalAngle_deg", goalAngle.get().getDegrees());
-    }
+    // Scalar logs for easy graphing
+    Logger.recordOutput(_name + "/Visualizer/CurrentPosition_m", currentMeters);
+    Logger.recordOutput(_name + "/Visualizer/GoalPosition_m", goalMeters);
+    Logger.recordOutput(_name + "/Visualizer/AtGoal", atGoal);
   }
 
   /**
-   * Simplified update method when only the measured angle is available.
+   * Converts encoder position (output rotations) to meters of linear travel for display.
    *
-   * @param measuredAngle The current measured angle from the encoder
-   */
-  public void update(Rotation2d measuredAngle) {
-    update(measuredAngle, Optional.empty(), Optional.empty(), false);
-  }
-
-  /**
-   * Update with measured angle and goal position.
+   * <p>This uses the ratio: {@link IntakeConstants.Visualization#MAX_TRAVEL_METERS} / {@link
+   * IntakeConstants.Positions#EXTENDED} so that the EXTENDED setpoint maps to the full travel.
    *
-   * @param measuredAngle The current measured angle
-   * @param goalAngle The goal position
-   * @param atGoal Whether the mechanism is at the goal
+   * @param encoderRotations Position in output rotations
+   * @return Equivalent travel distance in meters
    */
-  public void update(Rotation2d measuredAngle, Rotation2d goalAngle, boolean atGoal) {
-    update(measuredAngle, Optional.of(goalAngle), Optional.of(goalAngle), atGoal);
+  private double positionToMeters(double encoderRotations) {
+    double extendedRotations = IntakeConstants.Positions.EXTENDED.get();
+    if (extendedRotations == 0.0) return 0.0; // avoid divide-by-zero
+    return (encoderRotations / extendedRotations) * IntakeConstants.Visualization.MAX_TRAVEL_METERS;
   }
 }

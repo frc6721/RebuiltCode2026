@@ -92,10 +92,10 @@ public class Shooter extends SubsystemBase {
     // LOGGING
     Logger.recordOutput(
         "Shooter/FlywheelSpeed/Current_RadPerSec",
-        _shooterInputs._flywheelMotorVelocity.in(RadiansPerSecond));
+        _shooterInputs._leftFlywheelMotorVelocity.in(RadiansPerSecond));
     Logger.recordOutput(
         "Shooter/FlywheelSpeed/Current_RPM",
-        _shooterInputs._flywheelMotorVelocity.in(RevolutionsPerSecond) * 60);
+        _shooterInputs._leftFlywheelMotorVelocity.in(RevolutionsPerSecond) * 60);
 
     Logger.recordOutput(
         "Shooter/FlywheelSpeed/Desired_RadPerSec", _targetFlywheelSpeed.in(RadiansPerSecond));
@@ -106,7 +106,7 @@ public class Shooter extends SubsystemBase {
     // ==================== FUEL SIM INTEGRATION ====================
     // Update trajectory visualization every loop so driver sees real-time prediction
     LinearVelocity linearSpeed =
-        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._flywheelMotorVelocity);
+        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
     _fuelSimVisualizer.updateTrajectory(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
 
     // Check if we should launch fuel (for visualization)
@@ -153,7 +153,7 @@ public class Shooter extends SubsystemBase {
 
     // Use MEASURED speed for realistic physics
     LinearVelocity linearSpeed =
-        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._flywheelMotorVelocity);
+        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
 
     // Launch with hood angle from constants
     _fuelSimVisualizer.launchFuel(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
@@ -233,7 +233,7 @@ public class Shooter extends SubsystemBase {
   public boolean areFlywheelsAtTargetSpeed() {
     return Math.abs(
             _targetFlywheelSpeed.in(RadiansPerSecond)
-                - _shooterInputs._flywheelMotorVelocity.in(RadiansPerSecond))
+                - _shooterInputs._leftFlywheelMotorVelocity.in(RadiansPerSecond))
         <= Math.abs(
             _targetFlywheelSpeed.in(RadiansPerSecond) * ShooterConstants.Software.PID_TOLERANCE);
     // the tolerance is a percent error of the target speed we are allowed
@@ -262,7 +262,7 @@ public class Shooter extends SubsystemBase {
    * @return current flywheel angular velocity (rad/s)
    */
   public double getFFCharacterizationVelocity() {
-    return _shooterInputs._flywheelMotorVelocity.in(RadiansPerSecond);
+    return _shooterInputs._leftFlywheelMotorVelocity.in(RadiansPerSecond);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

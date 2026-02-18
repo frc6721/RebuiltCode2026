@@ -39,10 +39,13 @@ public class ShooterConstants {
      */
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0004);
 
-    /** Motor type for the flywheel (1x NEO) */
-    public static final DCMotor MOTOR = DCMotor.getNEO(1);
+    /** Motor type for the flywheel (1x NEO Vortex per side, used with SparkFlex) */
+    public static final DCMotor MOTOR = DCMotor.getNeoVortex(1);
 
-    /** Motor inversion */
+    /**
+     * Base motor inversion flag. The left motor uses this value, the right motor is always inverted
+     * relative to the left so that both flywheels physically spin the same direction.
+     */
     public static final boolean INVERTED = false;
   }
 

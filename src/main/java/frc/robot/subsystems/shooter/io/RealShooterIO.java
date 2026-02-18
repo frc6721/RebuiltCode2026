@@ -10,59 +10,101 @@ import static frc.robot.util.SparkUtil.tryUntilOk;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 
+/**
+ * Real hardware implementation of ShooterIO using two REV SparkFlex motor controllers in a
+ * leader-follower configuration.
+ *
+ * <p>The left motor is the leader and the right motor follows it inverted, so both flywheels
+ * physically spin the same direction. The base inversion is controlled by {@link
+ * ShooterConstants.Mechanical#INVERTED}.
+ */
 public class RealShooterIO implements ShooterIO {
-  private SparkMax _flywheelMotor;
+  private final SparkFlex _leftFlywheelMotor;
+  private final SparkFlex _rightFlywheelMotor;
 
   public RealShooterIO() {
-    configFlywheelMotor();
+    _leftFlywheelMotor =
+        new SparkFlex(Constants.CanIds.FLYWHEEL_LEFT_MOTOR_ID, MotorType.kBrushless);
+    _rightFlywheelMotor =
+        new SparkFlex(Constants.CanIds.FLYWHEEL_RIGHT_MOTOR_ID, MotorType.kBrushless);
+
+    configFlywheelMotors();
   }
 
-  public void configFlywheelMotor() {
-    _flywheelMotor = new SparkMax(Constants.CanIds.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
-
-    SparkMaxConfig config = new SparkMaxConfig();
-    config
+  /** Configures both flywheel motors. Left is leader, right follows inverted. */
+  public void configFlywheelMotors() {
+    // ── Left motor (leader) ──
+    SparkFlexConfig leftConfig = new SparkFlexConfig();
+    leftConfig
         .inverted(ShooterConstants.Mechanical.INVERTED)
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
         .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY)
         .voltageCompensation(12.0);
-    config.closedLoop.pid(
+    leftConfig.closedLoop.pid(
         ShooterConstants.getFlywheelKP(),
         ShooterConstants.getFlywheelKI(),
         ShooterConstants.getFlywheelKD());
-
-    config.closedLoop.maxMotion.maxAcceleration(
+    leftConfig.closedLoop.maxMotion.maxAcceleration(
         ShooterConstants.Limits.MAX_ACCEL.in(RotationsPerSecond.per(Second)) * 60.0);
 
     tryUntilOk(
-        _flywheelMotor,
+        _leftFlywheelMotor,
         5,
         () ->
-            _flywheelMotor.configure(
-                config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+            _leftFlywheelMotor.configure(
+                leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+
+    // ── Right motor (follower, inverted relative to leader) ──
+    SparkFlexConfig rightConfig = new SparkFlexConfig();
+    rightConfig
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
+        .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY)
+        .voltageCompensation(12.0);
+
+    // Follow the left motor, inverted so both wheels physically spin the same direction
+    rightConfig.follow(_leftFlywheelMotor, true);
+
+    tryUntilOk(
+        _rightFlywheelMotor,
+        5,
+        () ->
+            _rightFlywheelMotor.configure(
+                rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
+  @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    // Flywheel motor
-    inputs._flywheelMotorTemperature = Celsius.of(_flywheelMotor.getMotorTemperature());
-    inputs._flywheelMotorVelocity =
-        RotationsPerSecond.of(_flywheelMotor.getEncoder().getVelocity() / 60.0);
-    inputs._flywheelMotorVoltage =
-        Volts.of(_flywheelMotor.getAppliedOutput() * _flywheelMotor.getBusVoltage());
-    inputs._flywheelMotorCurrent = Amps.of(_flywheelMotor.getOutputCurrent());
+    // Left flywheel motor (leader)
+    inputs._leftFlywheelMotorTemperature = Celsius.of(_leftFlywheelMotor.getMotorTemperature());
+    inputs._leftFlywheelMotorVelocity =
+        RotationsPerSecond.of(_leftFlywheelMotor.getEncoder().getVelocity() / 60.0);
+    inputs._leftFlywheelMotorVoltage =
+        Volts.of(_leftFlywheelMotor.getAppliedOutput() * _leftFlywheelMotor.getBusVoltage());
+    inputs._leftFlywheelMotorCurrent = Amps.of(_leftFlywheelMotor.getOutputCurrent());
+
+    // Right flywheel motor (follower)
+    inputs._rightFlywheelMotorTemperature = Celsius.of(_rightFlywheelMotor.getMotorTemperature());
+    inputs._rightFlywheelMotorVelocity =
+        RotationsPerSecond.of(_rightFlywheelMotor.getEncoder().getVelocity() / 60.0);
+    inputs._rightFlywheelMotorVoltage =
+        Volts.of(_rightFlywheelMotor.getAppliedOutput() * _rightFlywheelMotor.getBusVoltage());
+    inputs._rightFlywheelMotorCurrent = Amps.of(_rightFlywheelMotor.getOutputCurrent());
   }
 
-  // Flywheel motor methods
+  // ── Flywheel motor methods (commands go to leader only; follower follows automatically) ──
+
+  @Override
   public void setFlywheelSpeed(AngularVelocity speed) {
     double targetRPM = speed.in(RotationsPerSecond) * 60.0;
 
@@ -71,7 +113,7 @@ public class RealShooterIO implements ShooterIO {
     double kV = ShooterConstants.getFlywheelKV();
     double ffVolts = kS * Math.signum(targetRPM) + kV * targetRPM;
 
-    _flywheelMotor
+    _leftFlywheelMotor
         .getClosedLoopController()
         .setReference(
             targetRPM,
@@ -81,17 +123,20 @@ public class RealShooterIO implements ShooterIO {
             com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
   }
 
+  @Override
   public void setFlyWheelDutyCycle(double output) {
-    this._flywheelMotor.set(output);
+    _leftFlywheelMotor.set(output);
   }
 
+  @Override
   public void stopFlywheel() {
-    // reset the integral accumulator to prevent integral windup
-    _flywheelMotor.getClosedLoopController().setIAccum(0);
-    _flywheelMotor.stopMotor();
+    // Reset the integral accumulator to prevent integral windup
+    _leftFlywheelMotor.getClosedLoopController().setIAccum(0);
+    _leftFlywheelMotor.stopMotor();
   }
 
+  @Override
   public void setFlywheelVoltage(Voltage volts) {
-    _flywheelMotor.setVoltage(volts.magnitude());
+    _leftFlywheelMotor.setVoltage(volts.magnitude());
   }
 }

@@ -7,81 +7,71 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.util.SparkUtil.ifOk;
 import static frc.robot.util.SparkUtil.tryUntilOk;
 
-import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 
+/**
+ * Real hardware implementation of IntakeIO for a linear slide + roller intake.
+ *
+ * <p><b>Hardware:</b>
+ *
+ * <ul>
+ *   <li>Linear motor (SparkMax + NEO): Extends/retracts the intake on a linear rail
+ *   <li>Roller motor (SparkMax + NEO): Spins rollers to acquire game pieces
+ * </ul>
+ *
+ * <p>Position is tracked using the linear motor's built-in relative encoder. The encoder is zeroed
+ * at startup (assumes intake starts fully retracted). Positive rotation = extending out.
+ */
 public class RealIntakeIO implements IntakeIO {
-  private SparkMax _rightPivotMotor;
-  private SparkMax _leftPivotMotor;
-  private SparkMax _rollerMotor;
-  private AbsoluteEncoder _pivotEncoder;
+  private final SparkMax _linearMotor;
+  private final SparkMax _rollerMotor;
+  private final RelativeEncoder _linearEncoder;
 
   public RealIntakeIO() {
-    configPivotMotors();
+    _linearMotor = new SparkMax(Constants.CanIds.INTAKE_LINEAR_MOTOR_ID, MotorType.kBrushless);
+    _rollerMotor = new SparkMax(Constants.CanIds.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
+
+    configLinearMotor();
     configRollerMotor();
+
+    // Get the internal encoder from the linear motor
+    _linearEncoder = _linearMotor.getEncoder();
   }
 
-  public void configPivotMotors() {
-    // Configure right (leader) pivot motor
-    _rightPivotMotor = new SparkMax(Constants.CanIds.RIGHT_PIVOT_MOTOR_ID, MotorType.kBrushless);
-
-    SparkMaxConfig rightConfig = new SparkMaxConfig();
-    rightConfig
-        .inverted(IntakeConstants.Hardware.RIGHT_PIVOT_INVERTED)
+  /** Configures the linear slide motor with position/velocity conversion factors. */
+  public void configLinearMotor() {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config
+        .inverted(IntakeConstants.Hardware.LINEAR_MOTOR_INVERTED)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(IntakeConstants.CurrentLimits.PIVOT_SMART)
-        .secondaryCurrentLimit(IntakeConstants.CurrentLimits.PIVOT_SECONDARY)
+        .smartCurrentLimit(IntakeConstants.CurrentLimits.LINEAR_SMART)
+        .secondaryCurrentLimit(IntakeConstants.CurrentLimits.LINEAR_SECONDARY)
         .voltageCompensation(12.0);
 
-    // Configure absolute encoder on right motor
-    rightConfig
-        .absoluteEncoder
-        .inverted(IntakeConstants.Hardware.PIVOT_ENCODER_INVERTED)
-        .positionConversionFactor(IntakeConstants.Hardware.PIVOT_ENCODER_POSITION_FACTOR)
-        .velocityConversionFactor(IntakeConstants.Hardware.PIVOT_ENCODER_VELOCITY_FACTOR)
-        .averageDepth(2);
+    // Configure the internal encoder conversion factors
+    config
+        .encoder
+        .positionConversionFactor(IntakeConstants.Mechanical.LINEAR_POSITION_CONVERSION_FACTOR)
+        .velocityConversionFactor(IntakeConstants.Mechanical.LINEAR_VELOCITY_CONVERSION_FACTOR);
 
     tryUntilOk(
-        _rightPivotMotor,
+        _linearMotor,
         5,
         () ->
-            _rightPivotMotor.configure(
-                rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-
-    _pivotEncoder = _rightPivotMotor.getAbsoluteEncoder();
-
-    // Configure left (follower) pivot motor
-    _leftPivotMotor = new SparkMax(Constants.CanIds.LEFT_PIVOT_MOTOR_ID, MotorType.kBrushless);
-
-    SparkMaxConfig leftConfig = new SparkMaxConfig();
-    leftConfig
-        .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(IntakeConstants.CurrentLimits.PIVOT_SMART)
-        .secondaryCurrentLimit(IntakeConstants.CurrentLimits.PIVOT_SECONDARY)
-        .voltageCompensation(12.0);
-
-    // Configure left motor to follow right motor
-    leftConfig.follow(_rightPivotMotor, true);
-
-    tryUntilOk(
-        _leftPivotMotor,
-        5,
-        () ->
-            _leftPivotMotor.configure(
-                leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+            _linearMotor.configure(
+                config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
+  /** Configures the roller motor. */
   public void configRollerMotor() {
-    _rollerMotor = new SparkMax(Constants.CanIds.ROLLER_MOTOR_ID, MotorType.kBrushless);
-
     SparkMaxConfig config = new SparkMaxConfig();
     config
         .inverted(IntakeConstants.Hardware.ROLLER_INVERTED)
@@ -98,88 +88,68 @@ public class RealIntakeIO implements IntakeIO {
                 config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
+  @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    // Right pivot motor
+    // Linear slide motor
     ifOk(
-        _rightPivotMotor,
-        _rightPivotMotor::getMotorTemperature,
-        (value) -> inputs._intakeRightPivotMotorTemperature = Celsius.of(value));
+        _linearMotor,
+        _linearMotor::getMotorTemperature,
+        (value) -> inputs._linearMotorTemperature = Celsius.of(value));
     ifOk(
-        _rightPivotMotor,
-        _pivotEncoder::getVelocity,
-        (value) -> inputs._intakeRightPivotMotorVelocity = RadiansPerSecond.of(value));
+        _linearMotor,
+        _linearEncoder::getVelocity,
+        (value) -> inputs._linearMotorVelocity = RadiansPerSecond.of(value));
+    ifOk(_linearMotor, _linearEncoder::getPosition, (value) -> inputs._linearMotorPosition = value);
     ifOk(
-        _rightPivotMotor,
-        _pivotEncoder::getPosition,
-        (value) ->
-            inputs._intakeRightPivotMotorPosition =
-                new Rotation2d(value).minus(IntakeConstants.Hardware.PIVOT_ZERO_ROTATION));
-    ifOk(
-        _rightPivotMotor,
+        _linearMotor,
         new java.util.function.DoubleSupplier[] {
-          _rightPivotMotor::getAppliedOutput, _rightPivotMotor::getBusVoltage
+          _linearMotor::getAppliedOutput, _linearMotor::getBusVoltage
         },
-        (values) -> inputs._intakeRightPivotMotorVoltage = Volts.of(values[0] * values[1]));
+        (values) -> inputs._linearMotorVoltage = Volts.of(values[0] * values[1]));
     ifOk(
-        _rightPivotMotor,
-        _rightPivotMotor::getOutputCurrent,
-        (value) -> inputs._intakeRightPivotMotorCurrent = Amps.of(value));
-
-    // Left pivot motor
-    ifOk(
-        _leftPivotMotor,
-        _leftPivotMotor::getMotorTemperature,
-        (value) -> inputs._intakeLeftPivotMotorTemperature = Celsius.of(value));
-    ifOk(
-        _leftPivotMotor,
-        _leftPivotMotor.getEncoder()::getVelocity,
-        (value) -> inputs._intakeLeftPivotMotorVelocity = RadiansPerSecond.of(value));
-    ifOk(
-        _leftPivotMotor,
-        _leftPivotMotor.getEncoder()::getPosition,
-        (value) -> inputs._intakeLeftPivotMotorPosition = new Rotation2d(value));
-    ifOk(
-        _leftPivotMotor,
-        new java.util.function.DoubleSupplier[] {
-          _leftPivotMotor::getAppliedOutput, _leftPivotMotor::getBusVoltage
-        },
-        (values) -> inputs._intakeLeftPivotMotorVoltage = Volts.of(values[0] * values[1]));
-    ifOk(
-        _leftPivotMotor,
-        _leftPivotMotor::getOutputCurrent,
-        (value) -> inputs._intakeLeftPivotMotorCurrent = Amps.of(value));
+        _linearMotor,
+        _linearMotor::getOutputCurrent,
+        (value) -> inputs._linearMotorCurrent = Amps.of(value));
 
     // Roller motor
     ifOk(
         _rollerMotor,
         _rollerMotor::getMotorTemperature,
-        (value) -> inputs._intakeRollerMotorTemperature = Celsius.of(value));
+        (value) -> inputs._rollerMotorTemperature = Celsius.of(value));
     ifOk(
         _rollerMotor,
         _rollerMotor.getEncoder()::getVelocity,
-        (value) -> inputs._intakeRollerMotorVelocity = RadiansPerSecond.of(value));
+        (value) -> inputs._rollerMotorVelocity = RadiansPerSecond.of(value));
     ifOk(
         _rollerMotor,
         new java.util.function.DoubleSupplier[] {
           _rollerMotor::getAppliedOutput, _rollerMotor::getBusVoltage
         },
-        (values) -> inputs._intakeRollerMotorVoltage = Volts.of(values[0] * values[1]));
+        (values) -> inputs._rollerMotorVoltage = Volts.of(values[0] * values[1]));
     ifOk(
         _rollerMotor,
         _rollerMotor::getOutputCurrent,
-        (value) -> inputs._intakeRollerMotorCurrent = Amps.of(value));
+        (value) -> inputs._rollerMotorCurrent = Amps.of(value));
   }
 
-  // Pivot motor methods
-  public void setPivotMotorVoltage(double volts) {
-    _rightPivotMotor.setVoltage(volts);
+  // Linear slide motor methods
+  @Override
+  public void setLinearMotorVoltage(double volts) {
+    _linearMotor.setVoltage(volts);
   }
 
-  public void setIntakePivotDutyCycleOutput(double output) {
-    _rightPivotMotor.set(output);
+  @Override
+  public void setLinearMotorDutyCycle(double output) {
+    _linearMotor.set(output);
+  }
+
+  @Override
+  public void resetLinearEncoder() {
+    _linearEncoder.setPosition(0.0);
   }
 
   // Roller motor methods
+  @Override
   public void setRollerMotorOutput(double output) {
     _rollerMotor.set(output);
   }
