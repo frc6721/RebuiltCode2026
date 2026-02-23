@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.feeder.FeederConstants;
 
@@ -88,5 +89,11 @@ public class RealFeederIO implements FeederIO {
   public void setMotorSpeed(double speed) {
     // Only set on leader; follower follows automatically
     _leftFeederMotor.set(speed);
+  }
+
+  @Override
+  public void setMotorVoltage(Voltage voltage) {
+    // Only set on leader; follower follows automatically
+    _leftFeederMotor.setVoltage(voltage);
   }
 }

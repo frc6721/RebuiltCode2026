@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.Intake;
@@ -56,6 +58,22 @@ public class IntakeCommands {
     return Commands.run(
         () -> {
           intake.setLinearMotorDutyCycleOutput(output);
+        },
+        intake);
+  }
+
+  public static Command setIntakeRollersVoltage(Intake intake, double voltage) {
+    return Commands.run(
+        () -> {
+          intake.setRollerVoltage(Volts.of(voltage));
+        },
+        intake);
+  }
+
+  public static Command setIntakeLinearVoltage(Intake intake, double voltage) {
+    return Commands.run(
+        () -> {
+          intake.setLinearMotorVoltage(Volts.of(voltage));
         },
         intake);
   }

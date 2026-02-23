@@ -29,4 +29,6 @@ public interface FeederIO {
    * @param speed Duty cycle from -1.0 (full reverse) to 1.0 (full forward)
    */
   public default void setMotorSpeed(double speed) {}
+
+  public default void setMotorVoltage(Voltage voltage) {}
 }

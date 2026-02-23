@@ -1,5 +1,6 @@
 package frc.robot.subsystems.feeder;
 
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.feeder.io.FeederIO;
 import frc.robot.subsystems.feeder.io.FeederIOInputsAutoLogged;
@@ -51,6 +52,10 @@ public class Feeder extends SubsystemBase {
    */
   public void setFeederSpeed(double speed) {
     _feederIO.setMotorSpeed(speed);
+  }
+
+  public void runFeederAtVoltage(Voltage voltage) {
+    _feederIO.setMotorVoltage(voltage);
   }
 
   /** Stops the feeder motor. Equivalent to {@code setFeederSpeed(0.0)}. */

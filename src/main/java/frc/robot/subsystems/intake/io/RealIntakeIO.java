@@ -14,6 +14,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 
@@ -32,13 +33,17 @@ import frc.robot.subsystems.intake.IntakeConstants;
  */
 public class RealIntakeIO implements IntakeIO {
   private final SparkMax _linearMotor;
-  private final SparkMax _rollerMotor;
+  private final SparkMax _rollerMotorLeader;
+  private final SparkMax _rollerMotorFollower;
+
   private final RelativeEncoder _linearEncoder;
 
   public RealIntakeIO() {
     _linearMotor = new SparkMax(Constants.CanIds.INTAKE_LINEAR_MOTOR_ID, MotorType.kBrushless);
-    _rollerMotor =
+    _rollerMotorLeader =
         new SparkMax(Constants.CanIds.INTAKE_ROLLER_MOTOR_LEADER_ID, MotorType.kBrushless);
+    _rollerMotorFollower =
+        new SparkMax(Constants.CanIds.INTAKE_ROLLER_MOTOR_FOLLOWER_ID, MotorType.kBrushless);
 
     configLinearMotor();
     configRollerMotor();
@@ -82,11 +87,29 @@ public class RealIntakeIO implements IntakeIO {
         .voltageCompensation(12.0);
 
     tryUntilOk(
-        _rollerMotor,
+        _rollerMotorLeader,
         5,
         () ->
-            _rollerMotor.configure(
+            _rollerMotorLeader.configure(
                 config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+
+    // ── Right motor (follower, inverted relative to leader) ──
+    SparkMaxConfig followerConfig = new SparkMaxConfig();
+    followerConfig
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(IntakeConstants.CurrentLimits.ROLLER_SMART)
+        .secondaryCurrentLimit(IntakeConstants.CurrentLimits.ROLLER_SECONDARY)
+        .voltageCompensation(12.0);
+
+    // Follow the left motor, inverted so both wheels physically spin the same direction
+    followerConfig.follow(_rollerMotorLeader, true);
+
+    tryUntilOk(
+        _rollerMotorFollower,
+        5,
+        () ->
+            _rollerMotorFollower.configure(
+                followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
@@ -114,29 +137,34 @@ public class RealIntakeIO implements IntakeIO {
 
     // Roller motor
     ifOk(
-        _rollerMotor,
-        _rollerMotor::getMotorTemperature,
+        _rollerMotorLeader,
+        _rollerMotorLeader::getMotorTemperature,
         (value) -> inputs._rollerMotorTemperature = Celsius.of(value));
     ifOk(
-        _rollerMotor,
-        _rollerMotor.getEncoder()::getVelocity,
+        _rollerMotorLeader,
+        _rollerMotorLeader.getEncoder()::getVelocity,
         (value) -> inputs._rollerMotorVelocity = RadiansPerSecond.of(value));
     ifOk(
-        _rollerMotor,
+        _rollerMotorLeader,
         new java.util.function.DoubleSupplier[] {
-          _rollerMotor::getAppliedOutput, _rollerMotor::getBusVoltage
+          _rollerMotorLeader::getAppliedOutput, _rollerMotorLeader::getBusVoltage
         },
         (values) -> inputs._rollerMotorVoltage = Volts.of(values[0] * values[1]));
     ifOk(
-        _rollerMotor,
-        _rollerMotor::getOutputCurrent,
+        _rollerMotorLeader,
+        _rollerMotorLeader::getOutputCurrent,
         (value) -> inputs._rollerMotorCurrent = Amps.of(value));
   }
 
   // Linear slide motor methods
   @Override
-  public void setLinearMotorVoltage(double volts) {
+  public void setLinearMotorVoltage(Voltage volts) {
     _linearMotor.setVoltage(volts);
+  }
+
+  @Override
+  public void setRollerVoltage(Voltage volts) {
+    _rollerMotorLeader.setVoltage(volts);
   }
 
   @Override
@@ -152,6 +180,6 @@ public class RealIntakeIO implements IntakeIO {
   // Roller motor methods
   @Override
   public void setRollerMotorOutput(double output) {
-    _rollerMotor.set(output);
+    _rollerMotorLeader.set(output);
   }
 }

@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.VirtualHopper;
 import frc.lib.feulSim.FuelSim;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.FeederCommands;
 import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
@@ -120,11 +119,6 @@ public class RobotContainer {
         hopper = new Hopper(new SimHopperIO());
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
-        // vision =
-        // new Vision(
-        //     drive::addVisionMeasurement,
-        //     new VisionIOPhotonVisionSim(VisionConstants.camera0Name,
-        // VisionConstants.robotToCamera0, drive::getPose));        break;
 
       default:
         // Replayed robot, disable IO implementations
@@ -259,6 +253,23 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    /**
+     * **************************************************************
+     * 
+     * BUTTON BINDINGS:
+     * 
+     * Right bumber: Run shooter and feeder at fixed voltage for testing. Update voltage values in the command to adjust speed.
+     * Driving joysticks: Same as default joystick swerve drive
+     * D-Pad left: Reset gyro to 0°
+     * Left bumper: Run intake rollers while held, stop when released. Adjust voltage in command
+     * A button: Run hopper at fixed speed while held, stop when released. Adjust speed in command (percent output, not voltage)
+     * X button: Manual control of intake linear slide forward while held, stop when released. Adjust voltage in command.
+     * Y button: Manual control of intake linear slide in reverse while held, stop when released. Adjust voltage in command.
+     * 
+     * 
+     * ****************************************************************
+     */
+
     // Default command, normal field-relative drive
     // real controller
     drive.setDefaultCommand(
@@ -282,47 +293,61 @@ public class RobotContainer {
 
     controller
         .leftBumper()
-        .whileTrue(IntakeCommands.runIntakeRollers(intake))
+        .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
         .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
-    // A button: Move intake to EXTENDED position (out)
-    controller.a().whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
-
-    // B button: Move intake to RETRACTED position (in)
-    controller
-        .b()
-        .whileTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
-
-    // Switch to X pattern when X button is pressed
-    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-    // controller
-    //     .x()
-    //     .onTrue(FeederCommands.runFeederAtPercentOutput(feeder, .5))
-    //     .onFalse(FeederCommands.stopFeeder(feeder));
-
-    // Right bumper is for the real controller
-    // y() button on xbox on mac os
     // Dynamic shooting with auto-aiming:
     // - Continuously adjusts flywheel speed based on distance to alliance hub
     // - Automatically rotates robot to face the hub
     // - Driver maintains full control of translation (forward/back, left/right)
-    controller
-        .y()
-        .whileTrue(
-            // Combine auto-aim driving with shooting sequence
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToAllianceHub())
-                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
-        .onFalse(
-            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         // Combine auto-aim driving with shooting sequence
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToAllianceHub())
+    //             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
+    //     .onFalse(
+    //
+    // FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
 
+    // TESTING COMMAND
+    // run the shooter and feeder at a fixed voltage
+    // update these values to run faster or slower.
+    // Max motor power is 12 volts
     controller
-        .pov(90)
+        .rightBumper()
+        .onTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 6.0))
+        .onFalse(ShooterCommands.runFlywheelsAtIdle(shooter));
+
+    /*  
+     * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
+     * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
+     */
+    controller
+        .a()
         .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
         .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
+
+    /*  
+     * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
+     * 
+     */
+    controller
+        .x()
+        .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
+        .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+
+    /*
+     * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
+     */
+    controller
+        .y()
+        .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
+        .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
 
     // Reset gyro to 0° when left dpad is pressed
     controller

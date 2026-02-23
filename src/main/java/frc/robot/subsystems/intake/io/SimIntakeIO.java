@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.subsystems.intake.IntakeConstants;
@@ -148,8 +149,8 @@ public class SimIntakeIO implements IntakeIO {
   }
 
   @Override
-  public void setLinearMotorVoltage(double volts) {
-    _linearAppliedVoltage = Math.max(-12.0, Math.min(12.0, volts));
+  public void setLinearMotorVoltage(Voltage volts) {
+    _linearAppliedVoltage = Math.max(-12.0, Math.min(12.0, volts.in(Volts)));
     _linearMotor.setVoltage(_linearAppliedVoltage);
   }
 

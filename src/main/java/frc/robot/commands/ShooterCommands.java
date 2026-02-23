@@ -7,6 +7,8 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import java.text.DecimalFormat;
@@ -42,6 +44,23 @@ public class ShooterCommands {
           shooter.setFlywheelSpeed(speed);
         },
         shooter);
+  }
+
+  public static Command runShooterAndFeederAtVoltage(
+      Shooter shooter, Feeder feeder, double ShooterVoltage, double FeederVoltage) {
+    return Commands.run(
+            () -> {
+              shooter.runCharacterization(Volts.of(ShooterVoltage));
+            },
+            shooter,
+            feeder)
+        .andThen(new WaitCommand(1.5))
+        .andThen(
+            () -> {
+              feeder.runFeederAtVoltage(Volts.of(FeederVoltage));
+            },
+            feeder)
+        .withName("RunShooterAndFeederAtVoltage");
   }
 
   /**

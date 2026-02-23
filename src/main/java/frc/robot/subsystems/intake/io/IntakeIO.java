@@ -44,7 +44,7 @@ public interface IntakeIO {
    *
    * @param volts Voltage to apply (-12.0 to +12.0)
    */
-  public default void setLinearMotorVoltage(double volts) {}
+  public default void setLinearMotorVoltage(Voltage volts) {}
 
   /**
    * Sets the linear motor duty cycle output directly.
@@ -64,4 +64,6 @@ public interface IntakeIO {
    * @param output Duty cycle from -1.0 to +1.0
    */
   public default void setRollerMotorOutput(double output) {}
+
+  public default void setRollerVoltage(Voltage volts) {}
 }

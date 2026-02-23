@@ -1,6 +1,7 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.VirtualHopper;
 import frc.robot.subsystems.intake.io.IntakeIO;
@@ -105,10 +106,10 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
 
     // Run PID control for linear slide position
-    _linearPIDController.setSetpoint(_intakePosition.getPosition());
-    double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
+    // _linearPIDController.setSetpoint(_intakePosition.getPosition());
+    // double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
 
-    _intakeIO.setLinearMotorVoltage(linearVoltage);
+    // _intakeIO.setLinearMotorVoltage(linearVoltage);
 
     // Check if at target
     boolean atGoal =
@@ -161,7 +162,15 @@ public class Intake extends SubsystemBase {
     _intakeIO.resetLinearEncoder();
   }
 
-  // ==================== FUEL SIM INTEGRATION ====================
+  public void setRollerVoltage(Voltage voltage) {
+    _intakeIO.setRollerVoltage(voltage);
+  }
+
+  public void setLinearMotorVoltage(Voltage voltage) {
+    _intakeIO.setLinearMotorVoltage(voltage);
+  }
+
+  // ==================== FUEL SIM INTEGRATION =============`=======
 
   /**
    * FuelSim callback: adds a virtual fuel to the hopper when a fuel piece enters the intake

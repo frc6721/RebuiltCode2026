@@ -62,7 +62,7 @@ public final class Constants {
     public static int INTAKE_LINEAR_MOTOR_ID = 11;
 
     public static int INTAKE_ROLLER_MOTOR_LEADER_ID = 9;
-    public static int INTAKE_ROLLER_MOTOR_FOLLWER_ID = 10;
+    public static int INTAKE_ROLLER_MOTOR_FOLLOWER_ID = 10;
 
     // Hopper
     public static int HOPPER_MOTOR_ID = 12;
