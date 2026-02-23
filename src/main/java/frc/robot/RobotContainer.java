@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.VirtualHopper;
 import frc.lib.feulSim.FuelSim;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.FeederCommands;
 import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
@@ -320,8 +321,10 @@ public class RobotContainer {
     // Max motor power is 12 volts
     controller
         .rightBumper()
-        .onTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 6.0))
-        .onFalse(ShooterCommands.runFlywheelsAtIdle(shooter));
+        .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 6.0))
+        .onFalse(
+            ShooterCommands.runFlywheelsAtIdle(shooter)
+                .alongWith(FeederCommands.stopFeeder(feeder)));
 
     /*  
      * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
@@ -330,7 +333,7 @@ public class RobotContainer {
     controller
         .a()
         .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
-        .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
+        .onFalse(HopperCommands.stopHopper(hopper));
 
     /*  
      * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.

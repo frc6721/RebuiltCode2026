@@ -47,19 +47,23 @@ public class ShooterCommands {
   }
 
   public static Command runShooterAndFeederAtVoltage(
-      Shooter shooter, Feeder feeder, double ShooterVoltage, double FeederVoltage) {
+      Shooter shooter, Feeder feeder, double shooterVoltage, double feederVoltage) {
+    // Run shooter continuously in parallel with a delayed feeder start.
+    // The shooter spins up immediately; after 1.5s the feeder begins feeding.
+    // Both run until the command is interrupted (button released).
     return Commands.run(
             () -> {
-              shooter.runCharacterization(Volts.of(ShooterVoltage));
+              shooter.runCharacterization(Volts.of(shooterVoltage));
             },
-            shooter,
-            feeder)
-        .andThen(new WaitCommand(1.5))
-        .andThen(
-            () -> {
-              feeder.runFeederAtVoltage(Volts.of(FeederVoltage));
-            },
-            feeder)
+            shooter)
+        .alongWith(
+            new WaitCommand(1.5)
+                .andThen(
+                    Commands.run(
+                        () -> {
+                          feeder.runFeederAtVoltage(Volts.of(feederVoltage));
+                        },
+                        feeder)))
         .withName("RunShooterAndFeederAtVoltage");
   }
 
