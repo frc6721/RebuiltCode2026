@@ -28,6 +28,7 @@ import frc.lib.VirtualHopper;
 import frc.lib.feulSim.FuelSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeederCommands;
+import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
@@ -260,20 +261,20 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
     // real controller
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -controller.getLeftY(),
-    //         () -> -controller.getLeftX(),
-    //         () -> -controller.getRightX()));
-
-    // sim controller in MAC os
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
-            () -> -(controller.getRightTriggerAxis())));
+            () -> -controller.getRightX()));
+
+    // sim controller in MAC os
+    // drive.setDefaultCommand(
+    //     DriveCommands.joystickDrive(
+    //         drive,
+    //         () -> -controller.getLeftY(),
+    //         () -> -controller.getLeftX(),
+    //         () -> -(controller.getRightTriggerAxis())));
 
     // Always run the flywheels a little bit during the match so they can spin up quicker when we
     // need them
@@ -317,6 +318,11 @@ public class RobotContainer {
                 .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
         .onFalse(
             FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+
+    controller
+        .pov(90)
+        .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
+        .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
 
     // Reset gyro to 0° when left dpad is pressed
     controller

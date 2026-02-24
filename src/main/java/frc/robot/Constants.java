@@ -59,19 +59,21 @@ public final class Constants {
   /** CAN bus IDs for all motors and sensors on the robot. */
   public static class CanIds {
     // Intake (linear slide + roller)
-    public static int INTAKE_LINEAR_MOTOR_ID = 20;
-    public static int INTAKE_ROLLER_MOTOR_ID = 22;
+    public static int INTAKE_LINEAR_MOTOR_ID = 11;
+
+    public static int INTAKE_ROLLER_MOTOR_LEADER_ID = 9;
+    public static int INTAKE_ROLLER_MOTOR_FOLLWER_ID = 10;
 
     // Hopper
-    public static int HOPPER_MOTOR_ID = 21;
+    public static int HOPPER_MOTOR_ID = 12;
 
     // Shooter (dual SparkFlex, leader-follower)
-    public static int FLYWHEEL_LEFT_MOTOR_ID = 30;
-    public static int FLYWHEEL_RIGHT_MOTOR_ID = 31;
+    public static int FLYWHEEL_LEFT_MOTOR_ID = 20;
+    public static int FLYWHEEL_RIGHT_MOTOR_ID = 21;
 
     // Feeder (dual SparkMax, leader-follower)
-    public static int FEEDER_LEFT_MOTOR_ID = 32;
-    public static int FEEDER_RIGHT_MOTOR_ID = 33;
+    public static int FEEDER_LEFT_MOTOR_ID = 13;
+    public static int FEEDER_RIGHT_MOTOR_ID = 14;
 
     // Climber
     public static int CLIMBER_MOTOR_ID = 42;

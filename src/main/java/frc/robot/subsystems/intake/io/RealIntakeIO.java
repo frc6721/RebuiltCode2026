@@ -37,7 +37,8 @@ public class RealIntakeIO implements IntakeIO {
 
   public RealIntakeIO() {
     _linearMotor = new SparkMax(Constants.CanIds.INTAKE_LINEAR_MOTOR_ID, MotorType.kBrushless);
-    _rollerMotor = new SparkMax(Constants.CanIds.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
+    _rollerMotor =
+        new SparkMax(Constants.CanIds.INTAKE_ROLLER_MOTOR_LEADER_ID, MotorType.kBrushless);
 
     configLinearMotor();
     configRollerMotor();

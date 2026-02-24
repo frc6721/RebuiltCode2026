@@ -27,8 +27,8 @@ public class DriveConstants {
   public static final double odometryFrequency = 100.0; // Hz
 
   // TODO: update based on your robots properties
-  public static final double trackWidth = Units.inchesToMeters(26.5);
-  public static final double wheelBase = Units.inchesToMeters(26.5);
+  public static final double trackWidth = Units.inchesToMeters(26);
+  public static final double wheelBase = Units.inchesToMeters(26);
   public static final double driveBaseRadius = Math.hypot(trackWidth / 2.0, wheelBase / 2.0);
   public static final Translation2d[] moduleTranslations =
       new Translation2d[] {
@@ -45,26 +45,26 @@ public class DriveConstants {
   //   public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.0); // module 2
   //   public static final Rotation2d backRightZeroRotation = new Rotation2d(0.0); // module 3
 
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-2.703); // module 0
-  public static final Rotation2d frontRightZeroRotation = new Rotation2d(-2.697); // module 1
-  public static final Rotation2d backLeftZeroRotation = new Rotation2d(2.960); // module 2
-  public static final Rotation2d backRightZeroRotation = new Rotation2d(-1.030); // module 3
+  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-2.726169); // module 0
+  public static final Rotation2d frontRightZeroRotation = new Rotation2d(-2.759878); // module 1
+  public static final Rotation2d backLeftZeroRotation = new Rotation2d(-1.20692); // module 2
+  public static final Rotation2d backRightZeroRotation = new Rotation2d(-1.020192); // module 3
 
   // Device CAN IDs
   // TODO: Update CAN IDS
-  public static final int pigeonCanId = 57;
+  public static final int pigeonCanId = 37;
 
-  public static final int kFrontLeftDrivingCanId = 5;
-  public static final int kFrontLeftTurningCanId = 4;
+  public static final int kFrontLeftDrivingCanId = 8;
+  public static final int kFrontLeftTurningCanId = 7;
 
-  public static final int kFrontRightDrivingCanId = 3;
-  public static final int kFrontRightTurningCanId = 2;
+  public static final int kFrontRightDrivingCanId = 2;
+  public static final int kFrontRightTurningCanId = 1;
 
-  public static final int kRearLeftDrivingCanId = 7;
+  public static final int kRearLeftDrivingCanId = 5;
   public static final int kRearLeftTurningCanId = 6;
 
-  public static final int kRearRightDrivingCanId = 9;
-  public static final int kRearRightTurningCanId = 8;
+  public static final int kRearRightDrivingCanId = 4;
+  public static final int kRearRightTurningCanId = 3;
 
   // Drive motor configuration
   public static final int driveMotorCurrentLimit = 50;
