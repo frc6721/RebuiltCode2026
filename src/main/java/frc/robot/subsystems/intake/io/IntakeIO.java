@@ -24,7 +24,8 @@ public interface IntakeIO {
     // Linear slide motor
     public Temperature _linearMotorTemperature;
     public AngularVelocity _linearMotorVelocity;
-    public double _linearMotorPosition = 0.0; // Output rotations (0 = retracted, + = extending)
+    public double _linearMotorPosition =
+        0.0; // Meters of linear travel (0 = retracted, + = extending)
     public Voltage _linearMotorVoltage;
     public Current _linearMotorCurrent;
 

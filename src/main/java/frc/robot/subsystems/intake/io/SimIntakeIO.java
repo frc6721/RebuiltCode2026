@@ -117,16 +117,10 @@ public class SimIntakeIO implements IntakeIO {
     _linearPhysicsSim.setInputVoltage(_linearAppliedVoltage);
     _linearPhysicsSim.update(0.02); // 20ms timestep
 
-    // Convert the physics sim's meters back to "output rotations" for the encoder.
-    // position (rotations) = position (meters) / (2π × drumRadius)
-    double positionRotations =
-        _linearPhysicsSim.getPositionMeters()
-            / (2.0 * Math.PI * IntakeConstants.Mechanical.DRUM_RADIUS_METERS);
-
-    // Convert velocity from m/s to output rotations per second
-    double velocityRotationsPerSec =
-        _linearPhysicsSim.getVelocityMetersPerSecond()
-            / (2.0 * Math.PI * IntakeConstants.Mechanical.DRUM_RADIUS_METERS);
+    // ElevatorSim outputs meters directly, and our encoder is now configured to read meters,
+    // so no manual conversion is needed — just read the physics sim values.
+    double positionMeters = _linearPhysicsSim.getPositionMeters();
+    double velocityMetersPerSec = _linearPhysicsSim.getVelocityMetersPerSecond();
 
     // Get current draw from the physics sim
     double linearCurrent = _linearPhysicsSim.getCurrentDrawAmps();
@@ -135,16 +129,20 @@ public class SimIntakeIO implements IntakeIO {
     double totalCurrent = linearCurrent + Math.abs(_rollerSimulatedCurrent);
     RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrent));
 
+    // Convert velocity to RPM for SparkMaxSim (it expects motor RPM)
+    double motorRPM =
+        velocityMetersPerSec / IntakeConstants.Mechanical.LINEAR_VELOCITY_CONVERSION_FACTOR;
+
     // Update SparkMax simulations so REV's sim layer stays in sync
     _linearSim.setBusVoltage(RoboRioSim.getVInVoltage());
-    _linearSim.iterate(velocityRotationsPerSec * 60.0, RoboRioSim.getVInVoltage(), 0.02); // RPM
+    _linearSim.iterate(motorRPM, RoboRioSim.getVInVoltage(), 0.02);
     _rollerSim.setBusVoltage(RoboRioSim.getVInVoltage());
 
     // --- Populate inputs (these get logged by AdvantageKit) ---
-    // Linear motor
+    // Linear motor — position and velocity are already in meters / m/s
     inputs._linearMotorTemperature = Celsius.of(40.0);
-    inputs._linearMotorVelocity = RadiansPerSecond.of(velocityRotationsPerSec * 2.0 * Math.PI);
-    inputs._linearMotorPosition = positionRotations;
+    inputs._linearMotorVelocity = RadiansPerSecond.of(velocityMetersPerSec);
+    inputs._linearMotorPosition = positionMeters;
     inputs._linearMotorVoltage = Volts.of(_linearAppliedVoltage);
     inputs._linearMotorCurrent = Amps.of(linearCurrent);
 

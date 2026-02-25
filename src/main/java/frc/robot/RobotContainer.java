@@ -341,7 +341,7 @@ public class RobotContainer {
     //     .leftBumper()
     //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
-        controller
+    controller
         .leftBumper()
         .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
@@ -352,9 +352,7 @@ public class RobotContainer {
     //     .y()
     //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
-    controller
-        .y()
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
+    controller.y().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
 
     // Reset gyro to 0° when left dpad is pressed
     controller

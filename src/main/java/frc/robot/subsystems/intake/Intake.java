@@ -66,9 +66,9 @@ public class Intake extends SubsystemBase {
     }
 
     /**
-     * Returns the target position for this intake state (in output rotations).
+     * Returns the target position for this intake state (in meters of linear travel).
      *
-     * @return The position setpoint
+     * @return The position setpoint in meters
      */
     public double getPosition() {
       return this._position.get();

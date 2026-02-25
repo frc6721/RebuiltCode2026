@@ -28,55 +28,110 @@ public class IntakeConstants {
     public static final boolean ROLLER_INVERTED = false;
   }
 
-  /** Physical/mechanical properties of the intake. */
+  /**
+   * Physical/mechanical properties of the intake rack-and-pinion linear slide.
+   *
+   * <p><b>How it works:</b> A NEO motor spins through a gearbox, then drives a pinion gear that
+   * meshes with a rack (a flat gear strip). As the pinion rotates, the rack (and the roller
+   * assembly bolted to it) moves linearly.
+   *
+   * <p><b>Unit strategy:</b> All constants below define the real physical measurements. The encoder
+   * conversion factors and simulation drum radius are <em>derived</em> from these, so you only need
+   * to update one place when the hardware changes.
+   *
+   * <pre>
+   *   [NEO Motor] → [Gearbox (LINEAR_GEAR_RATIO : 1)] → [Pinion (PINION_DIAMETER)] → [Rack]
+   *                                                          ↕
+   *                                               linear travel (meters)
+   * </pre>
+   */
   public static class Mechanical {
-    /** Gear ratio for the linear slide motor (motor rotations per unit of travel) */
-    public static final double LINEAR_GEAR_RATIO = 16.0;
+
+    // ── Physical hardware parameters (single source of truth) ──
+
+    /**
+     * Gear ratio between the motor and the pinion gear. A ratio of 4`:1 means the motor spins 4
+     * times for every 1 rotation of the pinion.
+     */
+    public static final double LINEAR_GEAR_RATIO = 4.0;
+
+    /**
+     * Pitch diameter of the pinion gear in meters. This is the effective diameter where the pinion
+     * meshes with the rack. For a 1-inch pitch diameter pinion: {@code Inches.of(1.0).in(Meters)}.
+     *
+     * <p><b>How to measure:</b> Count the teeth on the pinion and multiply by the tooth pitch (the
+     * distance between teeth on the rack). Or look up the pitch diameter on the gear spec sheet.
+     */
+    public static final double PINION_DIAMETER_METERS = Inches.of(1.0).in(Meters);
+
+    /**
+     * Maximum linear travel of the intake slide in meters. This is the physical distance from fully
+     * retracted to fully extended. Measured as 11 inches on our robot.
+     */
+    public static final double MAX_TRAVEL_METERS = Inches.of(11).in(Meters);
+
+    /**
+     * Mass of the intake carriage (roller assembly + any attached hardware) in kilograms. Used by
+     * ElevatorSim in simulation to model inertia. Weigh the moving parts on a scale to get this
+     * value.
+     */
+    public static final double CARRIAGE_MASS_KG = 5.0;
+
+    /** Motor type for the linear slide (1x NEO). */
+    public static final DCMotor LINEAR_MOTOR = DCMotor.getNEO(1);
 
     /** Roller gear ratio */
     public static final double ROLLER_GEAR_RATIO = 1.0;
 
-    /**
-     * Position conversion factor for the internal encoder. Converts motor rotations to linear
-     * position in rotations at the output. Adjust this based on your lead screw pitch or belt/gear
-     * ratio so that the encoder position reads in meaningful units.
-     */
-    public static final double LINEAR_POSITION_CONVERSION_FACTOR = 1.0;
-
-    /**
-     * Velocity conversion factor for the internal encoder. Converts motor RPM to output velocity.
-     */
-    public static final double LINEAR_VELOCITY_CONVERSION_FACTOR = 1.0 / 60.0;
-
-    /** Motor type for the linear slide (1x NEO) */
-    public static final DCMotor LINEAR_MOTOR = DCMotor.getNEO(1);
-
-    /** Motor type for the roller (1x NEO) */
+    /** Motor type for the roller (1x NEO). */
     public static final DCMotor ROLLER_MOTOR = DCMotor.getNEO(1);
 
-    /**
-     * Mass of the intake carriage (roller assembly) in kilograms. Used by ElevatorSim in simulation
-     * to model inertia.
-     */
-    public static final double CARRIAGE_MASS_KG = 5.0;
+    // ── Derived constants (computed from physical parameters above) ──
 
     /**
-     * Effective drum radius in meters that converts between motor rotations and linear travel.
+     * Linear distance traveled per single rotation of the pinion, in meters.
      *
-     * <p>This value ties "output rotations" (what the encoder reads) to real linear distance via
-     * {@code distance = rotations × 2π × drumRadius}. Derived from the max travel of the slide (11
-     * in ≈ 0.2794 m) and the max output rotations (10.0):
-     *
-     * <pre>drumRadius = maxTravel / (maxRotations × 2π)</pre>
+     * <p>For a rack-and-pinion, one full pinion rotation moves the rack by the pinion's
+     * circumference: {@code π × diameter}.
      */
-    public static final double DRUM_RADIUS_METERS =
-        Inches.of(11).in(Meters) / (10.0 * 2.0 * Math.PI);
+    public static final double METERS_PER_PINION_ROTATION = Math.PI * PINION_DIAMETER_METERS;
 
     /**
-     * Maximum linear travel of the intake slide in meters. Used as the upper bound for ElevatorSim
-     * so the simulated position stays within the physical range.
+     * Linear distance traveled per single rotation of the motor shaft, in meters. This accounts for
+     * the gearbox reduction: {@code metersPerPinionRotation / gearRatio}.
+     *
+     * <p>This is the key conversion factor that both the real encoder and the simulation use.
      */
-    public static final double MAX_TRAVEL_METERS = Inches.of(11).in(Meters);
+    public static final double METERS_PER_MOTOR_ROTATION =
+        METERS_PER_PINION_ROTATION / LINEAR_GEAR_RATIO;
+
+    /**
+     * SparkMax encoder position conversion factor. Converts raw motor rotations into meters of
+     * linear travel. Set this on the SparkMax encoder so {@code encoder.getPosition()} returns
+     * meters directly.
+     *
+     * <p>Same as {@link #METERS_PER_MOTOR_ROTATION} — named separately for clarity when configuring
+     * the SparkMax.
+     */
+    public static final double LINEAR_POSITION_CONVERSION_FACTOR = METERS_PER_MOTOR_ROTATION;
+
+    /**
+     * SparkMax encoder velocity conversion factor. Converts motor RPM into meters per second.
+     *
+     * <p>{@code metersPerMotorRotation / 60} because the SparkMax returns velocity in RPM.
+     */
+    public static final double LINEAR_VELOCITY_CONVERSION_FACTOR = METERS_PER_MOTOR_ROTATION / 60.0;
+
+    /**
+     * Effective drum radius for WPILib's ElevatorSim, in meters. ElevatorSim models the mechanism
+     * as a cable wound around a drum: {@code distance = rotations × 2π × drumRadius}.
+     *
+     * <p>We derive this from the pinion circumference so ElevatorSim matches the real hardware
+     * exactly: {@code drumRadius = pinionCircumference / (2π) = diameter / 2}.
+     */
+    public static final double DRUM_RADIUS_METERS = PINION_DIAMETER_METERS / 2.0;
+
+    // ── Visualization / mounting ──
 
     /**
      * Translation3d of the slide's retracted (zero) position in the robot frame. Adjust X/Y/Z to
@@ -96,19 +151,20 @@ public class IntakeConstants {
   }
 
   /**
-   * Position setpoints for the linear slide.
+   * Position setpoints for the linear slide, in meters.
    *
-   * <p>Position 0 = fully retracted (in). Positive values = extending out. Units are in output
-   * rotations (after gear ratio). Tune these to match your hardware.
+   * <p>Position 0 = fully retracted (in). Positive values = extending out. Units are in meters of
+   * linear travel (matching the encoder output after conversion). Tune these to match your
+   * hardware. The maximum physical travel is {@link Mechanical#MAX_TRAVEL_METERS}.
    */
   public static class Positions {
-    /** Fully retracted (stowed) position */
+    /** Fully retracted (stowed) position in meters. */
     public static final LoggedNetworkNumber RETRACTED =
         new LoggedNetworkNumber("Intake/Position/Retracted", 0.0);
 
-    /** Fully extended (deployed) position */
+    /** Fully extended (deployed) position in meters. */
     public static final LoggedNetworkNumber EXTENDED =
-        new LoggedNetworkNumber("Intake/Position/Extended", 10.0);
+        new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
   }
 
   /** PID tuning constants for the linear slide position control. */
@@ -170,8 +226,8 @@ public class IntakeConstants {
 
   /** Software tuning settings. */
   public static class Software {
-    /** Deadband for considering linear slide "at position" (in output rotations) */
-    public static final double POSITION_DEADBAND = 0.5;
+    /** Deadband for considering linear slide "at position" (in meters) */
+    public static final double POSITION_DEADBAND = 0.005; // 5mm
   }
 
   /** FuelSim bounding box constants for intake pickup simulation. */
@@ -184,14 +240,19 @@ public class IntakeConstants {
 
   // Logging
   static {
-    // Gear ratios
+    // Rack-and-pinion physical parameters
     Logger.recordOutput("Constants/Intake/GearRatio/Linear", Mechanical.LINEAR_GEAR_RATIO);
     Logger.recordOutput("Constants/Intake/GearRatio/Roller", Mechanical.ROLLER_GEAR_RATIO);
+    Logger.recordOutput("Constants/Intake/PinionDiameter_m", Mechanical.PINION_DIAMETER_METERS);
+    Logger.recordOutput(
+        "Constants/Intake/MetersPerPinionRotation", Mechanical.METERS_PER_PINION_ROTATION);
+    Logger.recordOutput(
+        "Constants/Intake/MetersPerMotorRotation", Mechanical.METERS_PER_MOTOR_ROTATION);
 
     // Simulation mechanical constants
-    Logger.recordOutput("Constants/Intake/Sim/CarriageMass_kg", Mechanical.CARRIAGE_MASS_KG);
-    Logger.recordOutput("Constants/Intake/Sim/DrumRadius_m", Mechanical.DRUM_RADIUS_METERS);
-    Logger.recordOutput("Constants/Intake/Sim/MaxTravel_m", Mechanical.MAX_TRAVEL_METERS);
+    Logger.recordOutput("Constants/Intake/CarriageMass_kg", Mechanical.CARRIAGE_MASS_KG);
+    Logger.recordOutput("Constants/Intake/DrumRadius_m", Mechanical.DRUM_RADIUS_METERS);
+    Logger.recordOutput("Constants/Intake/MaxTravel_m", Mechanical.MAX_TRAVEL_METERS);
 
     // Deadband
     Logger.recordOutput("Constants/Intake/PositionDeadband", Software.POSITION_DEADBAND);

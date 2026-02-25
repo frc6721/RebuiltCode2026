@@ -1,7 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Meters;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -85,9 +83,7 @@ public class IntakeVisualizer {
     // Max bound indicator — a short tick at the maximum travel distance
     LoggedMechanismRoot2d maxRoot =
         _mechanism.getRoot(
-            name + "_MaxRoot",
-            ROOT_X + IntakeConstants.Mechanical.MAX_TRAVEL_METERS,
-            ROOT_Y);
+            name + "_MaxRoot", ROOT_X + IntakeConstants.Mechanical.MAX_TRAVEL_METERS, ROOT_Y);
     _maxBound =
         new LoggedMechanismLigament2d(
             name + "_MaxBound", 0.02, 90.0, 3, new Color8Bit(Color.kWhite));
@@ -122,21 +118,16 @@ public class IntakeVisualizer {
    *
    * <p>Call this from {@link frc.robot.subsystems.intake.Intake#periodic()}.
    *
-   * @param currentPosition The current linear slide position in encoder output rotations (0 =
-   *     retracted)
-   * @param goalPosition The goal / setpoint position in the same units
+   * @param currentPosition The current linear slide position in meters (0 = retracted)
+   * @param goalPosition The goal / setpoint position in meters
    * @param atGoal Whether the mechanism is within the deadband of its goal
    */
   public void update(double currentPosition, double goalPosition, boolean atGoal) {
-    // Convert encoder rotations → meters of linear travel for display
-    double currentMeters = positionToMeters(currentPosition);
-    double goalMeters = positionToMeters(goalPosition);
-
-    // Clamp to valid travel range for display
-    currentMeters =
-        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
-    goalMeters =
-        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
+    // Positions are already in meters — clamp to valid travel range for display
+    double currentMeters =
+        Math.max(0.0, Math.min(currentPosition, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
+    double goalMeters =
+        Math.max(0.0, Math.min(goalPosition, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
 
     // Update bar lengths (Mechanism2d length = how far the ligament extends from root)
     _measuredBar.setLength(currentMeters);
@@ -182,21 +173,5 @@ public class IntakeVisualizer {
     Logger.recordOutput(_name + "/Visualizer/CurrentPosition_m", currentMeters);
     Logger.recordOutput(_name + "/Visualizer/GoalPosition_m", goalMeters);
     Logger.recordOutput(_name + "/Visualizer/AtGoal", atGoal);
-  }
-
-  /**
-   * Converts encoder position (output rotations) to meters of linear travel for display.
-   *
-   * <p>This uses the ratio: {@link IntakeConstants.Visualization#MAX_TRAVEL} / {@link
-   * IntakeConstants.Positions#EXTENDED} so that the EXTENDED setpoint maps to the full travel.
-   *
-   * @param encoderRotations Position in output rotations
-   * @return Equivalent travel distance in meters
-   */
-  private double positionToMeters(double encoderRotations) {
-    double extendedRotations = IntakeConstants.Positions.EXTENDED.get();
-    if (extendedRotations == 0.0) return 0.0; // avoid divide-by-zero
-    return (encoderRotations / extendedRotations)
-        * IntakeConstants.Mechanical.MAX_TRAVEL_METERS;
   }
 }
