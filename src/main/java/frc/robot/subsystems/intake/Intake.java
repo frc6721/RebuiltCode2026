@@ -1,5 +1,7 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -7,9 +9,6 @@ import frc.lib.VirtualHopper;
 import frc.robot.subsystems.intake.io.IntakeIO;
 import frc.robot.subsystems.intake.io.IntakeIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.ShooterConstants;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -223,12 +222,14 @@ public class Intake extends SubsystemBase {
     _pidEnabled = true;
   }
 
-  /** Disables the PID controller, allowing manual control of the linear motor via duty cycle or
+  /**
+   * Disables the PID controller, allowing manual control of the linear motor via duty cycle or
    * voltage methods. The PID will remain disabled until {@link #enablePID()} or a position command
    * is given.
    *
-   * <p><b>Warning:</b> Use this for testing/setup only. Use {@link #setIntakePosition(IntakePosition)}
-   * for normal operation to ensure the PID controller is active and maintaining the desired position.
+   * <p><b>Warning:</b> Use this for testing/setup only. Use {@link
+   * #setIntakePosition(IntakePosition)} for normal operation to ensure the PID controller is active
+   * and maintaining the desired position.
    */
   public void disablePID() {
     _pidEnabled = false;

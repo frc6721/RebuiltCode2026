@@ -14,6 +14,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.subsystems.intake.IntakeConstants;
 
@@ -23,13 +24,15 @@ import frc.robot.subsystems.intake.IntakeConstants;
  * <p>This class simulates:
  *
  * <ul>
- *   <li><b>Linear slide:</b> Simple position integration based on applied voltage
+ *   <li><b>Linear slide:</b> Uses WPILib's {@link ElevatorSim} for realistic position-based physics
  *   <li><b>Roller:</b> Simple voltage/current simulation (instant response)
  *   <li><b>Motors:</b> Uses REV SparkMaxSim for realistic motor behavior
  * </ul>
  *
- * <p>The linear slide simulation integrates velocity to track position. No gravity or complex
- * physics needed since it's a horizontal linear rail.
+ * <p>The linear slide is modeled as an elevator: voltage goes in, and the physics sim tracks
+ * position and velocity. This matches how the real intake is controlled — a PID on the roboRIO
+ * outputs a voltage, and the motor moves the slide to the target position. No gravity simulation is
+ * needed since the slide is horizontal.
  */
 public class SimIntakeIO implements IntakeIO {
 
@@ -41,23 +44,21 @@ public class SimIntakeIO implements IntakeIO {
   private final SparkMaxSim _linearSim;
   private final SparkMaxSim _rollerSim;
 
-  // Simulated linear slide state
-  private double _linearPosition = 0.0; // Starts fully retracted
-  private double _linearVelocity = 0.0; // Output rotations per second
+  // WPILib physics simulation for the linear slide (modeled as an elevator)
+  private final ElevatorSim _linearPhysicsSim;
+
+  // Tracks the last voltage applied to the linear motor so we can feed it to the physics sim
   private double _linearAppliedVoltage = 0.0;
 
   // Simulated roller state
   private double _rollerDutyCycle = 0.0;
   private double _rollerSimulatedCurrent = 0.0;
 
-  // Simple physics constants for the linear slide
-  private static final double MAX_VELOCITY = 10.0; // Max output rotations per second
-  private static final double ACCELERATION = 50.0; // Output rotations per second^2
-
   /**
-   * Creates a new SimIntakeIO with position simulation for the linear slide.
+   * Creates a new SimIntakeIO with ElevatorSim-based position simulation for the linear slide.
    *
-   * <p>Initializes simulated motors using constants from IntakeConstants.
+   * <p>Initializes simulated motors using constants from IntakeConstants, and creates an {@link
+   * ElevatorSim} to model the slide physics (voltage → position).
    */
   public SimIntakeIO() {
     // Create simulated motors (using arbitrary CAN IDs since they don't matter in sim)
@@ -94,53 +95,60 @@ public class SimIntakeIO implements IntakeIO {
     // Create REV simulation wrappers
     _linearSim = new SparkMaxSim(_linearMotor, IntakeConstants.Mechanical.LINEAR_MOTOR);
     _rollerSim = new SparkMaxSim(_rollerMotor, IntakeConstants.Mechanical.ROLLER_MOTOR);
+
+    // Create the ElevatorSim physics model for the linear slide.
+    // ElevatorSim tracks position (meters) and velocity (m/s) based on applied voltage.
+    // We disable gravity simulation since the slide is horizontal.
+    _linearPhysicsSim =
+        new ElevatorSim(
+            IntakeConstants.Mechanical.LINEAR_MOTOR, // Motor type (NEO)
+            IntakeConstants.Mechanical.LINEAR_GEAR_RATIO, // Gear reduction
+            IntakeConstants.Mechanical.CARRIAGE_MASS_KG, // Mass of the roller assembly
+            IntakeConstants.Mechanical.DRUM_RADIUS_METERS, // Drum radius (rotation → meters)
+            0.0, // Min height (fully retracted)
+            IntakeConstants.Mechanical.MAX_TRAVEL_METERS, // Max height (fully extended)
+            false, // No gravity (horizontal slide)
+            0.0); // Start fully retracted
   }
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    // --- Simulate the linear slide ---
-    // Calculate target velocity based on applied voltage (simple proportional model)
-    double targetVelocity = (_linearAppliedVoltage / 12.0) * MAX_VELOCITY;
+    // --- Step the linear slide physics simulation ---
+    _linearPhysicsSim.setInputVoltage(_linearAppliedVoltage);
+    _linearPhysicsSim.update(0.02); // 20ms timestep
 
-    // Accelerate towards target velocity
-    double velocityError = targetVelocity - _linearVelocity;
-    double maxDelta = ACCELERATION * 0.02; // Max change in one timestep
-    if (Math.abs(velocityError) < maxDelta) {
-      _linearVelocity = targetVelocity;
-    } else {
-      _linearVelocity += Math.signum(velocityError) * maxDelta;
-    }
+    // Convert the physics sim's meters back to "output rotations" for the encoder.
+    // position (rotations) = position (meters) / (2π × drumRadius)
+    double positionRotations =
+        _linearPhysicsSim.getPositionMeters()
+            / (2.0 * Math.PI * IntakeConstants.Mechanical.DRUM_RADIUS_METERS);
 
-    // Integrate position
-    _linearPosition += _linearVelocity * 0.02;
+    // Convert velocity from m/s to output rotations per second
+    double velocityRotationsPerSec =
+        _linearPhysicsSim.getVelocityMetersPerSecond()
+            / (2.0 * Math.PI * IntakeConstants.Mechanical.DRUM_RADIUS_METERS);
 
-    // Clamp position to valid range (can't go below 0 = fully retracted)
-    if (_linearPosition < 0.0) {
-      _linearPosition = 0.0;
-      _linearVelocity = Math.max(0.0, _linearVelocity);
-    }
+    // Get current draw from the physics sim
+    double linearCurrent = _linearPhysicsSim.getCurrentDrawAmps();
 
-    // Approximate current draw
-    double linearCurrent = Math.abs(_linearAppliedVoltage / 12.0) * 10.0;
-
-    // Update battery simulation
+    // Update battery simulation with combined current draw
     double totalCurrent = linearCurrent + Math.abs(_rollerSimulatedCurrent);
     RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(totalCurrent));
 
-    // Update SparkMax simulations
+    // Update SparkMax simulations so REV's sim layer stays in sync
     _linearSim.setBusVoltage(RoboRioSim.getVInVoltage());
-    _linearSim.iterate(_linearVelocity * 60.0, RoboRioSim.getVInVoltage(), 0.02); // RPM
+    _linearSim.iterate(velocityRotationsPerSec * 60.0, RoboRioSim.getVInVoltage(), 0.02); // RPM
     _rollerSim.setBusVoltage(RoboRioSim.getVInVoltage());
 
-    // --- Populate inputs ---
+    // --- Populate inputs (these get logged by AdvantageKit) ---
     // Linear motor
     inputs._linearMotorTemperature = Celsius.of(40.0);
-    inputs._linearMotorVelocity = RadiansPerSecond.of(_linearVelocity * 2 * Math.PI);
-    inputs._linearMotorPosition = _linearPosition;
+    inputs._linearMotorVelocity = RadiansPerSecond.of(velocityRotationsPerSec * 2.0 * Math.PI);
+    inputs._linearMotorPosition = positionRotations;
     inputs._linearMotorVoltage = Volts.of(_linearAppliedVoltage);
     inputs._linearMotorCurrent = Amps.of(linearCurrent);
 
-    // Roller motor (simple simulation)
+    // Roller motor (simple simulation — instant response)
     inputs._rollerMotorTemperature = Celsius.of(35.0);
     inputs._rollerMotorVelocity = RadiansPerSecond.of(_rollerDutyCycle * 500.0);
     inputs._rollerMotorVoltage = Volts.of(_rollerDutyCycle * 12.0);
@@ -162,8 +170,8 @@ public class SimIntakeIO implements IntakeIO {
 
   @Override
   public void resetLinearEncoder() {
-    _linearPosition = 0.0;
-    _linearVelocity = 0.0;
+    // Reset the physics sim position to 0 (fully retracted, no velocity)
+    _linearPhysicsSim.setState(0.0, 0.0);
   }
 
   @Override

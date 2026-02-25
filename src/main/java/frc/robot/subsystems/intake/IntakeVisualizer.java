@@ -1,14 +1,13 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-
-import static edu.wpi.first.units.Units.Meters;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -86,7 +85,9 @@ public class IntakeVisualizer {
     // Max bound indicator — a short tick at the maximum travel distance
     LoggedMechanismRoot2d maxRoot =
         _mechanism.getRoot(
-            name + "_MaxRoot", ROOT_X + IntakeConstants.Visualization.MAX_TRAVEL.in(Meters), ROOT_Y);
+            name + "_MaxRoot",
+            ROOT_X + IntakeConstants.Mechanical.MAX_TRAVEL_METERS,
+            ROOT_Y);
     _maxBound =
         new LoggedMechanismLigament2d(
             name + "_MaxBound", 0.02, 90.0, 3, new Color8Bit(Color.kWhite));
@@ -133,9 +134,9 @@ public class IntakeVisualizer {
 
     // Clamp to valid travel range for display
     currentMeters =
-        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Visualization.MAX_TRAVEL.in(Meters)));
+        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
     goalMeters =
-        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Visualization.MAX_TRAVEL.in(Meters)));
+        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Mechanical.MAX_TRAVEL_METERS));
 
     // Update bar lengths (Mechanism2d length = how far the ligament extends from root)
     _measuredBar.setLength(currentMeters);
@@ -161,11 +162,11 @@ public class IntakeVisualizer {
     //   dZ = -travel * sin(pitch)  — vertical component
     //                                 positive pitch → sin > 0 → negate → dZ < 0 (downward) ✓
     //                                 negative pitch → sin < 0 → negate → dZ > 0 (upward)   ✓
-    double pitchRad = Math.toRadians(IntakeConstants.Visualization.SLIDE_ANGLE_DEGREES);
-    double dx = currentMeters * Math.cos(pitchRad);  // forward along robot X
+    double pitchRad = Math.toRadians(IntakeConstants.Mechanical.SLIDE_ANGLE_DEGREES);
+    double dx = currentMeters * Math.cos(pitchRad); // forward along robot X
     double dz = -currentMeters * Math.sin(pitchRad); // down when pitch is positive
 
-    Translation3d baseTranslation = IntakeConstants.Visualization.BASE_OFFSET;
+    Translation3d baseTranslation = IntakeConstants.Mechanical.BASE_OFFSET;
     Pose3d rollerPose =
         new Pose3d(
             new Translation3d(
@@ -195,6 +196,7 @@ public class IntakeVisualizer {
   private double positionToMeters(double encoderRotations) {
     double extendedRotations = IntakeConstants.Positions.EXTENDED.get();
     if (extendedRotations == 0.0) return 0.0; // avoid divide-by-zero
-    return (encoderRotations / extendedRotations) * IntakeConstants.Visualization.MAX_TRAVEL.in(Meters);
+    return (encoderRotations / extendedRotations)
+        * IntakeConstants.Mechanical.MAX_TRAVEL_METERS;
   }
 }

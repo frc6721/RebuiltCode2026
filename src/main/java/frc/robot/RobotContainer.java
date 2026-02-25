@@ -259,13 +259,12 @@ public class RobotContainer {
      *
      * <p>BUTTON BINDINGS:
      *
-     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. 
-     * Driving joysticks: Same as default joystick swerve drive
-     * D-Pad left: Reset gyro to 0° 
-     * Left bumper: Run intake rollers while held, stop when released.
-     * A button: Run hopper at fixed speed while held, stop when released.
-     * X button: Manual control of intake linear slide forward while held, stop when released.  
-     * Y button: Manual control of intake linear slide in reverse while held, stop when released.
+     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
+     * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
+     * while held, stop when released. A button: Run hopper at fixed speed while held, stop when
+     * released. X button: Manual control of intake linear slide forward while held, stop when
+     * released. Y button: Manual control of intake linear slide in reverse while held, stop when
+     * released.
      *
      * <p>****************************************************************
      */
@@ -295,8 +294,6 @@ public class RobotContainer {
     //     .leftBumper()
     //     .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
     //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
-
-
 
     // Dynamic shooting with auto-aiming:
     // - Continuously adjusts flywheel speed based on distance to alliance hub
@@ -340,18 +337,24 @@ public class RobotContainer {
      * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
      *
      */
-    controller
+    // controller
+    //     .leftBumper()
+    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
+    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+        controller
         .leftBumper()
-        .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
-        .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
     /*
      * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
      */
+    // controller
+    //     .y()
+    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
+    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
         .y()
-        .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
-        .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
 
     // Reset gyro to 0° when left dpad is pressed
     controller

@@ -53,6 +53,46 @@ public class IntakeConstants {
 
     /** Motor type for the roller (1x NEO) */
     public static final DCMotor ROLLER_MOTOR = DCMotor.getNEO(1);
+
+    /**
+     * Mass of the intake carriage (roller assembly) in kilograms. Used by ElevatorSim in simulation
+     * to model inertia.
+     */
+    public static final double CARRIAGE_MASS_KG = 5.0;
+
+    /**
+     * Effective drum radius in meters that converts between motor rotations and linear travel.
+     *
+     * <p>This value ties "output rotations" (what the encoder reads) to real linear distance via
+     * {@code distance = rotations × 2π × drumRadius}. Derived from the max travel of the slide (11
+     * in ≈ 0.2794 m) and the max output rotations (10.0):
+     *
+     * <pre>drumRadius = maxTravel / (maxRotations × 2π)</pre>
+     */
+    public static final double DRUM_RADIUS_METERS =
+        Inches.of(11).in(Meters) / (10.0 * 2.0 * Math.PI);
+
+    /**
+     * Maximum linear travel of the intake slide in meters. Used as the upper bound for ElevatorSim
+     * so the simulated position stays within the physical range.
+     */
+    public static final double MAX_TRAVEL_METERS = Inches.of(11).in(Meters);
+
+    /**
+     * Translation3d of the slide's retracted (zero) position in the robot frame. Adjust X/Y/Z to
+     * match where the intake rail starts on your robot. X = forward, Y = left, Z = up (all in
+     * meters).
+     */
+    public static final Translation3d BASE_OFFSET = new Translation3d(0.0, 0.0, 0.23);
+
+    /**
+     * Fixed angle of the slide rail, following the WPILib pitch convention.
+     *
+     * <p>Positive = nose tilts DOWN (right-hand rule around +Y axis, same as {@code Rotation3d}
+     * pitch). Negative = nose tilts UP. Supply the physical downward angle of your intake rail as a
+     * positive number.
+     */
+    public static final double SLIDE_ANGLE_DEGREES = 5;
   }
 
   /**
@@ -87,7 +127,7 @@ public class IntakeConstants {
     /** Simulation PID values - tuned for physics simulation */
     public static class Sim {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kP", 0.5);
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kP", 10);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Sim/kI", 0.0);
@@ -134,33 +174,6 @@ public class IntakeConstants {
     public static final double POSITION_DEADBAND = 0.5;
   }
 
-  /**
-   * Visualization constants for Mechanism2d and AdvantageScope 3D output.
-   *
-   * <p>The intake slide is fixed at {@link #SLIDE_ANGLE_DEGREES}° below horizontal. The roller
-   * assembly translates along this axis for up to {@link #MAX_TRAVEL_INCHES} inches.
-   */
-  public static class Visualization {
-    /**
-     * Fixed angle of the slide rail, following the WPILib pitch convention.
-     *
-     * <p>Positive = nose tilts DOWN (right-hand rule around +Y axis, same as {@code Rotation3d}
-     * pitch). Negative = nose tilts UP. Supply the physical downward angle of your intake rail as
-     * a positive number.
-     */
-    public static final double SLIDE_ANGLE_DEGREES = 5;
-
-    /** Total linear travel converted for Pose3d math. */
-    public static final Distance MAX_TRAVEL = Inches.of(11);
-
-    /**
-     * Translation3d of the slide's retracted (zero) position in the robot frame. Adjust X/Y/Z to
-     * match where the intake rail starts on your robot. X = forward, Y = left, Z = up (all in
-     * meters).
-     */
-    public static final Translation3d BASE_OFFSET = new Translation3d(0.0, 0.0, 0.23);
-  }
-
   /** FuelSim bounding box constants for intake pickup simulation. */
   public static class FuelSim {
     /** Intake bounding box dimensions */
@@ -174,6 +187,11 @@ public class IntakeConstants {
     // Gear ratios
     Logger.recordOutput("Constants/Intake/GearRatio/Linear", Mechanical.LINEAR_GEAR_RATIO);
     Logger.recordOutput("Constants/Intake/GearRatio/Roller", Mechanical.ROLLER_GEAR_RATIO);
+
+    // Simulation mechanical constants
+    Logger.recordOutput("Constants/Intake/Sim/CarriageMass_kg", Mechanical.CARRIAGE_MASS_KG);
+    Logger.recordOutput("Constants/Intake/Sim/DrumRadius_m", Mechanical.DRUM_RADIUS_METERS);
+    Logger.recordOutput("Constants/Intake/Sim/MaxTravel_m", Mechanical.MAX_TRAVEL_METERS);
 
     // Deadband
     Logger.recordOutput("Constants/Intake/PositionDeadband", Software.POSITION_DEADBAND);
@@ -192,8 +210,7 @@ public class IntakeConstants {
 
     // Visualization constants
     Logger.recordOutput(
-        "Constants/Intake/Visualization/SlideAngle_deg", Visualization.SLIDE_ANGLE_DEGREES);
-    Logger.recordOutput(
-        "Constants/Intake/Visualization/MaxTravel_m", Visualization.MAX_TRAVEL);
+        "Constants/Intake/Visualization/SlideAngle_deg", Mechanical.SLIDE_ANGLE_DEGREES);
+    Logger.recordOutput("Constants/Intake/Visualization/MaxTravel_m", Mechanical.MAX_TRAVEL_METERS);
   }
 }
