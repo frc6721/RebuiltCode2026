@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -144,21 +145,17 @@ public class IntakeConstants {
      * Fixed angle of the slide rail below horizontal (degrees). Positive = below horizontal. In
      * WPILib robot frame this corresponds to a negative pitch rotation.
      */
-    public static final double SLIDE_ANGLE_DEGREES = 20.0;
+    public static final double SLIDE_ANGLE_DEGREES = -3.5;
 
-    /** Total linear travel of the slide in inches. */
-    public static final double MAX_TRAVEL_INCHES = 11.0;
-
-    /** Total linear travel converted to meters for Pose3d math. */
-    public static final double MAX_TRAVEL_METERS =
-        edu.wpi.first.units.Units.Inches.of(MAX_TRAVEL_INCHES).in(Meters);
+    /** Total linear travel converted for Pose3d math. */
+    public static final Distance MAX_TRAVEL = Inches.of(11);
 
     /**
      * Translation3d of the slide's retracted (zero) position in the robot frame. Adjust X/Y/Z to
      * match where the intake rail starts on your robot. X = forward, Y = left, Z = up (all in
      * meters).
      */
-    public static final Translation3d BASE_OFFSET = new Translation3d(0.3, 0.0, 0.1);
+    public static final Translation3d BASE_OFFSET = new Translation3d(0.0, 0.0, 0.23);
   }
 
   /** FuelSim bounding box constants for intake pickup simulation. */
@@ -194,6 +191,6 @@ public class IntakeConstants {
     Logger.recordOutput(
         "Constants/Intake/Visualization/SlideAngle_deg", Visualization.SLIDE_ANGLE_DEGREES);
     Logger.recordOutput(
-        "Constants/Intake/Visualization/MaxTravel_m", Visualization.MAX_TRAVEL_METERS);
+        "Constants/Intake/Visualization/MaxTravel_m", Visualization.MAX_TRAVEL);
   }
 }

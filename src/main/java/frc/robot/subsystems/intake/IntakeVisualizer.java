@@ -6,6 +6,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+
+import static edu.wpi.first.units.Units.Meters;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -83,7 +86,7 @@ public class IntakeVisualizer {
     // Max bound indicator — a short tick at the maximum travel distance
     LoggedMechanismRoot2d maxRoot =
         _mechanism.getRoot(
-            name + "_MaxRoot", ROOT_X + IntakeConstants.Visualization.MAX_TRAVEL_METERS, ROOT_Y);
+            name + "_MaxRoot", ROOT_X + IntakeConstants.Visualization.MAX_TRAVEL.in(Meters), ROOT_Y);
     _maxBound =
         new LoggedMechanismLigament2d(
             name + "_MaxBound", 0.02, 90.0, 3, new Color8Bit(Color.kWhite));
@@ -130,9 +133,9 @@ public class IntakeVisualizer {
 
     // Clamp to valid travel range for display
     currentMeters =
-        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Visualization.MAX_TRAVEL_METERS));
+        Math.max(0.0, Math.min(currentMeters, IntakeConstants.Visualization.MAX_TRAVEL.in(Meters)));
     goalMeters =
-        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Visualization.MAX_TRAVEL_METERS));
+        Math.max(0.0, Math.min(goalMeters, IntakeConstants.Visualization.MAX_TRAVEL.in(Meters)));
 
     // Update bar lengths (Mechanism2d length = how far the ligament extends from root)
     _measuredBar.setLength(currentMeters);
@@ -167,9 +170,9 @@ public class IntakeVisualizer {
             // Fixed rotation: the roller assembly is always at -20° pitch (angled down)
             new Rotation3d(0.0, -pitchRad, 0.0));
 
-    rollerPose = new Pose3d();
+    // rollerPose = new Pose3d();
     Logger.recordOutput(_name + "/Visualizer/Pose3d", rollerPose);
-    Logger.recordOutput(_name + "/Visualizer/Pose3d2", rollerPose);
+    // Logger.recordOutput(_name + "/Visualizer/Pose3d2", rollerPose);
 
     // Scalar logs for easy graphing
     Logger.recordOutput(_name + "/Visualizer/CurrentPosition_m", currentMeters);
@@ -180,7 +183,7 @@ public class IntakeVisualizer {
   /**
    * Converts encoder position (output rotations) to meters of linear travel for display.
    *
-   * <p>This uses the ratio: {@link IntakeConstants.Visualization#MAX_TRAVEL_METERS} / {@link
+   * <p>This uses the ratio: {@link IntakeConstants.Visualization#MAX_TRAVEL} / {@link
    * IntakeConstants.Positions#EXTENDED} so that the EXTENDED setpoint maps to the full travel.
    *
    * @param encoderRotations Position in output rotations
@@ -189,6 +192,6 @@ public class IntakeVisualizer {
   private double positionToMeters(double encoderRotations) {
     double extendedRotations = IntakeConstants.Positions.EXTENDED.get();
     if (extendedRotations == 0.0) return 0.0; // avoid divide-by-zero
-    return (encoderRotations / extendedRotations) * IntakeConstants.Visualization.MAX_TRAVEL_METERS;
+    return (encoderRotations / extendedRotations) * IntakeConstants.Visualization.MAX_TRAVEL.in(Meters);
   }
 }
