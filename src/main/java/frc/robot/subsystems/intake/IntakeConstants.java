@@ -183,7 +183,7 @@ public class IntakeConstants {
     /** Simulation PID values - tuned for physics simulation */
     public static class Sim {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kP", 10);
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/kP", 20);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Sim/kI", 0.0);
