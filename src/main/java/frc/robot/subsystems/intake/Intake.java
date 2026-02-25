@@ -41,6 +41,15 @@ public class Intake extends SubsystemBase {
   private final IntakeVisualizer _visualizer;
 
   /**
+   * Controls whether the PID controller is actively driving the linear motor.
+   *
+   * <p>Defaults to {@code true} so the PID is always in charge unless a manual duty-cycle or
+   * voltage override is explicitly requested. Setting a position via {@link
+   * #setIntakePosition(IntakePosition)} will automatically re-enable the PID.
+   */
+  private boolean _pidEnabled = true;
+
+  /**
    * Enum representing predefined positions for the linear slide. Actual positions are defined in
    * {@link IntakeConstants.Positions} as LoggedNetworkNumbers (tunable from dashboard).
    */
@@ -107,12 +116,15 @@ public class Intake extends SubsystemBase {
     // LOGGING
     Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
+    Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
 
-    // Run PID control for linear slide position
-    _linearPIDController.setSetpoint(_intakePosition.getPosition());
-    double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
-
-    _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
+    // Run PID control for linear slide position only when PID mode is active.
+    // Duty-cycle or voltage overrides disable the PID until a position is commanded again.
+    if (_pidEnabled) {
+      _linearPIDController.setSetpoint(_intakePosition.getPosition());
+      double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
+      _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
+    }
 
     // Check if at target
     boolean atGoal =
@@ -126,17 +138,24 @@ public class Intake extends SubsystemBase {
   }
 
   /**
-   * Sets the intake slide to a desired position. The actual movement is handled by the PID
-   * controller in {@link #periodic()}.
+   * Sets the intake slide to a desired position and (re-)enables the PID controller.
+   *
+   * <p>Calling this method will always switch the intake back into closed-loop control, even if a
+   * manual duty-cycle or voltage override was previously active.
    *
    * @param position The desired intake position (RETRACTED or EXTENDED)
    */
   public void setIntakePosition(IntakePosition position) {
     _intakePosition = position;
+    // Always re-enable closed-loop control when a position is commanded
+    _pidEnabled = true;
   }
 
   /**
    * Manually controls the linear slide with a duty cycle output, bypassing PID control.
+   *
+   * <p>This disables the PID controller so it does not fight the manual output. Call {@link
+   * #setIntakePosition(IntakePosition)} or {@link #enablePID()} to return to closed-loop control.
    *
    * <p><b>Warning:</b> For testing/setup only. Use {@link #setIntakePosition(IntakePosition)} for
    * normal operation.
@@ -144,6 +163,7 @@ public class Intake extends SubsystemBase {
    * @param output The duty cycle output (-1.0 to +1.0) for the linear motor
    */
   public void setLinearMotorDutyCycleOutput(double output) {
+    _pidEnabled = false;
     _intakeIO.setLinearMotorDutyCycle(output);
   }
 
@@ -169,8 +189,49 @@ public class Intake extends SubsystemBase {
     _intakeIO.setRollerVoltage(voltage);
   }
 
+  /**
+   * Directly applies a voltage to the linear motor, bypassing PID control.
+   *
+   * <p>This disables the PID controller so it does not fight the manual output. Call {@link
+   * #setIntakePosition(IntakePosition)} or {@link #enablePID()} to return to closed-loop control.
+   *
+   * @param voltage The voltage to apply to the linear motor
+   */
   public void setLinearMotorVoltage(Voltage voltage) {
+    _pidEnabled = false;
     _intakeIO.setLinearMotorVoltage(voltage);
+  }
+
+  // ==================== PID CONTROL ======================
+
+  /**
+   * Returns {@code true} if the PID controller is currently active and driving the linear motor.
+   *
+   * @return {@code true} when closed-loop position control is enabled
+   */
+  public boolean isPIDEnabled() {
+    return _pidEnabled;
+  }
+
+  /**
+   * Enables the PID controller, returning the intake to closed-loop position control.
+   *
+   * <p>Use this to re-engage automatic control after a manual duty-cycle or voltage override. The
+   * controller will immediately begin driving toward the last commanded {@link IntakePosition}.
+   */
+  public void enablePID() {
+    _pidEnabled = true;
+  }
+
+  /** Disables the PID controller, allowing manual control of the linear motor via duty cycle or
+   * voltage methods. The PID will remain disabled until {@link #enablePID()} or a position command
+   * is given.
+   *
+   * <p><b>Warning:</b> Use this for testing/setup only. Use {@link #setIntakePosition(IntakePosition)}
+   * for normal operation to ensure the PID controller is active and maintaining the desired position.
+   */
+  public void disablePID() {
+    _pidEnabled = false;
   }
 
   // ==================== FUEL SIM INTEGRATION =============`=======
