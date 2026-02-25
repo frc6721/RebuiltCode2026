@@ -150,25 +150,28 @@ public class IntakeVisualizer {
     Logger.recordOutput(_name + "/Visualizer/Mechanism2d", _mechanism);
 
     // --- 3D Pose ---
-    // The slide is fixed at -20° pitch (20° below horizontal, pitched down from front of robot).
-    // The roller assembly translates along the slide axis (forward-and-down direction).
+    // SLIDE_ANGLE_DEGREES follows the WPILib pitch convention directly:
+    //   positive pitch = nose tilts DOWN (right-hand rule around +Y axis)
+    //   negative pitch = nose tilts UP
     //
     // WPILib robot frame: X = forward, Y = left, Z = up
-    // Rotation3d pitch of -20° means the slide axis points forward-and-down.
-    // Translation is along X of the slide frame, converted back to robot frame:
-    //   dX_robot = currentMeters * cos(-20°) = currentMeters * cos(20°)
-    //   dZ_robot = currentMeters * sin(-20°) = -currentMeters * sin(20°)
+    //
+    // Decompose the travel distance along the slide axis into robot-frame X and Z:
+    //   dX =  travel * cos(pitch)  — forward component (always positive for extending intake)
+    //   dZ = -travel * sin(pitch)  — vertical component
+    //                                 positive pitch → sin > 0 → negate → dZ < 0 (downward) ✓
+    //                                 negative pitch → sin < 0 → negate → dZ > 0 (upward)   ✓
     double pitchRad = Math.toRadians(IntakeConstants.Visualization.SLIDE_ANGLE_DEGREES);
-    double dx = currentMeters * Math.cos(pitchRad);
-    double dz = -currentMeters * Math.sin(pitchRad); // negative = downward
+    double dx = currentMeters * Math.cos(pitchRad);  // forward along robot X
+    double dz = -currentMeters * Math.sin(pitchRad); // down when pitch is positive
 
     Translation3d baseTranslation = IntakeConstants.Visualization.BASE_OFFSET;
     Pose3d rollerPose =
         new Pose3d(
             new Translation3d(
                 baseTranslation.getX() + dx, baseTranslation.getY(), baseTranslation.getZ() + dz),
-            // Fixed rotation: the roller assembly is always at -20° pitch (angled down)
-            new Rotation3d(0.0, -pitchRad, 0.0));
+            // Fixed rotation: roller assembly sits at the slide's pitch angle (WPILib convention)
+            new Rotation3d(0.0, pitchRad, 0.0));
 
     // rollerPose = new Pose3d();
     Logger.recordOutput(_name + "/Visualizer/Pose3d", rollerPose);

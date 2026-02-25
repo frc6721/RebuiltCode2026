@@ -7,6 +7,9 @@ import frc.lib.VirtualHopper;
 import frc.robot.subsystems.intake.io.IntakeIO;
 import frc.robot.subsystems.intake.io.IntakeIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.ShooterConstants;
+
+import static edu.wpi.first.units.Units.Volts;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -106,10 +109,10 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
 
     // Run PID control for linear slide position
-    // _linearPIDController.setSetpoint(_intakePosition.getPosition());
-    // double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
+    _linearPIDController.setSetpoint(_intakePosition.getPosition());
+    double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
 
-    // _intakeIO.setLinearMotorVoltage(linearVoltage);
+    _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
 
     // Check if at target
     boolean atGoal =

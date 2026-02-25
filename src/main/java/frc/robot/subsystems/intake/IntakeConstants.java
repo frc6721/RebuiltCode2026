@@ -142,10 +142,13 @@ public class IntakeConstants {
    */
   public static class Visualization {
     /**
-     * Fixed angle of the slide rail below horizontal (degrees). Positive = below horizontal. In
-     * WPILib robot frame this corresponds to a negative pitch rotation.
+     * Fixed angle of the slide rail, following the WPILib pitch convention.
+     *
+     * <p>Positive = nose tilts DOWN (right-hand rule around +Y axis, same as {@code Rotation3d}
+     * pitch). Negative = nose tilts UP. Supply the physical downward angle of your intake rail as
+     * a positive number.
      */
-    public static final double SLIDE_ANGLE_DEGREES = -3.5;
+    public static final double SLIDE_ANGLE_DEGREES = 5;
 
     /** Total linear travel converted for Pose3d math. */
     public static final Distance MAX_TRAVEL = Inches.of(11);
@@ -161,9 +164,9 @@ public class IntakeConstants {
   /** FuelSim bounding box constants for intake pickup simulation. */
   public static class FuelSim {
     /** Intake bounding box dimensions */
-    public static final edu.wpi.first.units.measure.Distance WIDTH = Inches.of(10.0);
+    public static final Distance WIDTH = Inches.of(10.0);
 
-    public static final edu.wpi.first.units.measure.Distance LENGTH = Inches.of(20.0);
+    public static final Distance LENGTH = Inches.of(20.0);
   }
 
   // Logging

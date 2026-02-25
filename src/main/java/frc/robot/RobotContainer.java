@@ -259,43 +259,44 @@ public class RobotContainer {
      *
      * <p>BUTTON BINDINGS:
      *
-     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Update voltage values
-     * in the command to adjust speed. Driving joysticks: Same as default joystick swerve drive
-     * D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers while held, stop when released.
-     * Adjust voltage in command A button: Run hopper at fixed speed while held, stop when released.
-     * Adjust speed in command (percent output, not voltage) X button: Manual control of intake
-     * linear slide forward while held, stop when released. Adjust voltage in command. Y button:
-     * Manual control of intake linear slide in reverse while held, stop when released. Adjust
-     * voltage in command.
+     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. 
+     * Driving joysticks: Same as default joystick swerve drive
+     * D-Pad left: Reset gyro to 0° 
+     * Left bumper: Run intake rollers while held, stop when released.
+     * A button: Run hopper at fixed speed while held, stop when released.
+     * X button: Manual control of intake linear slide forward while held, stop when released.  
+     * Y button: Manual control of intake linear slide in reverse while held, stop when released.
      *
      * <p>****************************************************************
      */
 
     // Default command, normal field-relative drive
     // real controller
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
-
-    // sim controller in MAC os
     // drive.setDefaultCommand(
     //     DriveCommands.joystickDrive(
     //         drive,
     //         () -> -controller.getLeftY(),
     //         () -> -controller.getLeftX(),
-    //         () -> -(controller.getRightTriggerAxis())));
+    //         () -> -controller.getRightX()));
+
+    // sim controller in MAC os
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -(controller.getRightTriggerAxis())));
 
     // Always run the flywheels a little bit during the match so they can spin up quicker when we
     // need them
     // shooter.setDefaultCommand(ShooterCommands.runFlywheelsAtIdle(shooter));
 
-    controller
-        .leftBumper()
-        .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
-        .onFalse(IntakeCommands.stopIntakeRollers(intake));
+    // controller
+    //     .leftBumper()
+    //     .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
+    //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
+
+
 
     // Dynamic shooting with auto-aiming:
     // - Continuously adjusts flywheel speed based on distance to alliance hub
@@ -340,7 +341,7 @@ public class RobotContainer {
      *
      */
     controller
-        .x()
+        .leftBumper()
         .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
         .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
 
