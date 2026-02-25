@@ -28,7 +28,6 @@ import frc.lib.VirtualHopper;
 import frc.lib.feulSim.FuelSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeederCommands;
-import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
@@ -209,16 +208,17 @@ public class RobotContainer {
           drive::getFieldRelativeSpeeds);
 
       // Register intake with FuelSim
-      // Fuel inside the bounding box will be "collected" when canIntakeFuel() returns true
+      // Fuel inside the bounding box will be "collected" when canIntakeFuel() returns true.
+      // X is robot-forward: the box runs from the front bumper edge outward by LENGTH.
+      // Y is robot-left: centered on the robot's Y centerline by half-WIDTH on each side.
       fuelSim.registerIntake(
+          Constants.Dimensions.ROBOT_WIDTH.div(2).in(Meters), // xMin: front bumper edge
           Constants.Dimensions.ROBOT_WIDTH
               .div(2)
-              .unaryMinus()
-              .minus(IntakeConstants.FuelSim.WIDTH.div(2))
-              .in(Meters),
-          -Constants.Dimensions.ROBOT_WIDTH.div(2).in(Meters), // Offset intake box to back of robot
-          -IntakeConstants.FuelSim.LENGTH.div(2).in(Meters),
-          IntakeConstants.FuelSim.LENGTH.div(2).in(Meters),
+              .plus(IntakeConstants.FuelSim.LENGTH)
+              .in(Meters), // xMax: LENGTH beyond front bumper
+          -IntakeConstants.FuelSim.WIDTH.div(2).in(Meters), // yMin: half-width right of center
+          IntakeConstants.FuelSim.WIDTH.div(2).in(Meters), // yMax: half-width left of center
           intake::canIntakeFuel, // BooleanSupplier - checks if intake can collect
           intake::simIntakeFuel); // Runnable - called when fuel is collected
 
@@ -299,19 +299,18 @@ public class RobotContainer {
     // - Continuously adjusts flywheel speed based on distance to alliance hub
     // - Automatically rotates robot to face the hub
     // - Driver maintains full control of translation (forward/back, left/right)
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         // Combine auto-aim driving with shooting sequence
-    //         DriveCommands.joystickDriveAtAngle(
-    //                 drive,
-    //                 () -> -controller.getLeftY(),
-    //                 () -> -controller.getLeftX(),
-    //                 () -> RobotState.getInstance().getAngleToAllianceHub())
-    //             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
-    //     .onFalse(
-    //
-    // FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+    controller
+        .a()
+        .whileTrue(
+            // Combine auto-aim driving with shooting sequence
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToAllianceHub())
+                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
+        .onFalse(
+            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
 
     // TESTING COMMAND
     // run the shooter and feeder at a fixed voltage
@@ -328,10 +327,10 @@ public class RobotContainer {
      * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
      * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
      */
-    controller
-        .a()
-        .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
-        .onFalse(HopperCommands.stopHopper(hopper));
+    // controller
+    //     .a()
+    //     .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
+    //     .onFalse(HopperCommands.stopHopper(hopper));
 
     /*
      * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.

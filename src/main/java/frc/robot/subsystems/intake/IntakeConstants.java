@@ -232,9 +232,16 @@ public class IntakeConstants {
 
   /** FuelSim bounding box constants for intake pickup simulation. */
   public static class FuelSim {
-    /** Intake bounding box dimensions */
+    /**
+     * Width of the intake bounding box (robot Y axis — side to side). Centered on the robot's
+     * centerline.
+     */
     public static final Distance WIDTH = Inches.of(10.0);
 
+    /**
+     * Length of the intake bounding box (robot X axis — front to back). The box extends forward
+     * from the front edge of the robot by this amount.
+     */
     public static final Distance LENGTH = Inches.of(20.0);
   }
 
