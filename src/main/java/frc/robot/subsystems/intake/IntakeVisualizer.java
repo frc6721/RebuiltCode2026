@@ -167,7 +167,9 @@ public class IntakeVisualizer {
             // Fixed rotation: the roller assembly is always at -20° pitch (angled down)
             new Rotation3d(0.0, -pitchRad, 0.0));
 
+    rollerPose = new Pose3d();
     Logger.recordOutput(_name + "/Visualizer/Pose3d", rollerPose);
+    Logger.recordOutput(_name + "/Visualizer/Pose3d2", rollerPose);
 
     // Scalar logs for easy graphing
     Logger.recordOutput(_name + "/Visualizer/CurrentPosition_m", currentMeters);

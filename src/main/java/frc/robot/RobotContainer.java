@@ -256,19 +256,19 @@ public class RobotContainer {
   private void configureButtonBindings() {
     /**
      * **************************************************************
-     * 
-     * BUTTON BINDINGS:
-     * 
-     * Right bumber: Run shooter and feeder at fixed voltage for testing. Update voltage values in the command to adjust speed.
-     * Driving joysticks: Same as default joystick swerve drive
-     * D-Pad left: Reset gyro to 0°
-     * Left bumper: Run intake rollers while held, stop when released. Adjust voltage in command
-     * A button: Run hopper at fixed speed while held, stop when released. Adjust speed in command (percent output, not voltage)
-     * X button: Manual control of intake linear slide forward while held, stop when released. Adjust voltage in command.
-     * Y button: Manual control of intake linear slide in reverse while held, stop when released. Adjust voltage in command.
-     * 
-     * 
-     * ****************************************************************
+     *
+     * <p>BUTTON BINDINGS:
+     *
+     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Update voltage values
+     * in the command to adjust speed. Driving joysticks: Same as default joystick swerve drive
+     * D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers while held, stop when released.
+     * Adjust voltage in command A button: Run hopper at fixed speed while held, stop when released.
+     * Adjust speed in command (percent output, not voltage) X button: Manual control of intake
+     * linear slide forward while held, stop when released. Adjust voltage in command. Y button:
+     * Manual control of intake linear slide in reverse while held, stop when released. Adjust
+     * voltage in command.
+     *
+     * <p>****************************************************************
      */
 
     // Default command, normal field-relative drive
@@ -326,7 +326,7 @@ public class RobotContainer {
             ShooterCommands.runFlywheelsAtIdle(shooter)
                 .alongWith(FeederCommands.stopFeeder(feeder)));
 
-    /*  
+    /*
      * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
      * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
      */
@@ -335,9 +335,9 @@ public class RobotContainer {
         .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
         .onFalse(HopperCommands.stopHopper(hopper));
 
-    /*  
+    /*
      * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
-     * 
+     *
      */
     controller
         .x()
