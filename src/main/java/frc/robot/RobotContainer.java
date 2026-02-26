@@ -271,20 +271,20 @@ public class RobotContainer {
 
     // Default command, normal field-relative drive
     // real controller
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -controller.getLeftY(),
-    //         () -> -controller.getLeftX(),
-    //         () -> -controller.getRightX()));
-
-    // sim controller in MAC os
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
-            () -> -(controller.getRightTriggerAxis())));
+            () -> -controller.getRightX()));
+
+    // sim controller in MAC os
+    // drive.setDefaultCommand(
+    //  DriveCommands.joystickDrive(
+    //    drive,
+    //  () -> -controller.getLeftY(),
+    // () -> -controller.getLeftX(),
+    // () -> -(controller.getRightTriggerAxis())));
 
     // Always run the flywheels a little bit during the match so they can spin up quicker when we
     // need them
@@ -300,7 +300,7 @@ public class RobotContainer {
     // - Automatically rotates robot to face the hub
     // - Driver maintains full control of translation (forward/back, left/right)
     controller
-        .a()
+        .rightBumper()
         .whileTrue(
             // Combine auto-aim driving with shooting sequence
             DriveCommands.joystickDriveAtAngle(
@@ -317,11 +317,17 @@ public class RobotContainer {
     // update these values to run faster or slower.
     // Max motor power is 12 volts
     controller
-        .rightBumper()
-        .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 6.0))
+        .leftBumper()
+        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+        .whileTrue(ShooterCommands.shootToHubSequence(shooter, feeder))
         .onFalse(
             ShooterCommands.runFlywheelsAtIdle(shooter)
                 .alongWith(FeederCommands.stopFeeder(feeder)));
+
+    // controller
+    //     .leftBumper()
+    //     .whileTrue(ShooterCommands.feedforwardCharacterization(shooter))
+    //     .onFalse(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
 
     /*
      * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
@@ -341,7 +347,7 @@ public class RobotContainer {
     //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
-        .leftBumper()
+        .rightTrigger(0.5)
         .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
     /*
@@ -351,7 +357,9 @@ public class RobotContainer {
     //     .y()
     //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
-    controller.y().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
+    controller
+        .leftTrigger(0.5)
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
 
     // Reset gyro to 0° when left dpad is pressed
     controller

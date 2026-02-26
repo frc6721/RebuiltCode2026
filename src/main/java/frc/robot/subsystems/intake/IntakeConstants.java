@@ -22,7 +22,7 @@ public class IntakeConstants {
   /** Hardware configuration for motor inversions. */
   public static class Hardware {
     /** Linear slide motor inversion */
-    public static final boolean LINEAR_MOTOR_INVERTED = false;
+    public static final boolean LINEAR_MOTOR_INVERTED = true;
 
     /** Roller motor inversion */
     public static final boolean ROLLER_INVERTED = false;
@@ -62,7 +62,7 @@ public class IntakeConstants {
      * <p><b>How to measure:</b> Count the teeth on the pinion and multiply by the tooth pitch (the
      * distance between teeth on the rack). Or look up the pitch diameter on the gear spec sheet.
      */
-    public static final double PINION_DIAMETER_METERS = Inches.of(1.0).in(Meters);
+    public static final double PINION_DIAMETER_METERS = Inches.of(1.5).in(Meters);
 
     /**
      * Maximum linear travel of the intake slide in meters. This is the physical distance from fully
@@ -163,8 +163,12 @@ public class IntakeConstants {
         new LoggedNetworkNumber("Intake/Position/Retracted", 0.0);
 
     /** Fully extended (deployed) position in meters. */
+    // public static final LoggedNetworkNumber EXTENDED =
+    //     new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
+
+    /** DELETE BELOW LINE AND REVERT EXTENDED VALUE TO ABOVE. JUST FOR PID TUNING TESTING */
     public static final LoggedNetworkNumber EXTENDED =
-        new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
+        new LoggedNetworkNumber("Intake/Position/Extended", Inches.of(6.7).in(Meters));
   }
 
   /** PID tuning constants for the linear slide position control. */
@@ -172,7 +176,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 0.1);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 15.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);

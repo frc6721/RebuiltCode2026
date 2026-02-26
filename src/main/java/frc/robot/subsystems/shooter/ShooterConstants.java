@@ -57,7 +57,7 @@ public class ShooterConstants {
         RevolutionsPerSecond.of(5600 / 60.0); // 5600 RPM
 
     public static final AngularAcceleration MAX_ACCEL =
-        RevolutionsPerSecond.per(Second).of(5600 / 60.0); // 5600 RPM/s
+        RevolutionsPerSecond.per(Second).of(3000 / 60.0); // 5600 RPM/s
   }
 
   /** PID and feedforward tuning constants. */
@@ -65,14 +65,14 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.000500);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00025);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.0000);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.000175);
       public static final LoggedNetworkNumber FF =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000100);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
 
     /** Simulation PID values */
@@ -95,11 +95,11 @@ public class ShooterConstants {
     public static class Real {
       /** Static friction voltage (voltage to overcome friction) */
       public static final LoggedNetworkNumber KS =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kS", 0.18554);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kS", 0.26750);
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.002);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00170);
     }
 
     /** Simulation feedforward values */

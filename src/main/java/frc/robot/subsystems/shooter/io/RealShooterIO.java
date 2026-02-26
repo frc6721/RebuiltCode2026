@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter.io;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
@@ -55,7 +56,7 @@ public class RealShooterIO implements ShooterIO {
         ShooterConstants.getFlywheelKI(),
         ShooterConstants.getFlywheelKD());
     leftConfig.closedLoop.maxMotion.maxAcceleration(
-        ShooterConstants.Limits.MAX_ACCEL.in(RotationsPerSecond.per(Second)) * 60.0);
+        ShooterConstants.Limits.MAX_ACCEL.in(RPM.per(Second)));
 
     tryUntilOk(
         _leftFlywheelMotor,
