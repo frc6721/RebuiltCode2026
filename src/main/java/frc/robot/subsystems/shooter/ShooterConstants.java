@@ -194,8 +194,8 @@ public class ShooterConstants {
     /** Height of the shooter exit point above the ground. */
     public static final Distance HEIGHT_FROM_GROUND = Inches.of(18.0);
 
-    /** Forward offset of shooter from robot center. */
-    public static final Distance FORWARD_OFFSET = Inches.of(8.0);
+    /** Forward offset of shooter from robot center (negative = back of robot). */
+    public static final Distance FORWARD_OFFSET = Inches.of(-8.0);
 
     /** Side offset of shooter from robot center. */
     public static final Distance SIDE_OFFSET = Inches.of(0.0);

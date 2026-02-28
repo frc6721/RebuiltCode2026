@@ -181,11 +181,12 @@ public class FuelVisualizer {
     double horizontalSpeed = speedMps * Math.cos(angleRadians);
     double verticalSpeed = speedMps * Math.sin(angleRadians);
 
-    // Create robot-relative horizontal velocity (pointing forward from robot)
-    Translation2d robotRelativeVel = new Translation2d(horizontalSpeed, 0);
+    // Create robot-relative horizontal velocity (pointing backward from robot,
+    // since the shooter is mounted on the back of the robot)
+    Translation2d robotRelativeVel = new Translation2d(-horizontalSpeed, 0);
 
     // Rotate by robot heading to convert to field coordinates
-    // This is the key transformation - the shooter points where the robot points!
+    // This is the key transformation - the shooter points opposite the robot's heading!
     Translation2d fieldRelativeVel = robotRelativeVel.rotateBy(robotPose.getRotation());
 
     // Add robot's velocity (fuel inherits robot's motion)
