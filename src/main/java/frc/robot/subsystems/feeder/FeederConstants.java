@@ -1,7 +1,7 @@
 package frc.robot.subsystems.feeder;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Second;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -17,7 +17,7 @@ public class FeederConstants {
   /** Mechanical properties of the feeder mechanism. */
   public static class Mechanical {
     /** Gear ratio from motor to feeder mechanism (motor rotations per mechanism rotation) */
-    public static final double GEAR_RATIO = 4.0; // 4:1 AM Sport Gearbox
+    public static final double GEAR_RATIO = 1.0;
 
     /** Motor type for the feeder (1x NEO per side) */
     public static final DCMotor MOTOR = DCMotor.getNEO(1);
@@ -26,7 +26,7 @@ public class FeederConstants {
      * Moment of inertia for the feeder wheels and belt system. Estimated for 4" Thrifty Squish
      * Wheels + belt + pulleys. Adjust after characterization if sim doesn't match real behavior.
      */
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0025);
   }
 
   /** Motor configuration for the feeder. */
@@ -44,18 +44,16 @@ public class FeederConstants {
    */
   public static class Limits {
     /** Minimum feeder speed - below this the motor just stalls */
-    public static final AngularVelocity MIN_SPEED = RevolutionsPerSecond.of(50 / 60.0); // 50 RPM
+    public static final AngularVelocity MIN_SPEED = RPM.of(50);
 
     /** Maximum feeder speed - limited by NEO through 4:1 gearbox (~1400 RPM output) */
-    public static final AngularVelocity MAX_SPEED =
-        RevolutionsPerSecond.of(1400 / 60.0); // 1400 RPM
+    public static final AngularVelocity MAX_SPEED = RPM.of(1400);
 
     /**
      * Maximum acceleration for Motion Magic profiling. Controls how quickly the feeder ramps up to
      * target speed. Higher = faster response but more current draw.
      */
-    public static final AngularAcceleration MAX_ACCEL =
-        RevolutionsPerSecond.per(Second).of(2000 / 60.0); // 2000 RPM/s
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(2000); // 2000 RPM/s
   }
 
   /**
@@ -166,6 +164,6 @@ public class FeederConstants {
     Logger.recordOutput(
         "Constants/Feeder/CurrentLimit/Secondary_A", CurrentLimits.SECONDARY_CURRENT_LIMIT);
 
-    Logger.recordOutput("Constants/Feeder/SpeedTolerance", Software.PID_TOLERANCE);
+    Logger.recordOutput("Constants/Feeder/SpeedTolerance_pct", Software.PID_TOLERANCE);
   }
 }

@@ -2,7 +2,6 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -103,8 +102,8 @@ public class ShotCalculator {
 
     double speedRPM = ShooterConstants.DistanceMap.SPEED_MAP.get(distanceMeters);
 
-    double minRPM = ShooterConstants.Limits.MIN_SPEED.in(RevolutionsPerSecond) * 60.0;
-    double maxRPM = ShooterConstants.Limits.MAX_SPEED.in(RevolutionsPerSecond) * 60.0;
+    double minRPM = ShooterConstants.Limits.MIN_SPEED.in(RPM);
+    double maxRPM = ShooterConstants.Limits.MAX_SPEED.in(RPM);
     speedRPM = Math.max(minRPM, Math.min(maxRPM, speedRPM));
 
     Logger.recordOutput("Shooter/ShotCalculator/TargetPosition", target);

@@ -377,10 +377,9 @@ public class RobotContainer {
     // controller
     //     .x()
     //     .onTrue(
-    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RevolutionsPerSecond.of(3500 /
-    // 60.0)))
+    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
     //     .onFalse(
-    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RevolutionsPerSecond.of(0 / 60.0)));
+    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
 
     // Used for shooter characterization routines. Not for normal use.
     // Original X binding replaced with shooter characterization bindings

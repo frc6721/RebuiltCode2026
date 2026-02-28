@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -171,9 +173,9 @@ public class ShooterCommands {
                 () -> {
                   double voltage = timer.get() * FF_RAMP_RATE;
                   shooter.runCharacterization(Volts.of(voltage));
-                  // Sample velocity in rad/s, convert to RPM for regression
+                  // Sample velocity in rad/s, convert to RPM using WPILib units
                   double velocityRadPerSec = shooter.getFFCharacterizationVelocity();
-                  double velocityRPM = velocityRadPerSec * 60.0 / (2.0 * Math.PI);
+                  double velocityRPM = RadiansPerSecond.of(velocityRadPerSec).in(RPM);
                   velocitySamples.add(velocityRPM);
                   voltageSamples.add(voltage);
                 },
@@ -257,11 +259,7 @@ public class ShooterCommands {
         .alongWith(
             Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
                 .withTimeout(2.0)
-                .andThen(FeederCommands.runFeederAtVoltage(feeder, 0.75).repeatedly()))
-        .finallyDo(
-            () -> {
-              shooter.stopFlywheels();
-            })
+                .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(1000))))
         .withName("ShootToHubSequence");
   }
 }

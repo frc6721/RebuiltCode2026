@@ -113,8 +113,8 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", _intakeInputs);
 
     // LOGGING
-    Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
-    Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
+    Logger.recordOutput("Intake/LinearPosition/Current_m", _intakeInputs._linearMotorPosition);
+    Logger.recordOutput("Intake/LinearPosition/Desired_m", _intakePosition.getPosition());
     Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
 
     // Run PID control for linear slide position only when PID mode is active.

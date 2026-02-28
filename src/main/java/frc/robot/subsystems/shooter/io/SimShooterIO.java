@@ -3,7 +3,7 @@ package frc.robot.subsystems.shooter.io;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.sim.SparkFlexSim;
@@ -140,15 +140,13 @@ public class SimShooterIO implements ShooterIO {
     // --- Read back the simulated sensor values ---
     // Left flywheel motor (leader)
     inputs._leftFlywheelMotorTemperature = Celsius.of(45.0);
-    inputs._leftFlywheelMotorVelocity =
-        RotationsPerSecond.of(_flywheelPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._leftFlywheelMotorVelocity = RPM.of(_flywheelPhysicsSim.getAngularVelocityRPM());
     inputs._leftFlywheelMotorVoltage = Volts.of(_appliedVoltage);
     inputs._leftFlywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps() / 2.0);
 
     // Right flywheel motor (follower) - same speed, split current
     inputs._rightFlywheelMotorTemperature = Celsius.of(45.0);
-    inputs._rightFlywheelMotorVelocity =
-        RotationsPerSecond.of(_flywheelPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._rightFlywheelMotorVelocity = RPM.of(_flywheelPhysicsSim.getAngularVelocityRPM());
     inputs._rightFlywheelMotorVoltage = Volts.of(_appliedVoltage);
     inputs._rightFlywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps() / 2.0);
   }
@@ -156,7 +154,7 @@ public class SimShooterIO implements ShooterIO {
   @Override
   public void setFlywheelSpeed(AngularVelocity speed) {
     _velocityControlActive = true;
-    _targetVelocityRPM = speed.in(RotationsPerSecond) * 60.0;
+    _targetVelocityRPM = speed.in(RPM);
 
     // Also set through the actual motor controller for completeness
     _leftFlywheelMotor

@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -153,9 +155,9 @@ public class FeederCommands {
                   double voltage = timer.get() * FF_RAMP_RATE;
                   feeder.runCharacterization(Volts.of(voltage));
 
-                  // Sample velocity in rad/s, convert to RPM for the regression
+                  // Sample velocity in rad/s, convert to RPM using WPILib units
                   double velocityRadPerSec = feeder.getFFCharacterizationVelocity();
-                  double velocityRPM = velocityRadPerSec * 60.0 / (2.0 * Math.PI);
+                  double velocityRPM = RadiansPerSecond.of(velocityRadPerSec).in(RPM);
                   velocitySamples.add(velocityRPM);
                   voltageSamples.add(voltage);
                 },

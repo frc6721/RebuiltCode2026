@@ -289,11 +289,11 @@ public class FuelVisualizer {
    * @param angle The hood angle
    */
   public void updateTrajectory(LinearVelocity linearVel, Angle angle) {
-    // Convert to RPM to check against threshold
+    // Convert linear velocity back to angular velocity to check RPM threshold
     double linearVelMps = linearVel.in(MetersPerSecond);
     double radiusMeters = ShooterConstants.FuelSim.WHEEL_DIAMETER.in(Meters) / 2.0;
     double angularVelRadPerSec = linearVelMps / radiusMeters;
-    double rpm = (angularVelRadPerSec * 60.0) / (2.0 * Math.PI);
+    double rpm = RadiansPerSecond.of(angularVelRadPerSec).in(RPM);
 
     // If flywheel speed is below threshold, clear trajectory and return
     if (rpm < ShooterConstants.FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM)) {

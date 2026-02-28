@@ -256,9 +256,9 @@ public class IntakeConstants {
     Logger.recordOutput("Constants/Intake/GearRatio/Roller", Mechanical.ROLLER_GEAR_RATIO);
     Logger.recordOutput("Constants/Intake/PinionDiameter_m", Mechanical.PINION_DIAMETER_METERS);
     Logger.recordOutput(
-        "Constants/Intake/MetersPerPinionRotation", Mechanical.METERS_PER_PINION_ROTATION);
+        "Constants/Intake/MetersPerPinionRotation_m", Mechanical.METERS_PER_PINION_ROTATION);
     Logger.recordOutput(
-        "Constants/Intake/MetersPerMotorRotation", Mechanical.METERS_PER_MOTOR_ROTATION);
+        "Constants/Intake/MetersPerMotorRotation_m", Mechanical.METERS_PER_MOTOR_ROTATION);
 
     // Simulation mechanical constants
     Logger.recordOutput("Constants/Intake/CarriageMass_kg", Mechanical.CARRIAGE_MASS_KG);
@@ -266,7 +266,7 @@ public class IntakeConstants {
     Logger.recordOutput("Constants/Intake/MaxTravel_m", Mechanical.MAX_TRAVEL_METERS);
 
     // Deadband
-    Logger.recordOutput("Constants/Intake/PositionDeadband", Software.POSITION_DEADBAND);
+    Logger.recordOutput("Constants/Intake/PositionDeadband_m", Software.POSITION_DEADBAND);
 
     // Current limits
     Logger.recordOutput("Constants/Intake/CurrentLimit/LinearSmart_A", CurrentLimits.LINEAR_SMART);

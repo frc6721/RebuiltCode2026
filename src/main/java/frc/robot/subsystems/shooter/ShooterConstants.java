@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -51,13 +50,11 @@ public class ShooterConstants {
 
   /** Velocity and acceleration limits for the flywheel. */
   public static class Limits {
-    public static final AngularVelocity MIN_SPEED = RevolutionsPerSecond.of(100 / 60.0); // 100 RPM
+    public static final AngularVelocity MIN_SPEED = RPM.of(100);
 
-    public static final AngularVelocity MAX_SPEED =
-        RevolutionsPerSecond.of(5600 / 60.0); // 5600 RPM
+    public static final AngularVelocity MAX_SPEED = RPM.of(5600);
 
-    public static final AngularAcceleration MAX_ACCEL =
-        RevolutionsPerSecond.per(Second).of(3000 / 60.0); // 5600 RPM/s
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(3000); // 3000 RPM/s
   }
 
   /** PID and feedforward tuning constants. */
@@ -236,7 +233,7 @@ public class ShooterConstants {
     Logger.recordOutput("Constants/Shooter/FlywheelGearRatio", Mechanical.GEAR_RATIO);
     Logger.recordOutput(
         "Constants/Shooter/FlywheelMOI_kgm2", Mechanical.MOI.in(KilogramSquareMeters));
-    Logger.recordOutput("Constants/Shooter/SpeedTolerance", Software.PID_TOLERANCE);
+    Logger.recordOutput("Constants/Shooter/SpeedTolerance_pct", Software.PID_TOLERANCE);
     Logger.recordOutput("Constants/Shooter/FlywheelInverted", Mechanical.INVERTED);
 
     Logger.recordOutput("Constants/Shooter/CurrentLimit/Smart_A", CurrentLimits.SMART);
@@ -249,7 +246,7 @@ public class ShooterConstants {
     Logger.recordOutput("Constants/Shooter/FuelSim/SideOffset_m", FuelSim.SIDE_OFFSET.in(Meters));
     Logger.recordOutput("Constants/Shooter/FuelSim/HoodAngle_deg", FuelSim.HOOD_ANGLE.in(Degrees));
     Logger.recordOutput(
-        "Constants/Shooter/FuelSim/RPMThreshold", FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM));
+        "Constants/Shooter/FuelSim/RPMThreshold_RPM", FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM));
     Logger.recordOutput(
         "Constants/Shooter/FuelSim/LaunchInterval_s", FuelSim.LAUNCH_INTERVAL.in(Seconds));
     Logger.recordOutput(

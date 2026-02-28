@@ -3,7 +3,6 @@ package frc.robot.subsystems.feeder.io;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.util.SparkUtil.tryUntilOk;
@@ -97,16 +96,14 @@ public class RealFeederIO implements FeederIO {
   public void updateInputs(FeederIOInputs inputs) {
     // Left feeder motor (leader)
     inputs._leftFeederMotorTemperature = Celsius.of(_leftFeederMotor.getMotorTemperature());
-    inputs._leftFeederMotorVelocity =
-        RotationsPerSecond.of(_leftFeederMotor.getEncoder().getVelocity() / 60.0);
+    inputs._leftFeederMotorVelocity = RPM.of(_leftFeederMotor.getEncoder().getVelocity());
     inputs._leftFeederMotorVoltage =
         Volts.of(_leftFeederMotor.getAppliedOutput() * _leftFeederMotor.getBusVoltage());
     inputs._leftFeederMotorCurrent = Amps.of(_leftFeederMotor.getOutputCurrent());
 
     // Right feeder motor (follower)
     inputs._rightFeederMotorTemperature = Celsius.of(_rightFeederMotor.getMotorTemperature());
-    inputs._rightFeederMotorVelocity =
-        RotationsPerSecond.of(_rightFeederMotor.getEncoder().getVelocity() / 60.0);
+    inputs._rightFeederMotorVelocity = RPM.of(_rightFeederMotor.getEncoder().getVelocity());
     inputs._rightFeederMotorVoltage =
         Volts.of(_rightFeederMotor.getAppliedOutput() * _rightFeederMotor.getBusVoltage());
     inputs._rightFeederMotorCurrent = Amps.of(_rightFeederMotor.getOutputCurrent());
@@ -120,7 +117,7 @@ public class RealFeederIO implements FeederIO {
    */
   @Override
   public void setFeederVelocity(AngularVelocity speed) {
-    double targetRPM = speed.in(RotationsPerSecond) * 60.0;
+    double targetRPM = speed.in(RPM);
 
     // Manually calculate feedforward voltage: V = kS * sign(velocity) + kV * velocity
     double kS = FeederConstants.getFeederKS();

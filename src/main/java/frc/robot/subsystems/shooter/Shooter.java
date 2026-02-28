@@ -7,7 +7,6 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Translation3d;
@@ -94,13 +93,11 @@ public class Shooter extends SubsystemBase {
         "Shooter/FlywheelSpeed/Current_RadPerSec",
         _shooterInputs._leftFlywheelMotorVelocity.in(RadiansPerSecond));
     Logger.recordOutput(
-        "Shooter/FlywheelSpeed/Current_RPM",
-        _shooterInputs._leftFlywheelMotorVelocity.in(RevolutionsPerSecond) * 60);
+        "Shooter/FlywheelSpeed/Current_RPM", _shooterInputs._leftFlywheelMotorVelocity.in(RPM));
 
     Logger.recordOutput(
         "Shooter/FlywheelSpeed/Desired_RadPerSec", _targetFlywheelSpeed.in(RadiansPerSecond));
-    Logger.recordOutput(
-        "Shooter/FlywheelSpeed/Desired_RPM", _targetFlywheelSpeed.in(RevolutionsPerSecond) * 60);
+    Logger.recordOutput("Shooter/FlywheelSpeed/Desired_RPM", _targetFlywheelSpeed.in(RPM));
     Logger.recordOutput("Shooter/AtTargetSpeed", this.areFlywheelsAtTargetSpeed());
 
     // ==================== FUEL SIM INTEGRATION ====================
@@ -128,7 +125,7 @@ public class Shooter extends SubsystemBase {
     boolean atTargetSpeed = areFlywheelsAtTargetSpeed();
 
     // Check target speed is above threshold (compare using same units)
-    double targetRPM = _targetFlywheelSpeed.in(RevolutionsPerSecond) * 60;
+    double targetRPM = _targetFlywheelSpeed.in(RPM);
     boolean aboveThreshold = targetRPM > ShooterConstants.FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM);
 
     // Check hopper has fuel
@@ -206,8 +203,8 @@ public class Shooter extends SubsystemBase {
     double speedRPM = ShooterConstants.DistanceMap.SPEED_MAP.get(distanceMeters);
 
     // Clamp to min/max speeds for safety
-    double minRPM = ShooterConstants.Limits.MIN_SPEED.in(RevolutionsPerSecond) * 60.0;
-    double maxRPM = ShooterConstants.Limits.MAX_SPEED.in(RevolutionsPerSecond) * 60.0;
+    double minRPM = ShooterConstants.Limits.MIN_SPEED.in(RPM);
+    double maxRPM = ShooterConstants.Limits.MAX_SPEED.in(RPM);
     speedRPM = Math.max(minRPM, Math.min(maxRPM, speedRPM));
 
     // Log the calculation for debugging

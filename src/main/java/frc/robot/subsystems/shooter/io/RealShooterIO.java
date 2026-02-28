@@ -3,7 +3,6 @@ package frc.robot.subsystems.shooter.io;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.util.SparkUtil.tryUntilOk;
@@ -88,16 +87,14 @@ public class RealShooterIO implements ShooterIO {
   public void updateInputs(ShooterIOInputs inputs) {
     // Left flywheel motor (leader)
     inputs._leftFlywheelMotorTemperature = Celsius.of(_leftFlywheelMotor.getMotorTemperature());
-    inputs._leftFlywheelMotorVelocity =
-        RotationsPerSecond.of(_leftFlywheelMotor.getEncoder().getVelocity() / 60.0);
+    inputs._leftFlywheelMotorVelocity = RPM.of(_leftFlywheelMotor.getEncoder().getVelocity());
     inputs._leftFlywheelMotorVoltage =
         Volts.of(_leftFlywheelMotor.getAppliedOutput() * _leftFlywheelMotor.getBusVoltage());
     inputs._leftFlywheelMotorCurrent = Amps.of(_leftFlywheelMotor.getOutputCurrent());
 
     // Right flywheel motor (follower)
     inputs._rightFlywheelMotorTemperature = Celsius.of(_rightFlywheelMotor.getMotorTemperature());
-    inputs._rightFlywheelMotorVelocity =
-        RotationsPerSecond.of(_rightFlywheelMotor.getEncoder().getVelocity() / 60.0);
+    inputs._rightFlywheelMotorVelocity = RPM.of(_rightFlywheelMotor.getEncoder().getVelocity());
     inputs._rightFlywheelMotorVoltage =
         Volts.of(_rightFlywheelMotor.getAppliedOutput() * _rightFlywheelMotor.getBusVoltage());
     inputs._rightFlywheelMotorCurrent = Amps.of(_rightFlywheelMotor.getOutputCurrent());
@@ -107,7 +104,7 @@ public class RealShooterIO implements ShooterIO {
 
   @Override
   public void setFlywheelSpeed(AngularVelocity speed) {
-    double targetRPM = speed.in(RotationsPerSecond) * 60.0;
+    double targetRPM = speed.in(RPM);
 
     // Manually calculate feedforward voltage: V = kS * sign(velocity) + kV * velocity
     double kS = ShooterConstants.getFlywheelKS();

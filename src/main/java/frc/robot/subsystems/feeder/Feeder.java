@@ -1,7 +1,7 @@
 package frc.robot.subsystems.feeder;
 
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -87,13 +87,11 @@ public class Feeder extends SubsystemBase {
         "Feeder/FeederSpeed/Current_RadPerSec",
         _feederInputs._leftFeederMotorVelocity.in(RadiansPerSecond));
     Logger.recordOutput(
-        "Feeder/FeederSpeed/Current_RPM",
-        _feederInputs._leftFeederMotorVelocity.in(RevolutionsPerSecond) * 60);
+        "Feeder/FeederSpeed/Current_RPM", _feederInputs._leftFeederMotorVelocity.in(RPM));
 
     Logger.recordOutput(
         "Feeder/FeederSpeed/Desired_RadPerSec", _targetFeederSpeed.in(RadiansPerSecond));
-    Logger.recordOutput(
-        "Feeder/FeederSpeed/Desired_RPM", _targetFeederSpeed.in(RevolutionsPerSecond) * 60);
+    Logger.recordOutput("Feeder/FeederSpeed/Desired_RPM", _targetFeederSpeed.in(RPM));
     Logger.recordOutput("Feeder/AtTargetSpeed", this.areFeederWheelsAtTargetSpeed());
   }
 

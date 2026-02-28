@@ -3,7 +3,7 @@ package frc.robot.subsystems.feeder.io;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.sim.SparkMaxSim;
@@ -139,15 +139,13 @@ public class SimFeederIO implements FeederIO {
     // --- Read back the simulated sensor values ---
     // Left feeder motor (leader)
     inputs._leftFeederMotorTemperature = Celsius.of(35.0);
-    inputs._leftFeederMotorVelocity =
-        RotationsPerSecond.of(_feederPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._leftFeederMotorVelocity = RPM.of(_feederPhysicsSim.getAngularVelocityRPM());
     inputs._leftFeederMotorVoltage = Volts.of(_appliedVoltage);
     inputs._leftFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
 
     // Right feeder motor (follower) - same speed, split current
     inputs._rightFeederMotorTemperature = Celsius.of(35.0);
-    inputs._rightFeederMotorVelocity =
-        RotationsPerSecond.of(_feederPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._rightFeederMotorVelocity = RPM.of(_feederPhysicsSim.getAngularVelocityRPM());
     inputs._rightFeederMotorVoltage = Volts.of(_appliedVoltage);
     inputs._rightFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
   }
@@ -155,7 +153,7 @@ public class SimFeederIO implements FeederIO {
   @Override
   public void setFeederVelocity(AngularVelocity speed) {
     _velocityControlActive = true;
-    _targetVelocityRPM = speed.in(RotationsPerSecond) * 60.0;
+    _targetVelocityRPM = speed.in(RPM);
   }
 
   @Override

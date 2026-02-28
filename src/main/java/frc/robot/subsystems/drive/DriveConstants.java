@@ -78,7 +78,7 @@ public class DriveConstants {
   public static final double driveEncoderPositionFactor =
       2 * Math.PI / driveMotorReduction; // Rotor Rotations -> Wheel Radians
   public static final double driveEncoderVelocityFactor =
-      (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
+      driveEncoderPositionFactor / 60.0; // Rotor RPM -> Wheel Rad/Sec
 
   // Drive PID configuration
   // TODO: Tune these after initial setup by following the instructions
@@ -102,7 +102,8 @@ public class DriveConstants {
   // Turn encoder configuration
   public static final boolean turnEncoderInverted = false;
   public static final double turnEncoderPositionFactor = 2 * Math.PI; // Rotations -> Radians
-  public static final double turnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
+  public static final double turnEncoderVelocityFactor =
+      turnEncoderPositionFactor / 60.0; // RPM -> Rad/Sec
 
   // Turn PID configuration
   // TODO: Tune these after initial setup by following the instructions
