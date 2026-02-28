@@ -2,6 +2,8 @@ package frc.robot.subsystems.feeder.io;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Celsius;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.sim.SparkMaxSim;
@@ -11,16 +13,25 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.subsystems.feeder.FeederConstants;
 
 /**
  * Simulation implementation of FeederIO using two SparkMax motors in leader-follower configuration.
  *
- * <p>This is a simple simulation without physics - it just provides voltage and current logging for
- * both feeder motors. The feeder doesn't need realistic physics since it's just duty cycle
- * controlled.
+ * <p>This class simulates:
+ *
+ * <ul>
+ *   <li><b>Feeder wheels:</b> Uses WPILib's FlywheelSim for realistic physics
+ *   <li><b>Motors:</b> Uses REV SparkMaxSim for realistic motor behavior
+ *   <li><b>Velocity Control:</b> Feedforward + proportional feedback for velocity targeting
+ *   <li><b>Leader-follower:</b> Right motor follows left motor inverted
+ * </ul>
  */
 public class SimFeederIO implements FeederIO {
 
@@ -32,13 +43,19 @@ public class SimFeederIO implements FeederIO {
   private final SparkMaxSim _leftFeederSim;
   private final SparkMaxSim _rightFeederSim;
 
+  // WPILib physics simulation for the feeder wheels
+  private final FlywheelSim _feederPhysicsSim;
+
   // Control state
-  private double _dutyCycle = 0.0;
+  private double _appliedVoltage = 0.0;
+  private boolean _velocityControlActive = false;
+  private double _targetVelocityRPM = 0.0;
 
   /**
-   * Creates a new SimFeederIO with two simulated motors in leader-follower configuration.
+   * Creates a new SimFeederIO with physics simulation.
    *
-   * <p>Initializes simulated motors using constants from FeederConstants.
+   * <p>Initializes simulated motors and the flywheel physics simulation using constants from
+   * FeederConstants.
    */
   public SimFeederIO() {
     // Create simulated motors (using arbitrary CAN IDs since they don't matter in sim)
@@ -52,6 +69,13 @@ public class SimFeederIO implements FeederIO {
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
         .voltageCompensation(12.0);
+
+    // Configure PID for velocity control (using simulation PID values)
+    leftConfig.closedLoop.pidf(
+        FeederConstants.getFeederKP(),
+        FeederConstants.getFeederKI(),
+        FeederConstants.getFeederKD(),
+        FeederConstants.getFeederFF());
 
     _leftFeederMotor.configure(
         leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -67,44 +91,84 @@ public class SimFeederIO implements FeederIO {
     // Create REV simulation wrappers
     _leftFeederSim = new SparkMaxSim(_leftFeederMotor, FeederConstants.Mechanical.MOTOR);
     _rightFeederSim = new SparkMaxSim(_rightFeederMotor, FeederConstants.Mechanical.MOTOR);
+
+    // Create the flywheel physics simulation
+    // This models the feeder wheel + belt + gearbox as a spinning mass
+    _feederPhysicsSim =
+        new FlywheelSim(
+            LinearSystemId.createFlywheelSystem(
+                FeederConstants.Mechanical.MOTOR,
+                FeederConstants.Mechanical.MOI.in(KilogramSquareMeters),
+                FeederConstants.Mechanical.GEAR_RATIO),
+            FeederConstants.Mechanical.MOTOR);
   }
 
   @Override
   public void updateInputs(FeederIOInputs inputs) {
-    // Calculate simulated values based on duty cycle
-    double appliedVoltage = _dutyCycle * RoboRioSim.getVInVoltage();
+    // --- Calculate applied voltage ---
+    if (_velocityControlActive) {
+      // Manually calculate feedforward: V = kS * sign(velocity) + kV * velocity
+      double kS = FeederConstants.getFeederKS();
+      double kV = FeederConstants.getFeederKV();
+      double ffVolts = kS * Math.signum(_targetVelocityRPM) + kV * _targetVelocityRPM;
 
-    // Approximate current draw based on duty cycle (split between two motors)
-    double simulatedCurrentPerMotor = Math.abs(_dutyCycle) * 7.5; // ~15A total at full power
+      // Add proportional feedback for error correction
+      double currentRPM = _feederPhysicsSim.getAngularVelocityRPM();
+      double error = _targetVelocityRPM - currentRPM;
+      double pVolts = error * FeederConstants.getFeederKP() * 100.0;
 
-    // Update battery simulation
+      _appliedVoltage = Math.max(-12.0, Math.min(12.0, ffVolts + pVolts));
+    }
+
+    // --- Update the flywheel physics simulation ---
+    _feederPhysicsSim.setInputVoltage(_appliedVoltage);
+    _feederPhysicsSim.update(0.02);
+
+    // Update battery simulation based on current draw
     RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(simulatedCurrentPerMotor * 2.0));
+        BatterySim.calculateDefaultBatteryLoadedVoltage(_feederPhysicsSim.getCurrentDrawAmps()));
 
-    // Update both SparkMax simulations
+    // Update both SparkMax simulations with the physics results
     _leftFeederSim.setBusVoltage(RoboRioSim.getVInVoltage());
     _leftFeederSim.iterate(
-        _dutyCycle * 5000.0, // Approximate RPM at full speed
-        RoboRioSim.getVInVoltage(),
-        0.02);
+        _feederPhysicsSim.getAngularVelocityRPM(), RoboRioSim.getVInVoltage(), 0.02);
 
     _rightFeederSim.setBusVoltage(RoboRioSim.getVInVoltage());
-    _rightFeederSim.iterate(_dutyCycle * 5000.0, RoboRioSim.getVInVoltage(), 0.02);
+    _rightFeederSim.iterate(
+        _feederPhysicsSim.getAngularVelocityRPM(), RoboRioSim.getVInVoltage(), 0.02);
 
-    // Populate inputs - left motor (leader)
+    // --- Read back the simulated sensor values ---
+    // Left feeder motor (leader)
     inputs._leftFeederMotorTemperature = Celsius.of(35.0);
-    inputs._leftFeederMotorVoltage = Volts.of(appliedVoltage);
-    inputs._leftFeederMotorCurrent = Amps.of(simulatedCurrentPerMotor);
+    inputs._leftFeederMotorVelocity =
+        RotationsPerSecond.of(_feederPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._leftFeederMotorVoltage = Volts.of(_appliedVoltage);
+    inputs._leftFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
 
-    // Right motor (follower)
+    // Right feeder motor (follower) - same speed, split current
     inputs._rightFeederMotorTemperature = Celsius.of(35.0);
-    inputs._rightFeederMotorVoltage = Volts.of(appliedVoltage);
-    inputs._rightFeederMotorCurrent = Amps.of(simulatedCurrentPerMotor);
+    inputs._rightFeederMotorVelocity =
+        RotationsPerSecond.of(_feederPhysicsSim.getAngularVelocityRPM() / 60.0);
+    inputs._rightFeederMotorVoltage = Volts.of(_appliedVoltage);
+    inputs._rightFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
   }
 
   @Override
   public void setMotorSpeed(double speed) {
-    _dutyCycle = Math.max(-1.0, Math.min(1.0, speed));
-    _leftFeederMotor.set(_dutyCycle);
+    _velocityControlActive = false;
+    _appliedVoltage = Math.max(-1.0, Math.min(1.0, speed)) * 12.0;
+    _leftFeederMotor.set(speed);
+  }
+
+  @Override
+  public void setFeederVelocity(AngularVelocity speed) {
+    _velocityControlActive = true;
+    _targetVelocityRPM = speed.in(RotationsPerSecond) * 60.0;
+  }
+
+  @Override
+  public void setMotorVoltage(Voltage voltage) {
+    _velocityControlActive = false;
+    _appliedVoltage = voltage.in(Volts);
   }
 }
