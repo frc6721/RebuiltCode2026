@@ -37,43 +37,7 @@ public class FeederCommands {
 
   // ==================== OPEN-LOOP (DUTY CYCLE) COMMANDS ====================
 
-  /**
-   * Creates a command to run the feeder using joystick input with deadband applied. Useful for
-   * manual testing.
-   *
-   * @param feeder The feeder subsystem
-   * @param speedSupplier Joystick value supplier (-1.0 to 1.0)
-   * @return A command that continuously runs the feeder based on joystick input
-   */
-  public static Command runFeederWithJoystick(Feeder feeder, DoubleSupplier speedSupplier) {
-    return Commands.run(
-        () -> {
-          // Apply deadband to joystick input (similar to DriveCommands)
-          double speed = MathUtil.applyDeadband(speedSupplier.getAsDouble(), DEADBAND);
 
-          // Set the motor speed (duty cycle from -1.0 to 1.0)
-          feeder.setFeederSpeed(speed);
-        },
-        feeder);
-  }
-
-  /**
-   * Creates a command to run the feeder at a fixed duty cycle. Most common way to control the
-   * feeder in shooting sequences when precise speed doesn't matter.
-   *
-   * <p>Start with lower speeds (0.5-0.7) and increase if needed. Too fast can cause jams.
-   *
-   * @param feeder The feeder subsystem
-   * @param speed Fixed duty cycle from -1.0 (full reverse) to +1.0 (full forward into shooter)
-   * @return A command that runs the feeder at the specified speed
-   */
-  public static Command runFeederAtPercentOutput(Feeder feeder, double speed) {
-    return Commands.run(
-        () -> {
-          feeder.setFeederSpeed(speed);
-        },
-        feeder);
-  }
 
   // ==================== CLOSED-LOOP (VELOCITY) COMMANDS ====================
 
@@ -225,5 +189,9 @@ public class FeederCommands {
                   System.out.println("\tkV (Volts per RPM): " + formatter.format(kV));
                   System.out.println("Enter these values into FeederConstants.Feedforward.Real");
                 }));
+  }
+
+public static Command runFeederAtVoltage(Feeder feeder, double voltage) {
+    return Commands.runOnce(() -> feeder.runFeederAtVoltage(Volts.of(voltage)), feeder);
   }
 }

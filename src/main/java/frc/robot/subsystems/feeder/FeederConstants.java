@@ -71,8 +71,6 @@ public class FeederConstants {
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kD", 0.0002);
-      public static final LoggedNetworkNumber FF =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kFF", 0.0);
     }
 
     /** Simulation PID values */
@@ -83,8 +81,7 @@ public class FeederConstants {
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Sim/kI", 0.0);
       public static final LoggedNetworkNumber KD =
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Sim/kD", 0.0);
-      public static final LoggedNetworkNumber FF =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Sim/kFF", 0.0);
+
     }
   }
 
@@ -131,12 +128,6 @@ public class FeederConstants {
   public static double getFeederKD() {
     return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.KD.get() : PID.Real.KD.get();
   }
-
-  /** Returns the appropriate PID FF based on current mode */
-  public static double getFeederFF() {
-    return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.FF.get() : PID.Real.FF.get();
-  }
-
   /** Returns the appropriate feedforward kS based on current mode */
   public static double getFeederKS() {
     return Constants.currentMode == Constants.Mode.SIM

@@ -71,11 +71,10 @@ public class SimFeederIO implements FeederIO {
         .voltageCompensation(12.0);
 
     // Configure PID for velocity control (using simulation PID values)
-    leftConfig.closedLoop.pidf(
+    leftConfig.closedLoop.pid(
         FeederConstants.getFeederKP(),
         FeederConstants.getFeederKI(),
-        FeederConstants.getFeederKD(),
-        FeederConstants.getFeederFF());
+        FeederConstants.getFeederKD());
 
     _leftFeederMotor.configure(
         leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -151,13 +150,6 @@ public class SimFeederIO implements FeederIO {
         RotationsPerSecond.of(_feederPhysicsSim.getAngularVelocityRPM() / 60.0);
     inputs._rightFeederMotorVoltage = Volts.of(_appliedVoltage);
     inputs._rightFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
-  }
-
-  @Override
-  public void setMotorSpeed(double speed) {
-    _velocityControlActive = false;
-    _appliedVoltage = Math.max(-1.0, Math.min(1.0, speed)) * 12.0;
-    _leftFeederMotor.set(speed);
   }
 
   @Override

@@ -99,15 +99,6 @@ public class Feeder extends SubsystemBase {
 
   // ==================== DUTY CYCLE CONTROL ====================
 
-  /**
-   * Sets the feeder motor speed using open-loop duty cycle control. Use for simple testing or when
-   * precise speed doesn't matter.
-   *
-   * @param speed Duty cycle from -1.0 (full reverse) to +1.0 (full forward into shooter)
-   */
-  public void setFeederSpeed(double speed) {
-    _feederIO.setMotorSpeed(speed);
-  }
 
   // ==================== VELOCITY CONTROL ====================
 
@@ -209,6 +200,6 @@ public class Feeder extends SubsystemBase {
    */
   public void stop() {
     _targetFeederSpeed = RadiansPerSecond.of(0);
-    _feederIO.setMotorSpeed(0.0);
+    _feederIO.setMotorVoltage(Volts.of(0.0));
   }
 }

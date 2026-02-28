@@ -112,11 +112,6 @@ public class RealFeederIO implements FeederIO {
     inputs._rightFeederMotorCurrent = Amps.of(_rightFeederMotor.getOutputCurrent());
   }
 
-  @Override
-  public void setMotorSpeed(double speed) {
-    // Only set on leader; follower follows automatically
-    _leftFeederMotor.set(speed);
-  }
 
   /**
    * Sets the feeder to a target velocity using the SparkMax's on-board PID + Motion Magic.

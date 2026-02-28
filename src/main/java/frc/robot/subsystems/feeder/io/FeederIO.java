@@ -27,14 +27,6 @@ public interface FeederIO {
   public default void updateInputs(FeederIOInputs inputs) {}
 
   /**
-   * Sets the feeder motor speed as a duty cycle percentage. Use for simple open-loop control or
-   * manual testing.
-   *
-   * @param speed Duty cycle from -1.0 (full reverse) to 1.0 (full forward)
-   */
-  public default void setMotorSpeed(double speed) {}
-
-  /**
    * Sets the feeder motor to a target velocity using closed-loop PID control with feedforward. The
    * motor controller handles maintaining the speed using its on-board PID + Motion Magic profiling.
    *
