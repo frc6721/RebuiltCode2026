@@ -99,7 +99,6 @@ public class Feeder extends SubsystemBase {
 
   // ==================== DUTY CYCLE CONTROL ====================
 
-
   // ==================== VELOCITY CONTROL ====================
 
   /**

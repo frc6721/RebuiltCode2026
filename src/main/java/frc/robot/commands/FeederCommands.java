@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,7 +11,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.DoubleSupplier;
 
 /**
  * Factory class for creating feeder-related commands.
@@ -36,8 +34,6 @@ public class FeederCommands {
   private static final double FF_RAMP_RATE = 0.1; // Volts per second
 
   // ==================== OPEN-LOOP (DUTY CYCLE) COMMANDS ====================
-
-
 
   // ==================== CLOSED-LOOP (VELOCITY) COMMANDS ====================
 
@@ -191,7 +187,7 @@ public class FeederCommands {
                 }));
   }
 
-public static Command runFeederAtVoltage(Feeder feeder, double voltage) {
+  public static Command runFeederAtVoltage(Feeder feeder, double voltage) {
     return Commands.runOnce(() -> feeder.runFeederAtVoltage(Volts.of(voltage)), feeder);
   }
 }

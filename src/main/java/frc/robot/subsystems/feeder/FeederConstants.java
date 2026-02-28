@@ -81,7 +81,6 @@ public class FeederConstants {
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Sim/kI", 0.0);
       public static final LoggedNetworkNumber KD =
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Sim/kD", 0.0);
-
     }
   }
 
