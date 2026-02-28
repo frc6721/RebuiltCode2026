@@ -257,7 +257,7 @@ public class ShooterCommands {
         .alongWith(
             Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
                 .withTimeout(2.0)
-                .andThen(FeederCommands.runFeederAtPercentOutput(feeder, 0.75).repeatedly()))
+                .andThen(FeederCommands.runFeederAtVoltage(feeder, 0.75).repeatedly()))
         .finallyDo(
             () -> {
               shooter.stopFlywheels();
