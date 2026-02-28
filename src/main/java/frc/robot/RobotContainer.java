@@ -297,17 +297,19 @@ public class RobotContainer {
 
     // Dynamic shooting with auto-aiming:
     // - Continuously adjusts flywheel speed based on distance to alliance hub
-    // - Automatically rotates robot to face the hub
+    // - Automatically rotates robot so the BACK (shooter) faces the hub
     // - Driver maintains full control of translation (forward/back, left/right)
     controller
         .rightBumper()
         .whileTrue(
             // Combine auto-aim driving with shooting sequence
+            // useBackOfRobot = true because the shooter is rear-mounted
             DriveCommands.joystickDriveAtAngle(
                     drive,
                     () -> -controller.getLeftY(),
                     () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToAllianceHub())
+                    () -> RobotState.getInstance().getAngleToAllianceHub(),
+                    true) // true = aim back of robot (shooter) at the hub
                 .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
         .onFalse(
             FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));

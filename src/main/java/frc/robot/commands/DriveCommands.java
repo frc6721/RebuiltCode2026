@@ -108,12 +108,35 @@ public class DriveCommands {
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
    * absolute rotation with a joystick.
+   *
+   * <p>This overload defaults to aiming with the front of the robot.
    */
   public static Command joystickDriveAtAngle(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> rotationSupplier) {
+    return joystickDriveAtAngle(drive, xSupplier, ySupplier, rotationSupplier, false);
+  }
+
+  /**
+   * Field relative drive command using joystick for linear control and PID for angular control.
+   * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
+   * absolute rotation with a joystick.
+   *
+   * @param drive The drive subsystem
+   * @param xSupplier Joystick X axis (left/right translation)
+   * @param ySupplier Joystick Y axis (forward/back translation)
+   * @param rotationSupplier The target field-relative angle to face
+   * @param useBackOfRobot If true, rotates the target 180° so the back of the robot faces the
+   *     target instead of the front. Useful for rear-mounted mechanisms (e.g. shooter).
+   */
+  public static Command joystickDriveAtAngle(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Rotation2d> rotationSupplier,
+      boolean useBackOfRobot) {
 
     // Create PID controller
     ProfiledPIDController angleController =
@@ -132,10 +155,16 @@ public class DriveCommands {
               Translation2d linearVelocity =
                   getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
+              // Get the target angle, rotating 180° if we want the back to face the target
+              Rotation2d targetAngle = rotationSupplier.get();
+              if (useBackOfRobot) {
+                targetAngle = targetAngle.plus(Rotation2d.kPi);
+              }
+
               // Calculate angular speed
               double omega =
                   angleController.calculate(
-                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+                      drive.getRotation().getRadians(), targetAngle.getRadians());
 
               // Convert to field relative speeds & send command
               ChassisSpeeds speeds =

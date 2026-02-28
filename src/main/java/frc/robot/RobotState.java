@@ -303,10 +303,25 @@ public class RobotState {
    * );
    * </pre>
    *
-   * @return The heading the robot should face to point at the alliance hub
+   * @return The heading the robot should face to point the front of the robot at the alliance hub
    */
   @AutoLogOutput(key = "RobotState/AngleToAllianceHub")
   public Rotation2d getAngleToAllianceHub() {
+    return getAngleToAllianceHub(false);
+  }
+
+  /**
+   * Returns the angle the robot should face to point at the alliance hub.
+   *
+   * <p>When {@code useBack} is true, the returned angle is rotated 180° so the <b>back</b> of the
+   * robot faces the hub. This is useful when the shooter is mounted on the back of the robot and
+   * needs to face the target while the driver drives "forward" away from the hub.
+   *
+   * @param useBack If true, aims the back of the robot at the hub (e.g. for a rear-mounted
+   *     shooter). If false, aims the front of the robot at the hub.
+   * @return The heading the robot should face to point the desired end at the alliance hub
+   */
+  public Rotation2d getAngleToAllianceHub(boolean useBack) {
     // Get current robot position
     Pose2d currentPose = getEstimatedPose();
 
@@ -319,7 +334,15 @@ public class RobotState {
 
     // Calculate the angle using atan2
     // This gives us the direction we need to face to point at the hub
-    return new Rotation2d(robotToHub.getX(), robotToHub.getY());
+    Rotation2d angle = new Rotation2d(robotToHub.getX(), robotToHub.getY());
+
+    // If useBack is true, rotate 180° so the back of the robot faces the hub.
+    // This is needed when the shooter is rear-mounted.
+    if (useBack) {
+      angle = angle.plus(Rotation2d.kPi);
+    }
+
+    return angle;
   }
 
   // ==================== ODOMETRY UPDATES ====================
