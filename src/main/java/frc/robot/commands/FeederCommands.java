@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -189,7 +190,7 @@ public class FeederCommands {
                 }));
   }
 
-  public static Command runFeederAtVoltage(Feeder feeder, double voltage) {
-    return Commands.runOnce(() -> feeder.runFeederAtVoltage(Volts.of(voltage)), feeder);
+  public static Command runFeederAtVoltage(Feeder feeder, Voltage voltage) {
+    return Commands.runOnce(() -> feeder.runFeederAtVoltage(voltage), feeder);
   }
 }

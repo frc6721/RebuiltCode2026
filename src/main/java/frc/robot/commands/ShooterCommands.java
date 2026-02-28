@@ -259,7 +259,7 @@ public class ShooterCommands {
         .alongWith(
             Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
                 .withTimeout(2.0)
-                .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(1000))))
+                .andThen(FeederCommands.runFeederAtVoltage(feeder, Volts.of(8))))
         .withName("ShootToHubSequence");
   }
 }
