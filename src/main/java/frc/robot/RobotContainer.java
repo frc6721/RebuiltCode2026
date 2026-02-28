@@ -374,6 +374,17 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
+    // D-Pad up: Teleport the robot to directly in front of the alliance hub
+    // Useful for quickly positioning the robot for shooting tests.
+    // AllianceFlipUtil (inside RobotState) automatically handles red vs. blue alliance.
+    controller
+        .pov(0)
+        .onTrue(
+            Commands.runOnce(
+                    () -> drive.setPose(RobotState.getInstance().getPoseInFrontOfAllianceHub()),
+                    drive)
+                .ignoringDisable(true));
+
     // controller
     //     .x()
     //     .onTrue(

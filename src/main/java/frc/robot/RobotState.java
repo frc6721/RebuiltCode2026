@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.Matrix;
@@ -269,6 +270,39 @@ public class RobotState {
     // oppTopCenterPoint is the opposing hub from blue perspective
     // Flip it if we're on red alliance
     return AllianceFlipUtil.apply(FieldConstants.Hub.oppTopCenterPoint);
+  }
+
+  /**
+   * Returns the Pose2d directly in front of the alliance hub, 6 feet toward the alliance wall.
+   *
+   * <p>The position is calculated by taking the hub's center X and subtracting 6 feet (toward the
+   * blue alliance wall). The robot is oriented to face the hub (pointing in the +X direction toward
+   * it). {@link AllianceFlipUtil} automatically mirrors the pose for red alliance.
+   *
+   * <p><b>Usage:</b>
+   *
+   * <pre>
+   * drive.setPose(RobotState.getInstance().getPoseInFrontOfAllianceHub());
+   * </pre>
+   *
+   * @return A Pose2d 6 feet in front of the alliance hub, facing the hub
+   */
+  public Pose2d getPoseInFrontOfAllianceHub() {
+    // Distance to stand in front of the hub (6 feet converted to meters)
+    Distance offsetDistance = Feet.of(3.5);
+
+    // Hub center (2D), defined from blue alliance perspective
+    Translation2d hubCenter = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+
+    // Step 6 feet toward the blue alliance wall (negative X direction from the hub center)
+    Translation2d positionBlue =
+        new Translation2d(hubCenter.getX() - offsetDistance.in(Meters), hubCenter.getY());
+
+    // Build the pose facing the hub (+X direction = toward hub) before flipping
+    Pose2d poseBlue = new Pose2d(positionBlue, Rotation2d.kZero);
+
+    // AllianceFlipUtil mirrors both position and rotation for red alliance
+    return AllianceFlipUtil.apply(poseBlue);
   }
 
   /**
