@@ -19,14 +19,16 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.VirtualHopper;
-import frc.lib.feulSim.FuelSim;
+import frc.lib.fuelSim.FuelSim;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.FeederCommands;
 import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
@@ -75,6 +77,9 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Vision vision;
 
+  // FuelSim instance - created once and passed to subsystems that need it
+  private final FuelSim fuelSim = new FuelSim();
+
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -95,7 +100,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         intake = new Intake(new RealIntakeIO());
-        shooter = new Shooter(new RealShooterIO());
+        shooter = new Shooter(new RealShooterIO(), fuelSim);
         feeder = new Feeder(new RealFeederIO());
         hopper = new Hopper(new RealHopperIO());
         vision =
@@ -114,7 +119,7 @@ public class RobotContainer {
                 new ModuleIOSim());
         // Use simulation IO implementations with physics simulation
         intake = new Intake(new SimIntakeIO());
-        shooter = new Shooter(new SimShooterIO());
+        shooter = new Shooter(new SimShooterIO(), fuelSim);
         feeder = new Feeder(new SimFeederIO());
         hopper = new Hopper(new SimHopperIO());
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
@@ -131,7 +136,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         // For replay, use empty IO implementations
         intake = new Intake(new IntakeIO() {});
-        shooter = new Shooter(new ShooterIO() {});
+        shooter = new Shooter(new ShooterIO() {}, fuelSim);
         feeder = new Feeder(new FeederIO() {});
         hopper = new Hopper(new HopperIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
@@ -158,7 +163,11 @@ public class RobotContainer {
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
-    configureButtonBindings();
+    if (RobotBase.isSimulation()) {
+      configureSimButtonBindings();
+    } else {
+      configureButtonBindings();
+    }
 
     SmartDashboard.putData(
         "Retract Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
@@ -193,8 +202,6 @@ public class RobotContainer {
    */
   private void configureFuelSim() {
     try {
-      FuelSim fuelSim = FuelSim.getInstance();
-
       // Spawn initial fuel on the field (neutral zone and depots)
       fuelSim.spawnStartingFuel();
 
@@ -231,9 +238,9 @@ public class RobotContainer {
           Commands.runOnce(
                   () -> {
                     // Clear all fuel from the field
-                    FuelSim.getInstance().clearFuel();
+                    fuelSim.clearFuel();
                     // Respawn fuel in starting positions
-                    FuelSim.getInstance().spawnStartingFuel();
+                    fuelSim.spawnStartingFuel();
                     // Reset virtual hopper to empty
                     VirtualHopper.getInstance().reset();
                   })
@@ -413,6 +420,150 @@ public class RobotContainer {
     //     .onFalse(Commands.run(() -> shooter.setFlyWheelDutyCycle(0.0), shooter));
   }
 
+  private void configureSimButtonBindings() {
+    /**
+     * **************************************************************
+     *
+     * <p>BUTTON BINDINGS:
+     *
+     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
+     * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
+     * while held, stop when released. A button: Run hopper at fixed speed while held, stop when
+     * released. X button: Manual control of intake linear slide forward while held, stop when
+     * released. Y button: Manual control of intake linear slide in reverse while held, stop when
+     * released.
+     *
+     * <p>****************************************************************
+     */
+
+    // Default command, normal field-relative drive
+    // real controller
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -controller.getLeftY(),
+            () -> -controller.getLeftX(),
+            () -> -controller.getRightTriggerAxis()));
+
+    // sim controller in MAC os
+    // drive.setDefaultCommand(
+    //  DriveCommands.joystickDrive(
+    //    drive,
+    //  () -> -controller.getLeftY(),
+    // () -> -controller.getLeftX(),
+    // () -> -(controller.getRightTriggerAxis())));
+
+    // Always run the flywheels a little bit during the match so they can spin up quicker when we
+    // need them
+    // shooter.setDefaultCommand(ShooterCommands.runFlywheelsAtIdle(shooter));
+
+    // controller
+    //     .leftBumper()
+    //     .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
+    //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
+
+    // Dynamic shooting with auto-aiming:
+    // - Continuously adjusts flywheel speed based on distance to alliance hub
+    // - Automatically rotates robot so the BACK (shooter) faces the hub
+    // - Driver maintains full control of translation (forward/back, left/right)
+    controller
+        .y()
+        .whileTrue(
+            // Combine auto-aim driving with shooting sequence
+            // useBackOfRobot = true because the shooter is rear-mounted
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToAllianceHub(),
+                    true) // true = aim back of robot (shooter) at the hub
+                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper)))
+        .onFalse(
+            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+
+    // controller
+    //     .rightBumper()
+    //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
+    //     .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
+
+    // controller
+    //     .x()
+    //     .onTrue(
+    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
+    //             .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
+    //     .onFalse(
+    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
+    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
+
+    // TESTING COMMAND
+    // run the shooter and feeder at a fixed voltage
+    // update these values to run faster or slower.
+    // Max motor power is 12 volts
+    controller
+        .leftBumper()
+        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+        .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
+        .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
+
+    // controller
+    //     .leftBumper()
+    //     .whileTrue(ShooterCommands.feedforwardCharacterization(shooter))
+    //     .onFalse(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
+
+    /*
+     * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
+     * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
+     */
+    // controller
+    //     .a()
+    //     .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
+    //     .onFalse(HopperCommands.stopHopper(hopper));
+
+    /*
+     * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
+     *
+     */
+    // controller
+    //     .leftBumper()
+    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
+    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+    controller
+        .rightTrigger(0.5)
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+
+    /*
+     * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
+     */
+    // controller
+    //     .y()
+    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
+    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
+    controller
+        .leftTrigger(0.5)
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
+
+    // Reset gyro to 0° when left dpad is pressed
+    controller
+        .pov(270)
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                    drive)
+                .ignoringDisable(true));
+
+    // D-Pad up: Teleport the robot to directly in front of the alliance hub
+    // Useful for quickly positioning the robot for shooting tests.
+    // AllianceFlipUtil (inside RobotState) automatically handles red vs. blue alliance.
+    controller
+        .pov(0)
+        .onTrue(
+            Commands.runOnce(
+                    () -> drive.setPose(RobotState.getInstance().getPoseInFrontOfAllianceHub()),
+                    drive)
+                .ignoringDisable(true));
+  }
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -420,5 +571,16 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  /**
+   * Returns the FuelSim instance used by this robot container.
+   *
+   * <p>Used by {@link Robot} to call {@code updateSim()} each loop in simulation.
+   *
+   * @return the shared FuelSim instance
+   */
+  public FuelSim getFuelSim() {
+    return fuelSim;
   }
 }

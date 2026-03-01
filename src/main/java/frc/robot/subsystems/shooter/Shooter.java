@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.VirtualHopper;
+import frc.lib.fuelSim.FuelSim;
 import frc.robot.subsystems.shooter.io.ShooterIO;
 import frc.robot.subsystems.shooter.io.ShooterIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
@@ -56,13 +57,14 @@ public class Shooter extends SubsystemBase {
    * Uses RobotState singleton for pose/velocity data (decoupled from Drive subsystem).
    *
    * @param shooterIO The hardware interface for shooter control
+   * @param fuelSim The shared FuelSim instance (created once in RobotContainer)
    */
-  public Shooter(ShooterIO shooterIO) {
+  public Shooter(ShooterIO shooterIO, FuelSim fuelSim) {
     this._shooterIO = shooterIO;
     this.stopFlywheels();
 
     // Initialize FuelSim visualizer for trajectory and launch simulation
-    _fuelSimVisualizer = new FuelVisualizer();
+    _fuelSimVisualizer = new FuelVisualizer(fuelSim);
 
     // Configure SysId
     _sysId =

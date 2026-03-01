@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
@@ -15,7 +16,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.lib.VirtualHopper;
-import frc.lib.feulSim.FuelSim;
+import frc.lib.fuelSim.FuelSim;
 import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
 
@@ -55,15 +56,19 @@ import org.littletonrobotics.junction.Logger;
  *   <li>Add robot's field velocity (robot is moving while shooting)
  * </ol>
  *
- * <p><b>RobotState Integration:</b>
+ * <p><b>FuelSim v1.0.0 Integration:</b>
  *
- * <p>This class uses the centralized RobotState singleton to get robot pose and velocity, removing
- * the need for pose/speed suppliers to be passed in.
+ * <p>This class delegates coordinate transforms and velocity decomposition to the FuelSim library's
+ * {@code launchFuel} method, which accepts a robot-relative turret yaw and launch height so it can
+ * leverage the registered robot pose supplier internally.
  */
 public class FuelVisualizer {
 
-  // Gravitational acceleration (m/s²)
+  // Gravitational acceleration (m/s²) — used for local trajectory preview only
   private static final double GRAVITY = 9.81;
+
+  // The shared FuelSim instance (passed in via constructor — no longer a singleton)
+  private final FuelSim fuelSim;
 
   // Trajectory visualization array
   private final Translation3d[] trajectory;
@@ -88,10 +93,13 @@ public class FuelVisualizer {
   /**
    * Creates a new FuelVisualizer.
    *
-   * <p>This class now uses RobotState.getInstance() to get robot pose and velocity, so no suppliers
-   * need to be passed in.
+   * <p>As of FuelSim v1.0.0, FuelSim is no longer a singleton. Pass the shared instance in so this
+   * visualizer can call {@code launchFuel} on it.
+   *
+   * @param fuelSim The shared FuelSim instance created in RobotContainer
    */
-  public FuelVisualizer() {
+  public FuelVisualizer(FuelSim fuelSim) {
+    this.fuelSim = fuelSim;
     // Initialize trajectory array with size from constants
     this.trajectory = new Translation3d[ShooterConstants.FuelSim.TRAJECTORY_POINTS];
     for (int i = 0; i < trajectory.length; i++) {
@@ -147,96 +155,25 @@ public class FuelVisualizer {
   }
 
   /**
-   * Calculates the initial velocity vector for launched fuel in field coordinates.
+   * Launches a virtual fuel into the simulation using the FuelSim library's built-in launch API.
    *
-   * <p><b>Physics Explanation:</b>
+   * <p>As of FuelSim v1.0.0, the library handles coordinate transforms internally using the
+   * registered robot pose supplier. We just provide:
    *
-   * <p>The fuel is launched at a fixed angle (hood angle) from horizontal. We decompose this into
-   * horizontal and vertical components using trigonometry:
-   *
-   * <pre>
-   * vₕₒᵣᵢᵤₒₙₜₐₗ = v × cos(θ)  (forward component)
-   * vᵥₑᵣₜᵢcₐₗ = v × sin(θ)    (upward component)
-   * </pre>
-   *
-   * <p>The horizontal velocity is initially in robot-relative coordinates (pointing forward from
-   * the shooter). We rotate it by the robot's heading to get field coordinates.
-   *
-   * <p>Finally, we add the robot's velocity because the robot is moving while shooting. Think of
-   * throwing a ball from a moving car - the ball inherits the car's velocity!
-   *
-   * @param linearVel The linear launch velocity magnitude
-   * @param angle The launch angle (hood angle) from horizontal
-   * @return Field-relative 3D velocity vector
-   */
-  public Translation3d calculateLaunchVelocity(LinearVelocity linearVel, Angle angle) {
-    // Get current robot state from centralized RobotState
-    Pose2d robotPose = RobotState.getInstance().getEstimatedPose();
-    ChassisSpeeds fieldSpeeds = RobotState.getInstance().getFieldRelativeVelocity();
-
-    // Convert units
-    double speedMps = linearVel.in(MetersPerSecond);
-    double angleRadians = angle.in(Radians);
-
-    // Decompose launch velocity into horizontal and vertical components
-    // Using trig: cos gives the "adjacent" side (horizontal), sin gives "opposite" (vertical)
-    double horizontalSpeed = speedMps * Math.cos(angleRadians);
-    double verticalSpeed = speedMps * Math.sin(angleRadians);
-
-    // Create robot-relative horizontal velocity (pointing backward from robot,
-    // since the shooter is mounted on the back of the robot)
-    Translation2d robotRelativeVel = new Translation2d(-horizontalSpeed, 0);
-
-    // Rotate by robot heading to convert to field coordinates
-    // This is the key transformation - the shooter points opposite the robot's heading!
-    Translation2d fieldRelativeVel = robotRelativeVel.rotateBy(robotPose.getRotation());
-
-    // Add robot's velocity (fuel inherits robot's motion)
-    double fieldVelX = fieldRelativeVel.getX() + fieldSpeeds.vxMetersPerSecond;
-    double fieldVelY = fieldRelativeVel.getY() + fieldSpeeds.vyMetersPerSecond;
-
-    // Return full 3D velocity vector
-    return new Translation3d(fieldVelX, fieldVelY, verticalSpeed);
-  }
-
-  /**
-   * Calculates the shooter's 3D position on the field.
-   *
-   * <p>The shooter has an offset from the robot center (forward and up). We need to transform this
-   * robot-relative offset to field coordinates.
-   *
-   * @return The shooter's position in field coordinates (x, y, z in meters)
-   */
-  private Translation3d getShooterPosition() {
-    Pose2d robotPose = RobotState.getInstance().getEstimatedPose();
-
-    // Get shooter offset from constants (robot-relative) - convert Distance to meters
-    double forwardOffset = ShooterConstants.FuelSim.FORWARD_OFFSET.in(Meters);
-    double sideOffset = ShooterConstants.FuelSim.SIDE_OFFSET.in(Meters);
-    double height = ShooterConstants.FuelSim.HEIGHT_FROM_GROUND.in(Meters);
-
-    // Create 2D offset and rotate by robot heading
-    Translation2d robotRelativeOffset = new Translation2d(forwardOffset, sideOffset);
-    Translation2d fieldRelativeOffset = robotRelativeOffset.rotateBy(robotPose.getRotation());
-
-    // Combine robot position + offset + height
-    return new Translation3d(
-        robotPose.getX() + fieldRelativeOffset.getX(),
-        robotPose.getY() + fieldRelativeOffset.getY(),
-        height);
-  }
-
-  /**
-   * Launches a virtual fuel into the simulation.
+   * <ul>
+   *   <li>The linear launch velocity (from flywheel speed)
+   *   <li>The hood angle (launch angle from horizontal)
+   *   <li>The turret yaw in <b>robot-relative</b> coordinates — 180° because our shooter points
+   *       backward
+   *   <li>The launch height above the ground
+   * </ul>
    *
    * <p>This method:
    *
    * <ol>
    *   <li>Checks if the hopper has fuel (returns early if empty)
    *   <li>Removes one fuel from the virtual hopper
-   *   <li>Calculates the shooter position in field coordinates
-   *   <li>Calculates the launch velocity (with robot motion compensation)
-   *   <li>Spawns the fuel in the FuelSim system
+   *   <li>Delegates to {@code fuelSim.launchFuel()} with robot-relative yaw
    *   <li>Updates the last launch timestamp
    * </ol>
    *
@@ -252,19 +189,22 @@ public class FuelVisualizer {
     // Remove fuel from hopper
     VirtualHopper.getInstance().removeFuel();
 
-    // Calculate position and velocity
-    Translation3d position = getShooterPosition();
-    Translation3d velocity = calculateLaunchVelocity(linearVel, angle);
-
-    // Spawn fuel in simulation
-    FuelSim.getInstance().spawnFuel(position, velocity);
+    // The shooter is mounted on the back of the robot, so the robot-relative yaw is 180°.
+    // FuelSim v1.0.0 uses robot-relative yaw and leverages the registered pose supplier
+    // internally to compute field-relative velocity — no manual rotation needed here.
+    fuelSim.launchFuel(
+        linearVel,
+        angle,
+        Degrees.of(180), // turretYaw: 180° = pointing backward in robot-relative coords
+        ShooterConstants.FuelSim.HEIGHT_FROM_GROUND // launch height above the ground
+        );
 
     // Update launch timestamp (using System.currentTimeMillis() for timing)
     lastLaunchTime = System.currentTimeMillis() / 1000.0;
 
     // Log the launch event for debugging
-    Logger.recordOutput("Shooter/FuelSim/LastLaunchPosition", position);
-    Logger.recordOutput("Shooter/FuelSim/LastLaunchVelocity", velocity);
+    Logger.recordOutput("Shooter/FuelSim/LaunchVelocity_mps", linearVel.in(MetersPerSecond));
+    Logger.recordOutput("Shooter/FuelSim/HoodAngle_deg", angle.in(Degrees));
   }
 
   /**
@@ -308,9 +248,36 @@ public class FuelVisualizer {
       return;
     }
 
-    // Get initial position and velocity
-    Translation3d initialPos = getShooterPosition();
-    Translation3d velocity = calculateLaunchVelocity(linearVel, angle);
+    // Get initial position and velocity by computing them inline.
+    // This mirrors the same logic FuelSim uses internally for the actual launched fuel,
+    // keeping the trajectory preview consistent with what will be launched.
+    Pose2d robotPose = RobotState.getInstance().getEstimatedPose();
+    ChassisSpeeds fieldSpeeds = RobotState.getInstance().getFieldRelativeVelocity();
+
+    // Shooter height above ground from constants
+    double height = ShooterConstants.FuelSim.HEIGHT_FROM_GROUND.in(Meters);
+    // Shooter forward/side offsets are robot-relative; rotate them by the robot's heading
+    double forwardOffset = ShooterConstants.FuelSim.FORWARD_OFFSET.in(Meters);
+    double sideOffset = ShooterConstants.FuelSim.SIDE_OFFSET.in(Meters);
+    Translation2d fieldOffset =
+        new Translation2d(forwardOffset, sideOffset).rotateBy(robotPose.getRotation());
+    Translation3d initialPos =
+        new Translation3d(
+            robotPose.getX() + fieldOffset.getX(), robotPose.getY() + fieldOffset.getY(), height);
+
+    // Decompose launch speed into horizontal/vertical using hood angle
+    double speedMps = linearVel.in(MetersPerSecond);
+    double angleRadians = angle.in(Radians);
+    double horizontalSpeed = speedMps * Math.cos(angleRadians);
+    double verticalSpeed = speedMps * Math.sin(angleRadians);
+    // Shooter points backward (180° robot-relative), rotate to field coords
+    Translation2d robotRelativeVel = new Translation2d(-horizontalSpeed, 0);
+    Translation2d fieldRelativeVel = robotRelativeVel.rotateBy(robotPose.getRotation());
+    Translation3d velocity =
+        new Translation3d(
+            fieldRelativeVel.getX() + fieldSpeeds.vxMetersPerSecond,
+            fieldRelativeVel.getY() + fieldSpeeds.vyMetersPerSecond,
+            verticalSpeed);
 
     // Get the time step for this trajectory calculation
     double timeStep = getTrajectoryTimeStep();
