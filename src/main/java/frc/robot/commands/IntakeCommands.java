@@ -92,4 +92,20 @@ public class IntakeCommands {
         },
         intake);
   }
+
+  /**
+   * Creates a command to home the intake. Use when you need to reset the 0 position of the linear
+   * slide motor controller
+   */
+  public static Command homeIntake(Intake intake) {
+    return Commands.runOnce(
+        () -> {
+          intake.homeIntake();
+          // while (intake._intakeIO._linearMotorCurrent < 10) {
+          //     intake.setIntakePosition( new Intakeposition(intake.getPosition() - .01);
+          // }
+          // intake.resetEncoder();
+        },
+        intake);
+  }
 }

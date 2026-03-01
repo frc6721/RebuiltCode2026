@@ -113,8 +113,8 @@ public class Intake extends SubsystemBase {
     Logger.processInputs("Intake", _intakeInputs);
 
     // LOGGING
-    Logger.recordOutput("Intake/LinearPosition/Current_m", _intakeInputs._linearMotorPosition);
-    Logger.recordOutput("Intake/LinearPosition/Desired_m", _intakePosition.getPosition());
+    Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
+    Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
     Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
 
     // Run PID control for linear slide position only when PID mode is active.
@@ -134,6 +134,15 @@ public class Intake extends SubsystemBase {
 
     // Update the Mechanism2d and Pose3d visualization
     _visualizer.update(_intakeInputs._linearMotorPosition, _intakePosition.getPosition(), atGoal);
+  }
+
+  /**
+   * Returns the current intake position of the linear slide.
+   *
+   * @return The current intake position in meters
+   */
+  public double getIntakePosition() {
+    return _intakePosition.getPosition();
   }
 
   /**
@@ -164,6 +173,12 @@ public class Intake extends SubsystemBase {
   public void setLinearMotorDutyCycleOutput(double output) {
     _pidEnabled = false;
     _intakeIO.setLinearMotorDutyCycle(output);
+  }
+
+  public void homeIntake() {
+    // while (_intakeIO._linearMotorCurrent < 10) {
+
+    // }
   }
 
   /**

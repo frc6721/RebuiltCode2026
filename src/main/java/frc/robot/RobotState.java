@@ -288,7 +288,7 @@ public class RobotState {
    * @return A Pose2d 6 feet in front of the alliance hub, facing the hub
    */
   public Pose2d getPoseInFrontOfAllianceHub() {
-    // Distance to stand in front of the hub (6 feet converted to meters)
+    // Distance to stand in front of the hub (3.5 feet converted to meters)
     Distance offsetDistance = Feet.of(3.5);
 
     // Hub center (2D), defined from blue alliance perspective

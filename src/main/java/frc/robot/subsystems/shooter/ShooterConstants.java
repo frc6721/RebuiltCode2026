@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
@@ -184,8 +185,8 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      SPEED_MAP.put(Meters.of(1.0).in(Meters), RPM.of(1000.0).in(RPM));
-      SPEED_MAP.put(Meters.of(3.0).in(Meters), RPM.of(1500.0).in(RPM));
+      SPEED_MAP.put(Feet.of(1).in(Meters), RPM.of(400.0).in(RPM));
+      SPEED_MAP.put(Feet.of(10.0).in(Meters), RPM.of(2500.0).in(RPM));
     }
   }
 

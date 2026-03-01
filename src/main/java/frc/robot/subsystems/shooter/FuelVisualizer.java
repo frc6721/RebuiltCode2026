@@ -141,6 +141,8 @@ public class FuelVisualizer {
     // v = ω × r (linear velocity = angular velocity × radius)
     double linearVelMps = omegaRadPerSec * radiusMeters;
 
+    linearVelMps = linearVelMps * 0.75;
+
     return MetersPerSecond.of(linearVelMps);
   }
 
