@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import java.text.DecimalFormat;
@@ -53,7 +54,7 @@ public class ShooterCommands {
     // Run shooter continuously in parallel with a delayed feeder start.
     // The shooter spins up immediately; after 1.5s the feeder begins feeding.
     // Both run until the command is interrupted (button released).
-    return Commands.run(
+    return Commands.runOnce(
             () -> {
               shooter.runCharacterization(Volts.of(shooterVoltage));
             },
@@ -61,7 +62,7 @@ public class ShooterCommands {
         .alongWith(
             new WaitCommand(1.5)
                 .andThen(
-                    Commands.run(
+                    Commands.runOnce(
                         () -> {
                           feeder.runFeederAtVoltage(Volts.of(feederVoltage));
                         },
@@ -254,12 +255,14 @@ public class ShooterCommands {
    * @return A complete shooting sequence command
    */
   public static Command shootToHubSequence(
-      Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder) {
+      Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper) {
     return shootToHub(shooter)
         .alongWith(
             Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
                 .withTimeout(2.0)
-                .andThen(FeederCommands.runFeederAtVoltage(feeder, Volts.of(8))))
+                .andThen(
+                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
+                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.3))))
         .withName("ShootToHubSequence");
   }
 }

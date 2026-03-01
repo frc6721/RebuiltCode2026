@@ -141,8 +141,8 @@ public class FeederConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
-    public static final int SMART_CURRENT_LIMIT = 40;
-    public static final double SECONDARY_CURRENT_LIMIT = 55;
+    public static final int SMART_CURRENT_LIMIT = 80;
+    public static final double SECONDARY_CURRENT_LIMIT = 100;
   }
 
   /** Software tuning settings for the feeder. */

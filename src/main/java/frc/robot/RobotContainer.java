@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.VirtualHopper;
 import frc.lib.feulSim.FuelSim;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.FeederCommands;
+import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
@@ -299,20 +299,35 @@ public class RobotContainer {
     // - Continuously adjusts flywheel speed based on distance to alliance hub
     // - Automatically rotates robot so the BACK (shooter) faces the hub
     // - Driver maintains full control of translation (forward/back, left/right)
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         // Combine auto-aim driving with shooting sequence
+    //         // useBackOfRobot = true because the shooter is rear-mounted
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToAllianceHub(),
+    //                 true) // true = aim back of robot (shooter) at the hub
+    //             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper)))
+    //     .onFalse(
+    //
+    // FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+
+    // controller
+    //     .rightBumper()
+    //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
+    //     .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
+
     controller
         .rightBumper()
-        .whileTrue(
-            // Combine auto-aim driving with shooting sequence
-            // useBackOfRobot = true because the shooter is rear-mounted
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToAllianceHub(),
-                    true) // true = aim back of robot (shooter) at the hub
-                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder)))
+        .onTrue(
+            ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
+                .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
         .onFalse(
-            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+            ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
+                .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
 
     // TESTING COMMAND
     // run the shooter and feeder at a fixed voltage
@@ -321,10 +336,8 @@ public class RobotContainer {
     controller
         .leftBumper()
         // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-        .whileTrue(ShooterCommands.shootToHubSequence(shooter, feeder))
-        .onFalse(
-            ShooterCommands.runFlywheelsAtIdle(shooter)
-                .alongWith(FeederCommands.stopFeeder(feeder)));
+        .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
+        .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
 
     // controller
     //     .leftBumper()

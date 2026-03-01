@@ -168,7 +168,7 @@ public class IntakeConstants {
 
     /** DELETE BELOW LINE AND REVERT EXTENDED VALUE TO ABOVE. JUST FOR PID TUNING TESTING */
     public static final LoggedNetworkNumber EXTENDED =
-        new LoggedNetworkNumber("Intake/Position/Extended", Inches.of(6.7).in(Meters));
+        new LoggedNetworkNumber("Intake/Position/Extended", Inches.of(11.0).in(Meters));
   }
 
   /** PID tuning constants for the linear slide position control. */
@@ -176,7 +176,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 15.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 20.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
