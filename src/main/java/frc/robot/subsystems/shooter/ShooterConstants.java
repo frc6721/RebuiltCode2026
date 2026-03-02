@@ -147,6 +147,12 @@ public class ShooterConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
+    /**
+     * Set to {@code true} to enable current limiting on the flywheel motors, or {@code false} to
+     * disable it (useful during testing/characterization).
+     */
+    public static final boolean ENABLE_CURRENT_LIMITS = true;
+
     public static final int SMART = 100;
     public static final double SECONDARY = 100;
   }
@@ -239,6 +245,7 @@ public class ShooterConstants {
 
     Logger.recordOutput("Constants/Shooter/CurrentLimit/Smart_A", CurrentLimits.SMART);
     Logger.recordOutput("Constants/Shooter/CurrentLimit/Secondary_A", CurrentLimits.SECONDARY);
+    Logger.recordOutput("Constants/Shooter/CurrentLimit/Enabled", CurrentLimits.ENABLE_CURRENT_LIMITS);
 
     Logger.recordOutput(
         "Constants/Shooter/FuelSim/Height_m", FuelSim.HEIGHT_FROM_GROUND.in(Meters));

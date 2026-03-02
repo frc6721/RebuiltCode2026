@@ -52,9 +52,14 @@ public class RealFeederIO implements FeederIO {
     leftConfig
         .inverted(FeederConstants.Motor.INVERTED)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
-        .secondaryCurrentLimit(FeederConstants.CurrentLimits.SECONDARY_CURRENT_LIMIT)
         .voltageCompensation(12.0);
+
+    // Only apply current limits if enabled - disable during testing/characterization
+    if (FeederConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
+      leftConfig
+          .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
+          .secondaryCurrentLimit(FeederConstants.CurrentLimits.SECONDARY_CURRENT_LIMIT);
+    }
 
     // Configure PID for velocity control on the motor controller
     leftConfig.closedLoop.pid(
@@ -77,9 +82,14 @@ public class RealFeederIO implements FeederIO {
     SparkMaxConfig rightConfig = new SparkMaxConfig();
     rightConfig
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
-        .secondaryCurrentLimit(FeederConstants.CurrentLimits.SECONDARY_CURRENT_LIMIT)
         .voltageCompensation(12.0);
+
+    // Only apply current limits if enabled - disable during testing/characterization
+    if (FeederConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
+      rightConfig
+          .smartCurrentLimit(FeederConstants.CurrentLimits.SMART_CURRENT_LIMIT)
+          .secondaryCurrentLimit(FeederConstants.CurrentLimits.SECONDARY_CURRENT_LIMIT);
+    }
 
     // Follow the left motor, inverted so both wheels physically spin the same direction
     rightConfig.follow(_leftFeederMotor, true);

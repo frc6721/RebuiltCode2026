@@ -47,9 +47,14 @@ public class RealShooterIO implements ShooterIO {
     leftConfig
         .inverted(ShooterConstants.Mechanical.INVERTED)
         .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
-        .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY)
         .voltageCompensation(12.0);
+
+    // Only apply current limits if enabled - disable during testing/characterization
+    if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
+      leftConfig
+          .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
+          .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
+    }
     leftConfig.closedLoop.pid(
         ShooterConstants.getFlywheelKP(),
         ShooterConstants.getFlywheelKI(),
@@ -68,9 +73,14 @@ public class RealShooterIO implements ShooterIO {
     SparkFlexConfig rightConfig = new SparkFlexConfig();
     rightConfig
         .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
-        .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY)
         .voltageCompensation(12.0);
+
+    // Only apply current limits if enabled - disable during testing/characterization
+    if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
+      rightConfig
+          .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
+          .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
+    }
 
     // Follow the left motor, inverted so both wheels physically spin the same direction
     rightConfig.follow(_leftFlywheelMotor, true);
