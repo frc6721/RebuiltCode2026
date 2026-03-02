@@ -245,7 +245,8 @@ public class ShooterConstants {
 
     Logger.recordOutput("Constants/Shooter/CurrentLimit/Smart_A", CurrentLimits.SMART);
     Logger.recordOutput("Constants/Shooter/CurrentLimit/Secondary_A", CurrentLimits.SECONDARY);
-    Logger.recordOutput("Constants/Shooter/CurrentLimit/Enabled", CurrentLimits.ENABLE_CURRENT_LIMITS);
+    Logger.recordOutput(
+        "Constants/Shooter/CurrentLimit/Enabled", CurrentLimits.ENABLE_CURRENT_LIMITS);
 
     Logger.recordOutput(
         "Constants/Shooter/FuelSim/Height_m", FuelSim.HEIGHT_FROM_GROUND.in(Meters));

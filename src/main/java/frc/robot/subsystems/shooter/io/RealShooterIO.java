@@ -71,9 +71,7 @@ public class RealShooterIO implements ShooterIO {
 
     // ── Right motor (follower, inverted relative to leader) ──
     SparkFlexConfig rightConfig = new SparkFlexConfig();
-    rightConfig
-        .idleMode(IdleMode.kCoast)
-        .voltageCompensation(12.0);
+    rightConfig.idleMode(IdleMode.kCoast).voltageCompensation(12.0);
 
     // Only apply current limits if enabled - disable during testing/characterization
     if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {

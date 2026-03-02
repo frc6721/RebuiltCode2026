@@ -164,8 +164,8 @@ public class RobotContainer {
 
     // Configure the button bindings
     if (RobotBase.isSimulation()) {
-    //   configureSimButtonBindings();
-        configureButtonBindings();
+      //   configureSimButtonBindings();
+      configureButtonBindings();
     } else {
       configureButtonBindings();
     }

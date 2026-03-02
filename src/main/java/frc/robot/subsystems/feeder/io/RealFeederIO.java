@@ -80,9 +80,7 @@ public class RealFeederIO implements FeederIO {
 
     // ── Right motor (follower, inverted relative to leader) ──
     SparkMaxConfig rightConfig = new SparkMaxConfig();
-    rightConfig
-        .idleMode(IdleMode.kBrake)
-        .voltageCompensation(12.0);
+    rightConfig.idleMode(IdleMode.kBrake).voltageCompensation(12.0);
 
     // Only apply current limits if enabled - disable during testing/characterization
     if (FeederConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {

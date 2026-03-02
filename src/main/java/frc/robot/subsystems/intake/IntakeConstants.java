@@ -321,8 +321,7 @@ public class IntakeConstants {
         "Constants/Intake/PID/Real/MaxVelocity_mps", PID.Real.MAX_VELOCITY_MPS.get());
     Logger.recordOutput(
         "Constants/Intake/PID/Real/MaxAcceleration_mpss", PID.Real.MAX_ACCELERATION_MPSS.get());
-    Logger.recordOutput(
-        "Constants/Intake/PID/Sim/MaxVelocity_mps", PID.Sim.MAX_VELOCITY_MPS.get());
+    Logger.recordOutput("Constants/Intake/PID/Sim/MaxVelocity_mps", PID.Sim.MAX_VELOCITY_MPS.get());
     Logger.recordOutput(
         "Constants/Intake/PID/Sim/MaxAcceleration_mpss", PID.Sim.MAX_ACCELERATION_MPSS.get());
 

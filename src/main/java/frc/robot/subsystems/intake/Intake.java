@@ -137,9 +137,11 @@ public class Intake extends SubsystemBase {
       // Log the intermediate profiled setpoint so we can see the planned trajectory in
       // AdvantageScope — useful for verifying the motion profile shape while tuning.
       Logger.recordOutput(
-          "Intake/LinearPosition/ProfiledSetpointPosition", _linearPIDController.getSetpoint().position);
+          "Intake/LinearPosition/ProfiledSetpointPosition",
+          _linearPIDController.getSetpoint().position);
       Logger.recordOutput(
-          "Intake/LinearVelocity/ProfiledSetpointVelocity", _linearPIDController.getSetpoint().velocity);
+          "Intake/LinearVelocity/ProfiledSetpointVelocity",
+          _linearPIDController.getSetpoint().velocity);
     }
 
     // Check if at target
