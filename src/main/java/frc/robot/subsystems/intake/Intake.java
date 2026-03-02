@@ -2,7 +2,8 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.VirtualHopper;
@@ -36,7 +37,7 @@ public class Intake extends SubsystemBase {
   private final IntakeIO _intakeIO;
   private final IntakeIOInputsAutoLogged _intakeInputs = new IntakeIOInputsAutoLogged();
   private IntakePosition _intakePosition;
-  private final PIDController _linearPIDController;
+  private final ProfiledPIDController _linearPIDController;
   private final IntakeVisualizer _visualizer;
 
   /**
@@ -89,12 +90,18 @@ public class Intake extends SubsystemBase {
     // Assume intake starts fully retracted
     _intakePosition = IntakePosition.RETRACTED;
 
-    // Use mode-selected PID constants (different values for sim vs real)
+    // Use mode-selected PID constants (different values for sim vs real).
+    // A TrapezoidProfile.Constraints object is passed in to limit how fast the intake
+    // can move (maxVelocity) and how quickly it can ramp up to that speed (maxAcceleration).
+    // This prevents the slider from slamming into the hard stops.
     _linearPIDController =
-        new PIDController(
+        new ProfiledPIDController(
             IntakeConstants.getLinearKP(),
             IntakeConstants.getLinearKI(),
-            IntakeConstants.getLinearKD());
+            IntakeConstants.getLinearKD(),
+            new TrapezoidProfile.Constraints(
+                IntakeConstants.getLinearMaxVelocity(),
+                IntakeConstants.getLinearMaxAcceleration()));
 
     // Reset the internal encoder so 0 = fully retracted
     _intakeIO.resetLinearEncoder();
@@ -120,9 +127,19 @@ public class Intake extends SubsystemBase {
     // Run PID control for linear slide position only when PID mode is active.
     // Duty-cycle or voltage overrides disable the PID until a position is commanded again.
     if (_pidEnabled) {
-      _linearPIDController.setSetpoint(_intakePosition.getPosition());
+      // setGoal() tells the ProfiledPIDController where we ultimately want to be.
+      // Internally it generates a smooth trapezoidal motion profile between the current
+      // position and the goal, respecting the max velocity and acceleration constraints.
+      _linearPIDController.setGoal(_intakePosition.getPosition());
       double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
       _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
+
+      // Log the intermediate profiled setpoint so we can see the planned trajectory in
+      // AdvantageScope — useful for verifying the motion profile shape while tuning.
+      Logger.recordOutput(
+          "Intake/LinearPosition/ProfiledSetpointPosition", _linearPIDController.getSetpoint().position);
+      Logger.recordOutput(
+          "Intake/LinearVelocity/ProfiledSetpointVelocity", _linearPIDController.getSetpoint().velocity);
     }
 
     // Check if at target
