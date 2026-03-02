@@ -13,8 +13,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -22,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class FuelSim {
   protected static final double PERIOD = 0.02; // sec
@@ -338,14 +337,15 @@ public class FuelSim {
   protected int subticks = 5;
   protected double loggingFreqHz = 10;
   protected Timer loggingTimer = new Timer();
+  protected String logKey;
 
   /**
    * Creates a new instance of FuelSim
    *
-   * @param tableKey NetworkTable to log fuel positions to as an array of {@link Translation3d}
-   *     structs.
+   * @param logKey AdvantageKit log key to log fuel positions to as an array of {@link Translation3d}
+   *     structs. Fuels will be logged at logKey + "/Fuels".
    */
-  public FuelSim(String tableKey) {
+  public FuelSim(String logKey) {
     // Initialize grid
     for (int i = 0; i < GRID_COLS; i++) {
       for (int j = 0; j < GRID_ROWS; j++) {
@@ -353,15 +353,12 @@ public class FuelSim {
       }
     }
 
-    fuelPublisher =
-        NetworkTableInstance.getDefault()
-            .getStructArrayTopic(tableKey + "/Fuels", Translation3d.struct)
-            .publish();
+    this.logKey = logKey;
   }
 
-  /** Creates a new instance of FuelSim with log path "/Fuel Simulation" */
+  /** Creates a new instance of FuelSim with log path "Simulation/FuelSim" */
   public FuelSim() {
-    this("/Fuel Simulation");
+    this("Simulation/FuelSim");
   }
 
   /** Clears the field of fuel */
@@ -419,11 +416,13 @@ public class FuelSim {
     // Logger.recordOutput("Fuel Simulation/Lines (debug)", lines);
   }
 
-  protected StructArrayPublisher<Translation3d> fuelPublisher;
-
-  /** Adds array of `Translation3d`'s to NetworkTables at tableKey + "/Fuels" */
+  /**
+   * Adds array of `Translation3d`'s to AdvantageKit logger at logKey + "/Fuels"
+   */
   public void logFuels() {
-    fuelPublisher.set(fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
+    Logger.recordOutput(
+        logKey + "/Fuels",
+        fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
   }
 
   /** Start the simulation. `updateSim` must still be called every loop */
