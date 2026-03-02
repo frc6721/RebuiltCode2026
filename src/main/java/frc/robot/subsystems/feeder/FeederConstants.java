@@ -141,6 +141,12 @@ public class FeederConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
+    /**
+     * Set to {@code true} to enable current limiting on the feeder motors, or {@code false} to
+     * disable it (useful during testing/characterization).
+     */
+    public static final boolean ENABLE_CURRENT_LIMITS = true;
+
     public static final int SMART_CURRENT_LIMIT = 80;
     public static final double SECONDARY_CURRENT_LIMIT = 100;
   }
@@ -163,6 +169,8 @@ public class FeederConstants {
     Logger.recordOutput("Constants/Feeder/CurrentLimit/Smart_A", CurrentLimits.SMART_CURRENT_LIMIT);
     Logger.recordOutput(
         "Constants/Feeder/CurrentLimit/Secondary_A", CurrentLimits.SECONDARY_CURRENT_LIMIT);
+    Logger.recordOutput(
+        "Constants/Feeder/CurrentLimit/Enabled", CurrentLimits.ENABLE_CURRENT_LIMITS);
 
     Logger.recordOutput("Constants/Feeder/SpeedTolerance_pct", Software.PID_TOLERANCE);
   }
