@@ -182,6 +182,24 @@ public class IntakeConstants {
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 0.0);
+
+      /**
+       * Maximum velocity of the linear slide in meters per second.
+       *
+       * <p>The ProfiledPIDController will never command motion faster than this, even if the
+       * position error is large. Tune this to keep the intake from slamming into the hard stops.
+       */
+      public static final LoggedNetworkNumber MAX_VELOCITY_MPS =
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.4);
+
+      /**
+       * Maximum acceleration of the linear slide in meters per second squared.
+       *
+       * <p>Controls how quickly the slide ramps up to its maximum velocity. Lower values produce a
+       * smoother, gentler motion; higher values produce faster but jerkier starts and stops.
+       */
+      public static final LoggedNetworkNumber MAX_ACCELERATION_MPSS =
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxAcceleration_mpss", 0.8);
     }
 
     /** Simulation PID values - tuned for physics simulation */
@@ -193,6 +211,22 @@ public class IntakeConstants {
           new LoggedNetworkNumber("Intake/Linear/PID/Sim/kI", 0.0);
       public static final LoggedNetworkNumber KD =
           new LoggedNetworkNumber("Intake/Linear/PID/Sim/kD", 0.01);
+
+      /**
+       * Maximum velocity of the linear slide in meters per second (simulation).
+       *
+       * <p>See {@link Real#MAX_VELOCITY_MPS} for a full description.
+       */
+      public static final LoggedNetworkNumber MAX_VELOCITY_MPS =
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/MaxVelocity_mps", 0.4);
+
+      /**
+       * Maximum acceleration of the linear slide in meters per second squared (simulation).
+       *
+       * <p>See {@link Real#MAX_ACCELERATION_MPSS} for a full description.
+       */
+      public static final LoggedNetworkNumber MAX_ACCELERATION_MPSS =
+          new LoggedNetworkNumber("Intake/Linear/PID/Sim/MaxAcceleration_mpss", 0.8);
     }
   }
 
@@ -209,6 +243,20 @@ public class IntakeConstants {
   /** Returns the appropriate PID kD based on current mode */
   public static double getLinearKD() {
     return Constants.currentMode == Constants.Mode.SIM ? PID.Sim.KD.get() : PID.Real.KD.get();
+  }
+
+  /** Returns the appropriate max velocity constraint (m/s) based on current mode */
+  public static double getLinearMaxVelocity() {
+    return Constants.currentMode == Constants.Mode.SIM
+        ? PID.Sim.MAX_VELOCITY_MPS.get()
+        : PID.Real.MAX_VELOCITY_MPS.get();
+  }
+
+  /** Returns the appropriate max acceleration constraint (m/s²) based on current mode */
+  public static double getLinearMaxAcceleration() {
+    return Constants.currentMode == Constants.Mode.SIM
+        ? PID.Sim.MAX_ACCELERATION_MPSS.get()
+        : PID.Real.MAX_ACCELERATION_MPSS.get();
   }
 
   /** Current limits for motor protection. */
@@ -267,6 +315,16 @@ public class IntakeConstants {
 
     // Deadband
     Logger.recordOutput("Constants/Intake/PositionDeadband_m", Software.POSITION_DEADBAND);
+
+    // Motion profile constraints (logged at startup with their default values)
+    Logger.recordOutput(
+        "Constants/Intake/PID/Real/MaxVelocity_mps", PID.Real.MAX_VELOCITY_MPS.get());
+    Logger.recordOutput(
+        "Constants/Intake/PID/Real/MaxAcceleration_mpss", PID.Real.MAX_ACCELERATION_MPSS.get());
+    Logger.recordOutput(
+        "Constants/Intake/PID/Sim/MaxVelocity_mps", PID.Sim.MAX_VELOCITY_MPS.get());
+    Logger.recordOutput(
+        "Constants/Intake/PID/Sim/MaxAcceleration_mpss", PID.Sim.MAX_ACCELERATION_MPSS.get());
 
     // Current limits
     Logger.recordOutput("Constants/Intake/CurrentLimit/LinearSmart_A", CurrentLimits.LINEAR_SMART);
