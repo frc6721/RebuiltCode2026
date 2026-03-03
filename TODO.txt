@@ -1,0 +1,22 @@
+- make elastic dashboard
+    - Add auto visualizer to elastic
+- Swerve
+    - tune swerve drive PID
+    - tune swerve turn PID
+    - tune turn to angle PID
+- tune intake PID
+- Tune shooter RPMs for distance
+- tune cameras
+    - verify cameras connect to robot
+- make autos
+    - run autos in sim
+- auto pass in neutral zone
+- comp button mapping
+    - button to auto shoot
+    - button to extend intake
+    - button to retact intake
+    - button to toggle intake rollers?
+    - button to shoot from tower
+    - button to auto align for driving under trench
+    - climber up
+    - climber down
