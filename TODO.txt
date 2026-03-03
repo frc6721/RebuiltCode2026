@@ -1,13 +1,7 @@
+Without robot:
+
 - make elastic dashboard
     - Add auto visualizer to elastic
-- Swerve
-    - tune swerve drive PID
-    - tune swerve turn PID
-    - tune turn to angle PID
-- tune intake PID
-- Tune shooter RPMs for distance
-- tune cameras
-    - verify cameras connect to robot
 - make autos
     - run autos in sim
 - auto pass in neutral zone
@@ -20,3 +14,14 @@
     - button to auto align for driving under trench
     - climber up
     - climber down
+
+With robot:
+
+- Swerve
+    - tune swerve drive PID
+    - tune swerve turn PID
+    - tune turn to angle PID
+- tune intake PID
+- Tune shooter RPMs for distance
+- tune cameras
+    - verify cameras connect to robot
