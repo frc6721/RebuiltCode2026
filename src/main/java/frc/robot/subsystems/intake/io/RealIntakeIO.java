@@ -135,25 +135,45 @@ public class RealIntakeIO implements IntakeIO {
         _linearMotor::getOutputCurrent,
         (value) -> inputs._linearMotorCurrent = Amps.of(value));
 
-    // Roller motor
+    // Roller leader motor
     ifOk(
         _rollerMotorLeader,
         _rollerMotorLeader::getMotorTemperature,
-        (value) -> inputs._rollerMotorTemperature = Celsius.of(value));
+        (value) -> inputs._rollerMotorLeaderTemperature = Celsius.of(value));
     ifOk(
         _rollerMotorLeader,
         _rollerMotorLeader.getEncoder()::getVelocity,
-        (value) -> inputs._rollerMotorVelocity = RadiansPerSecond.of(value));
+        (value) -> inputs._rollerMotorLeaderVelocity = RadiansPerSecond.of(value));
     ifOk(
         _rollerMotorLeader,
         new java.util.function.DoubleSupplier[] {
           _rollerMotorLeader::getAppliedOutput, _rollerMotorLeader::getBusVoltage
         },
-        (values) -> inputs._rollerMotorVoltage = Volts.of(values[0] * values[1]));
+        (values) -> inputs._rollerMotorLeaderVoltage = Volts.of(values[0] * values[1]));
     ifOk(
         _rollerMotorLeader,
         _rollerMotorLeader::getOutputCurrent,
-        (value) -> inputs._rollerMotorCurrent = Amps.of(value));
+        (value) -> inputs._rollerMotorLeaderCurrent = Amps.of(value));
+
+    // Roller follower motor
+    ifOk(
+        _rollerMotorFollower,
+        _rollerMotorFollower::getMotorTemperature,
+        (value) -> inputs._rollerMotorFollowerTemperature = Celsius.of(value));
+    ifOk(
+        _rollerMotorFollower,
+        _rollerMotorFollower.getEncoder()::getVelocity,
+        (value) -> inputs._rollerMotorFollowerVelocity = RadiansPerSecond.of(value));
+    ifOk(
+        _rollerMotorFollower,
+        new java.util.function.DoubleSupplier[] {
+          _rollerMotorFollower::getAppliedOutput, _rollerMotorFollower::getBusVoltage
+        },
+        (values) -> inputs._rollerMotorFollowerVoltage = Volts.of(values[0] * values[1]));
+    ifOk(
+        _rollerMotorFollower,
+        _rollerMotorFollower::getOutputCurrent,
+        (value) -> inputs._rollerMotorFollowerCurrent = Amps.of(value));
   }
 
   // Linear slide motor methods

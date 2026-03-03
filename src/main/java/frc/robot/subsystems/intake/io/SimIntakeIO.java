@@ -146,12 +146,17 @@ public class SimIntakeIO implements IntakeIO {
     inputs._linearMotorVoltage = Volts.of(_linearAppliedVoltage);
     inputs._linearMotorCurrent = Amps.of(linearCurrent);
 
-    // Roller motor (simple simulation — instant response)
-    inputs._rollerMotorTemperature = Celsius.of(35.0);
-    inputs._rollerMotorVelocity = RadiansPerSecond.of(_rollerDutyCycle * 500.0);
-    inputs._rollerMotorVoltage = Volts.of(_rollerDutyCycle * 12.0);
+    // Roller motors (simple simulation — instant response, follower mirrors leader)
+    inputs._rollerMotorLeaderTemperature = Celsius.of(35.0);
+    inputs._rollerMotorLeaderVelocity = RadiansPerSecond.of(_rollerDutyCycle * 500.0);
+    inputs._rollerMotorLeaderVoltage = Volts.of(_rollerDutyCycle * 12.0);
     _rollerSimulatedCurrent = Math.abs(_rollerDutyCycle) * 20.0;
-    inputs._rollerMotorCurrent = Amps.of(_rollerSimulatedCurrent);
+    inputs._rollerMotorLeaderCurrent = Amps.of(_rollerSimulatedCurrent);
+
+    inputs._rollerMotorFollowerTemperature = Celsius.of(35.0);
+    inputs._rollerMotorFollowerVelocity = RadiansPerSecond.of(-_rollerDutyCycle * 500.0);
+    inputs._rollerMotorFollowerVoltage = Volts.of(-_rollerDutyCycle * 12.0);
+    inputs._rollerMotorFollowerCurrent = Amps.of(_rollerSimulatedCurrent);
   }
 
   @Override

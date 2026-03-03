@@ -29,11 +29,17 @@ public interface IntakeIO {
     public Voltage _linearMotorVoltage;
     public Current _linearMotorCurrent;
 
-    // Roller motor
-    public Temperature _rollerMotorTemperature;
-    public AngularVelocity _rollerMotorVelocity;
-    public Voltage _rollerMotorVoltage;
-    public Current _rollerMotorCurrent;
+    // Roller leader motor
+    public Temperature _rollerMotorLeaderTemperature;
+    public AngularVelocity _rollerMotorLeaderVelocity;
+    public Voltage _rollerMotorLeaderVoltage;
+    public Current _rollerMotorLeaderCurrent;
+
+    // Roller follower motor
+    public Temperature _rollerMotorFollowerTemperature;
+    public AngularVelocity _rollerMotorFollowerVelocity;
+    public Voltage _rollerMotorFollowerVoltage;
+    public Current _rollerMotorFollowerCurrent;
   }
 
   public default void updateInputs(IntakeIOInputs inputs) {}
