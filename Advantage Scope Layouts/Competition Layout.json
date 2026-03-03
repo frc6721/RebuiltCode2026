@@ -14,8 +14,8 @@
             "/RealOutputs/Drive/SwerveStates",
             "/RealOutputs/Feeder/FeederSpeed",
             "/RealOutputs",
-            "/RealOutputs/Vision",
-            "/RealOutputs/Vision/Summary"
+            "/RealOutputs/Vision/Summary",
+            "/RealOutputs/Simulation/VirtualHopper"
           ]
         },
         "tabs": {
@@ -148,9 +148,9 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -13.411880784159337,
-                  5.717128140584324,
-                  6.18015322397679
+                  -11.482167098815987,
+                  11.512762163711804,
+                  15.26273219127537
                 ],
                 "cameraTarget": [
                   0,
@@ -158,7 +158,7 @@
                   0
                 ]
               },
-              "controlsHeight": 264
+              "controlsHeight": 372
             },
             {
               "type": 1,

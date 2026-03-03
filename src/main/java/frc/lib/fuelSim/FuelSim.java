@@ -342,8 +342,8 @@ public class FuelSim {
   /**
    * Creates a new instance of FuelSim
    *
-   * @param logKey AdvantageKit log key to log fuel positions to as an array of {@link Translation3d}
-   *     structs. Fuels will be logged at logKey + "/Fuels".
+   * @param logKey AdvantageKit log key to log fuel positions to as an array of {@link
+   *     Translation3d} structs. Fuels will be logged at logKey + "/Fuels".
    */
   public FuelSim(String logKey) {
     // Initialize grid
@@ -416,13 +416,10 @@ public class FuelSim {
     // Logger.recordOutput("Fuel Simulation/Lines (debug)", lines);
   }
 
-  /**
-   * Adds array of `Translation3d`'s to AdvantageKit logger at logKey + "/Fuels"
-   */
+  /** Adds array of `Translation3d`'s to AdvantageKit logger at logKey + "/Fuels" */
   public void logFuels() {
     Logger.recordOutput(
-        logKey + "/Fuels",
-        fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
+        logKey + "/Fuels", fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
   }
 
   /** Start the simulation. `updateSim` must still be called every loop */
