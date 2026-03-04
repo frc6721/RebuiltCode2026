@@ -1,10 +1,8 @@
 Without robot:
 
-- make autos
-    - run autos in sim
 - comp button mapping
-    - button to auto shoot
     - button to toggle intake rollers?
+    - make button to spit / un jam fuel.
     - button to shoot from tower
     - climber up
     - climber down
