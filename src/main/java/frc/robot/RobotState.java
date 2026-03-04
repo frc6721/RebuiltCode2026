@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.FieldConstants;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.LoggedTrigger;
 import frc.robot.util.PointInPolygon;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -804,8 +805,9 @@ public class RobotState {
    *     .onTrue(FeederCommands.runFeeder(feeder));
    * </pre>
    */
-  public final Trigger facingTarget =
-      new Trigger(
+  public final LoggedTrigger facingTarget =
+      new LoggedTrigger(
+          "RobotState/FacingTarget",
           () ->
               Math.abs(
                       getAngleToActiveTarget().minus(getEstimatedPose().getRotation()).getDegrees())

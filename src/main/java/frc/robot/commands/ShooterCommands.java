@@ -249,17 +249,33 @@ public class ShooterCommands {
 
   /**
    * Creates a complete shooting sequence: continuously tracks hub distance, waits for flywheel to
-   * reach speed (2s timeout), feeds the game piece, and stops the flywheel on end.
+   * reach speed AND robot to face the target (2s timeout), then feeds the game piece.
+   *
+   * <p>The robot will only feed when BOTH conditions are met:
+   *
+   * <ul>
+   *   <li>Flywheel is at target speed (within PID tolerance)
+   *   <li>Robot is facing the active target (within {@link
+   *       frc.robot.RobotState#SHOOT_TOLERANCE_DEGREES} degrees)
+   * </ul>
+   *
+   * <p>If neither condition is met within 2 seconds, feeding begins anyway as a safety timeout.
    *
    * @param shooter The shooter subsystem
    * @param feeder The feeder subsystem
+   * @param hopper The hopper subsystem
    * @return A complete shooting sequence command
    */
   public static Command shootToHubSequence(
       Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper) {
     return shootToHub(shooter)
         .alongWith(
-            Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
+            // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
+            // or give up waiting after 2 seconds (safety timeout)
+            Commands.waitUntil(
+                    () ->
+                        shooter.areFlywheelsAtTargetSpeed()
+                            && RobotState.getInstance().facingTarget.getAsBoolean())
                 .withTimeout(2.0)
                 .andThen(
                     FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
@@ -304,9 +320,19 @@ public class ShooterCommands {
    *
    * <ol>
    *   <li>Continuously adjusts flywheel speed for the active target (hub or feed)
-   *   <li>Waits for the flywheel to reach speed (2s timeout for safety)
+   *   <li>Waits for the flywheel to reach speed AND the robot to face the target (2s timeout)
    *   <li>Runs the feeder and hopper to launch the game piece
    * </ol>
+   *
+   * <p>The robot will only feed when BOTH conditions are met:
+   *
+   * <ul>
+   *   <li>Flywheel is at target speed (within PID tolerance)
+   *   <li>Robot is facing the active target (within {@link
+   *       frc.robot.RobotState#SHOOT_TOLERANCE_DEGREES} degrees)
+   * </ul>
+   *
+   * <p>If neither condition is met within 2 seconds, feeding begins anyway as a safety timeout.
    *
    * <p>Pair this with {@link frc.robot.commands.DriveCommands#joystickDriveAtAngle} using {@link
    * RobotState#getAngleToActiveTarget()} for full auto-aim + auto-shoot.
@@ -319,7 +345,12 @@ public class ShooterCommands {
   public static Command shootToActiveTargetSequence(Shooter shooter, Feeder feeder, Hopper hopper) {
     return shootToActiveTarget(shooter)
         .alongWith(
-            Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
+            // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
+            // or give up waiting after 2 seconds (safety timeout)
+            Commands.waitUntil(
+                    () ->
+                        shooter.areFlywheelsAtTargetSpeed()
+                            && RobotState.getInstance().facingTarget.getAsBoolean())
                 .withTimeout(2.0)
                 .andThen(
                     FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))

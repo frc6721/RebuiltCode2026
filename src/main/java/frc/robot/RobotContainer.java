@@ -320,6 +320,7 @@ public class RobotContainer {
     // - Automatically determines target based on field position (hub, feed left, feed right)
     // - Continuously adjusts flywheel speed based on distance to the active target
     // - Automatically rotates robot so the BACK (shooter) faces the active target
+    // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
     // - Driver maintains full control of translation (forward/back, left/right)
     // controller
     //     .rightBumper()
@@ -500,6 +501,7 @@ public class RobotContainer {
     // - Automatically determines target based on field position (hub, feed left, feed right)
     // - Continuously adjusts flywheel speed based on distance to the active target
     // - Automatically rotates robot so the BACK (shooter) faces the active target
+    // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
     // - Driver maintains full control of translation (forward/back, left/right)
     controller
         .y()
