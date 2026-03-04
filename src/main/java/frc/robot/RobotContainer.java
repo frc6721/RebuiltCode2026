@@ -317,8 +317,9 @@ public class RobotContainer {
     //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
     // Dynamic shooting with auto-aiming:
-    // - Continuously adjusts flywheel speed based on distance to alliance hub
-    // - Automatically rotates robot so the BACK (shooter) faces the hub
+    // - Automatically determines target based on field position (hub, feed left, feed right)
+    // - Continuously adjusts flywheel speed based on distance to the active target
+    // - Automatically rotates robot so the BACK (shooter) faces the active target
     // - Driver maintains full control of translation (forward/back, left/right)
     // controller
     //     .rightBumper()
@@ -329,9 +330,9 @@ public class RobotContainer {
     //                 drive,
     //                 () -> -controller.getLeftY(),
     //                 () -> -controller.getLeftX(),
-    //                 () -> RobotState.getInstance().getAngleToAllianceHub(),
-    //                 true) // true = aim back of robot (shooter) at the hub
-    //             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper)))
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true) // true = aim back of robot (shooter) at the active target
+    //             .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
     //     .onFalse(
     //
     // FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
@@ -496,8 +497,9 @@ public class RobotContainer {
     //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
     // Dynamic shooting with auto-aiming:
-    // - Continuously adjusts flywheel speed based on distance to alliance hub
-    // - Automatically rotates robot so the BACK (shooter) faces the hub
+    // - Automatically determines target based on field position (hub, feed left, feed right)
+    // - Continuously adjusts flywheel speed based on distance to the active target
+    // - Automatically rotates robot so the BACK (shooter) faces the active target
     // - Driver maintains full control of translation (forward/back, left/right)
     controller
         .y()
@@ -508,9 +510,9 @@ public class RobotContainer {
                     drive,
                     () -> -controller.getLeftY(),
                     () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToAllianceHub(),
-                    true) // true = aim back of robot (shooter) at the hub
-                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper)))
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true) // true = aim back of robot (shooter) at the active target
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
         .onFalse(
             FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
 

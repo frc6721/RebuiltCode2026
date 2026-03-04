@@ -5,9 +5,11 @@ import static edu.wpi.first.units.Units.RPM;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -95,12 +97,27 @@ public class ShotCalculator {
    * @return The required flywheel angular velocity
    */
   public AngularVelocity getFlywheelSpeedForTarget(Translation3d target) {
+    return getFlywheelSpeedForTarget(target, ShooterConstants.DistanceMap.SPEED_MAP);
+  }
+
+  /**
+   * Calculates the required flywheel speed using a specific speed map.
+   *
+   * <p>Different targets (hub vs feed) use different speed maps because they require different RPMs
+   * at the same distance. Hub shots are direct and fast; feed shots are slower lobs.
+   *
+   * @param target The target position to shoot at (Translation3d in field coordinates)
+   * @param speedMap The interpolation table mapping distance (meters) to RPM
+   * @return The required flywheel angular velocity
+   */
+  public AngularVelocity getFlywheelSpeedForTarget(
+      Translation3d target, InterpolatingDoubleTreeMap speedMap) {
     Translation2d robotPosition = RobotState.getInstance().getEstimatedPose().getTranslation();
 
     Translation2d targetPosition2d = target.toTranslation2d();
     double distanceMeters = robotPosition.getDistance(targetPosition2d);
 
-    double speedRPM = ShooterConstants.DistanceMap.SPEED_MAP.get(distanceMeters);
+    double speedRPM = speedMap.get(distanceMeters);
 
     double minRPM = ShooterConstants.Limits.MIN_SPEED.in(RPM);
     double maxRPM = ShooterConstants.Limits.MAX_SPEED.in(RPM);
@@ -112,6 +129,51 @@ public class ShotCalculator {
     Logger.recordOutput("Shooter/ShotCalculator/CalculatedSpeed_RPM", speedRPM);
 
     return RPM.of(speedRPM);
+  }
+
+  /**
+   * Calculates the required flywheel speed for a specific {@link Target} enum value.
+   *
+   * <p>Automatically selects the correct speed map:
+   *
+   * <ul>
+   *   <li>{@link Target#HUB} → Uses the hub speed map ({@link
+   *       ShooterConstants.DistanceMap#SPEED_MAP})
+   *   <li>{@link Target#FEED_LEFT} / {@link Target#FEED_RIGHT} → Uses the feed speed map ({@link
+   *       ShooterConstants.DistanceMap#FEED_SPEED_MAP})
+   * </ul>
+   *
+   * @param target The target to shoot at
+   * @return The required flywheel angular velocity
+   */
+  public AngularVelocity getFlywheelSpeedForTarget(Target target) {
+    InterpolatingDoubleTreeMap speedMap =
+        target.isFeedTarget()
+            ? ShooterConstants.DistanceMap.FEED_SPEED_MAP
+            : ShooterConstants.DistanceMap.SPEED_MAP;
+
+    Logger.recordOutput("Shooter/ShotCalculator/TargetType", target.name());
+    Logger.recordOutput("Shooter/ShotCalculator/IsFeedShot", target.isFeedTarget());
+
+    return getFlywheelSpeedForTarget(target.getPosition(), speedMap);
+  }
+
+  /**
+   * Calculates the required flywheel speed for the currently active target.
+   *
+   * <p>This is the primary method commands should use. It automatically:
+   *
+   * <ol>
+   *   <li>Determines the active target from {@link RobotState#getActiveTarget()}
+   *   <li>Selects the correct speed map (hub vs feed)
+   *   <li>Calculates distance-based RPM
+   * </ol>
+   *
+   * @return The required flywheel angular velocity for the active target
+   */
+  public AngularVelocity getFlywheelSpeedForActiveTarget() {
+    Target activeTarget = RobotState.getInstance().getActiveTarget();
+    return getFlywheelSpeedForTarget(activeTarget);
   }
 
   /**

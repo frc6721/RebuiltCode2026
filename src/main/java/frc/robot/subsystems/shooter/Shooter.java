@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.VirtualHopper;
 import frc.lib.fuelSim.FuelSim;
+import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 import frc.robot.subsystems.shooter.io.ShooterIO;
 import frc.robot.subsystems.shooter.io.ShooterIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
@@ -300,6 +302,36 @@ public class Shooter extends SubsystemBase {
   public void updateSpeedForTarget(Translation3d target) {
     AngularVelocity targetSpeed = ShotCalculator.getInstance().getFlywheelSpeedForTarget(target);
     setFlywheelSpeed(targetSpeed);
+  }
+
+  /**
+   * Updates the flywheel speed for the currently active target based on field position.
+   *
+   * <p>This is the primary method for automatic target-based shooting. It:
+   *
+   * <ol>
+   *   <li>Queries {@link RobotState#getActiveTarget()} to determine what to shoot at (hub or feed)
+   *   <li>Selects the correct speed map (hub shots use different RPMs than feed shots)
+   *   <li>Calculates distance-based RPM and sets the flywheel
+   * </ol>
+   *
+   * <p>Call this continuously (e.g., from a command's execute()) to adjust speed as the robot moves
+   * and the active target may change.
+   */
+  public void updateSpeedForActiveTarget() {
+    AngularVelocity targetSpeed = ShotCalculator.getInstance().getFlywheelSpeedForActiveTarget();
+    setFlywheelSpeed(targetSpeed);
+  }
+
+  /**
+   * Returns the currently active target based on the robot's field position.
+   *
+   * <p>Convenience method that delegates to {@link RobotState#getActiveTarget()}.
+   *
+   * @return The active {@link Target} (HUB, FEED_LEFT, or FEED_RIGHT)
+   */
+  public Target getActiveTarget() {
+    return RobotState.getInstance().getActiveTarget();
   }
 
   /**

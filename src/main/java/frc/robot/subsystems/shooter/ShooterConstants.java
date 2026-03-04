@@ -185,14 +185,36 @@ public class ShooterConstants {
   /** Distance-to-speed lookup table for automatic shooting. */
   public static class DistanceMap {
     /**
-     * Maps distance to target (meters) → required shooter speed (RPM). Characterize by shooting
-     * from various distances and recording the RPM needed.
+     * Maps distance to hub target (meters) → required shooter speed (RPM). Characterize by shooting
+     * from various distances and recording the RPM needed to score in the hub.
      */
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
       SPEED_MAP.put(Feet.of(1).in(Meters), RPM.of(400.0).in(RPM));
       SPEED_MAP.put(Feet.of(10.0).in(Meters), RPM.of(2500.0).in(RPM));
+    }
+
+    /**
+     * Maps distance to feed target (meters) → required shooter speed (RPM). Feed shots are lobbed
+     * across the field to alliance partners. They use lower speeds because the ball needs to arc
+     * high and land gently.
+     *
+     * <p><b>To characterize:</b> Place the robot at known distances from the feed target, adjust
+     * RPM until the ball lands in the target zone, and record (distance, RPM) pairs.
+     */
+    public static final InterpolatingDoubleTreeMap FEED_SPEED_MAP =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      // Feed shots — lower RPM for arcing lob shots
+      // TODO: Characterize feed shot distances and RPMs on the actual field
+      FEED_SPEED_MAP.put(Meters.of(3.0).in(Meters), RPM.of(1700.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(5.0).in(Meters), RPM.of(2000.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(7.0).in(Meters), RPM.of(2500.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(9.0).in(Meters), RPM.of(2900.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(11.0).in(Meters), RPM.of(3200.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(13.0).in(Meters), RPM.of(3500.0).in(RPM));
     }
   }
 

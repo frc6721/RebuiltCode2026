@@ -2,6 +2,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -16,9 +17,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.FieldConstants;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.PointInPolygon;
+import java.util.List;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -467,4 +471,410 @@ public class RobotState {
   public void resetPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, lastModulePositions, pose);
   }
+
+  // ==================== TARGET ENUM ====================
+
+  /**
+   * Defines the possible shooting targets on the field.
+   *
+   * <p>Each target has a 3D position defined from the <b>blue alliance perspective</b>. {@link
+   * AllianceFlipUtil#apply(Translation3d)} is used at runtime to mirror positions for red alliance.
+   *
+   * <p><b>Targets:</b>
+   *
+   * <ul>
+   *   <li>{@link #HUB} — The alliance hub (primary scoring target)
+   *   <li>{@link #FEED_LEFT} — Feed shot toward the left side of the field (from driver POV)
+   *   <li>{@link #FEED_RIGHT} — Feed shot toward the right side of the field (from driver POV)
+   * </ul>
+   */
+  public enum Target {
+    /** The alliance hub — primary scoring target. */
+    HUB(
+        new Translation3d(
+            FieldConstants.Hub.topCenterPoint.getX(),
+            FieldConstants.Hub.topCenterPoint.getY(),
+            FieldConstants.Hub.height)),
+
+    /**
+     * Feed shot toward the left side of the field (from the blue driver station POV).
+     *
+     * <p>Position is halfway between the neutral zone line and the alliance wall, on the left half
+     * of the field. Height is 0 because feed shots are lobbed to the ground.
+     */
+    FEED_LEFT(
+        new Translation3d(
+            FieldConstants.LinesVertical.neutralZoneNear / 2.0,
+            (FieldConstants.LinesHorizontal.center + FieldConstants.fieldWidth) / 2.0,
+            0)),
+
+    /**
+     * Feed shot toward the right side of the field (from the blue driver station POV).
+     *
+     * <p>Position is halfway between the neutral zone line and the alliance wall, on the right half
+     * of the field.
+     */
+    FEED_RIGHT(
+        new Translation3d(
+            FieldConstants.LinesVertical.neutralZoneNear / 2.0,
+            (0.0 + FieldConstants.LinesHorizontal.center) / 2.0,
+            0));
+
+    /** The 3D position of this target from the blue alliance perspective. */
+    private final Translation3d bluePosition;
+
+    Target(Translation3d bluePosition) {
+      this.bluePosition = bluePosition;
+    }
+
+    /**
+     * Returns the alliance-corrected 3D position of this target.
+     *
+     * <p>Automatically mirrors the position for red alliance using {@link AllianceFlipUtil}.
+     *
+     * @return The target position in field coordinates
+     */
+    public Translation3d getPosition() {
+      return AllianceFlipUtil.apply(bluePosition);
+    }
+
+    /**
+     * Returns whether this target is a feed shot (FEED_LEFT or FEED_RIGHT).
+     *
+     * @return true if this is a feed target, false if it's the HUB
+     */
+    public boolean isFeedTarget() {
+      return this == FEED_LEFT || this == FEED_RIGHT;
+    }
+  }
+
+  // ==================== FIELD REGION ENUM ====================
+
+  /**
+   * Regions of the field used to determine which target the robot should shoot at.
+   *
+   * <p>All regions are defined from the <b>blue alliance perspective</b> and are automatically
+   * flipped for red alliance at runtime using {@link AllianceFlipUtil}.
+   *
+   * <p><b>Target Selection Rules:</b>
+   *
+   * <ul>
+   *   <li>{@link #ALLIANCE_ZONE} → Shoot at {@link Target#HUB}
+   *   <li>{@link #LEFT_BUMP_TRENCH} → Shoot at {@link Target#HUB}
+   *   <li>{@link #RIGHT_BUMP_TRENCH} → Shoot at {@link Target#HUB}
+   *   <li>{@link #NEUTRAL_ZONE} → Feed shot (left or right based on robot Y position)
+   *   <li>{@link #OPPONENT_ALLIANCE_ZONE} → Feed shot (left or right based on robot Y position)
+   * </ul>
+   */
+  public enum FieldRegion {
+    /** The area near our alliance wall, between the wall and the neutral zone line. */
+    ALLIANCE_ZONE,
+
+    /** The center of the field between the two neutral zone lines. */
+    NEUTRAL_ZONE,
+
+    /** The area near the opposing alliance wall. */
+    OPPONENT_ALLIANCE_ZONE,
+
+    /** The trench on the left side of the hub (from blue driver station POV). */
+    LEFT_BUMP_TRENCH,
+
+    /** The trench on the right side of the hub (from blue driver station POV). */
+    RIGHT_BUMP_TRENCH
+  }
+
+  // ==================== FIELD REGION DETECTION ====================
+
+  /**
+   * Determines which region of the field the robot is currently in.
+   *
+   * <p>Uses polygon-based hit detection with {@link PointInPolygon} to classify the robot's
+   * position. The polygons are defined from the blue alliance perspective and the robot's position
+   * is un-flipped before testing so the same polygons work for both alliances.
+   *
+   * <p><b>Region priority:</b> Trenches are checked first since they overlap with other zones.
+   *
+   * @return The {@link FieldRegion} the robot is currently in
+   */
+  @AutoLogOutput(key = "RobotState/FieldRegion")
+  public FieldRegion getFieldRegion() {
+    // Un-flip the robot's position to blue-alliance coordinates so we can use
+    // a single set of polygon definitions for both alliances.
+    Translation2d robotPos = AllianceFlipUtil.apply(getEstimatedPose().getTranslation());
+
+    // Check trenches first (they are sub-regions of the alliance zone)
+    if (isInLeftBumpTrench(robotPos)) {
+      return FieldRegion.LEFT_BUMP_TRENCH;
+    }
+    if (isInRightBumpTrench(robotPos)) {
+      return FieldRegion.RIGHT_BUMP_TRENCH;
+    }
+
+    // Check main zones by X position (blue alliance perspective)
+    double x = robotPos.getX();
+    if (x <= FieldConstants.LinesVertical.neutralZoneNear) {
+      return FieldRegion.ALLIANCE_ZONE;
+    } else if (x <= FieldConstants.LinesVertical.neutralZoneFar) {
+      return FieldRegion.NEUTRAL_ZONE;
+    } else {
+      return FieldRegion.OPPONENT_ALLIANCE_ZONE;
+    }
+  }
+
+  /**
+   * Checks if a point (in blue-alliance coordinates) is inside the left bump trench.
+   *
+   * <p>The left bump trench polygon is defined by the four corners of the left bump field element.
+   *
+   * @param point The robot's position in blue-alliance coordinates
+   * @return true if the robot is in the left bump trench
+   */
+  private boolean isInLeftBumpTrench(Translation2d point) {
+    // Define the left bump trench polygon using the bump corner constants
+    List<Translation2d> polygon =
+        List.of(
+            FieldConstants.LeftBump.nearLeftCorner,
+            FieldConstants.LeftBump.nearRightCorner,
+            FieldConstants.LeftBump.farRightCorner,
+            FieldConstants.LeftBump.farLeftCorner);
+    return PointInPolygon.pointInPolygon(point, polygon);
+  }
+
+  /**
+   * Checks if a point (in blue-alliance coordinates) is inside the right bump trench.
+   *
+   * @param point The robot's position in blue-alliance coordinates
+   * @return true if the robot is in the right bump trench
+   */
+  private boolean isInRightBumpTrench(Translation2d point) {
+    // Define the right bump trench polygon using the bump corner constants
+    List<Translation2d> polygon =
+        List.of(
+            FieldConstants.RightBump.nearLeftCorner,
+            FieldConstants.RightBump.nearRightCorner,
+            FieldConstants.RightBump.farRightCorner,
+            FieldConstants.RightBump.farLeftCorner);
+    return PointInPolygon.pointInPolygon(point, polygon);
+  }
+
+  // ==================== TARGET SELECTION ====================
+
+  /**
+   * Returns the target the robot should currently shoot at based on its field position.
+   *
+   * <p><b>Logic:</b>
+   *
+   * <ul>
+   *   <li>Alliance zone or either trench → {@link Target#HUB}
+   *   <li>Neutral zone or opponent zone → Feed shot (left or right based on robot Y)
+   * </ul>
+   *
+   * <p>For feed targets, the side is determined by comparing the robot's Y position to the field
+   * center line. If the robot is on the left half of the field (from the blue driver station POV),
+   * it feeds left; otherwise it feeds right.
+   *
+   * @return The {@link Target} the robot should shoot at
+   */
+  @AutoLogOutput(key = "RobotState/ActiveTarget")
+  public Target getActiveTarget() {
+    FieldRegion region = getFieldRegion();
+
+    switch (region) {
+      case ALLIANCE_ZONE:
+      case LEFT_BUMP_TRENCH:
+      case RIGHT_BUMP_TRENCH:
+        // Close to our hub — shoot directly at it
+        return Target.HUB;
+
+      case NEUTRAL_ZONE:
+      case OPPONENT_ALLIANCE_ZONE:
+      default:
+        // Too far from hub — lob a feed shot to our alliance side
+        return getFeedTargetForCurrentPosition();
+    }
+  }
+
+  /**
+   * Determines which feed target (left or right) to use based on the robot's Y position.
+   *
+   * <p>Compares the robot's Y coordinate to the field center line. This uses the actual
+   * (non-flipped) robot position because the feed targets are already alliance-flipped.
+   *
+   * @return {@link Target#FEED_LEFT} or {@link Target#FEED_RIGHT}
+   */
+  private Target getFeedTargetForCurrentPosition() {
+    // Un-flip to blue coordinates for consistent left/right determination
+    Translation2d bluePos = AllianceFlipUtil.apply(getEstimatedPose().getTranslation());
+    double fieldCenterY = FieldConstants.fieldWidth / 2.0;
+
+    if (bluePos.getY() > fieldCenterY) {
+      return Target.FEED_LEFT;
+    } else {
+      return Target.FEED_RIGHT;
+    }
+  }
+
+  // ==================== ANGLE TO TARGET ====================
+
+  /**
+   * Returns the angle the robot should face to point at the currently active target.
+   *
+   * <p>This is the primary method commands should use for auto-aiming. It automatically selects the
+   * correct target based on field position.
+   *
+   * @return The heading to face the active target
+   */
+  @AutoLogOutput(key = "RobotState/AngleToActiveTarget")
+  public Rotation2d getAngleToActiveTarget() {
+    return getAngleToTarget(getActiveTarget());
+  }
+
+  /**
+   * Returns the angle the robot should face to point at a specific target.
+   *
+   * <p>Calculates the bearing from the robot's current position to the target's position.
+   *
+   * @param target The target to aim at
+   * @return The heading the robot should face to point at the target
+   */
+  public Rotation2d getAngleToTarget(Target target) {
+    Pose2d currentPose = getEstimatedPose();
+    Translation2d targetPos = target.getPosition().toTranslation2d();
+    Translation2d robotToTarget = targetPos.minus(currentPose.getTranslation());
+    return new Rotation2d(robotToTarget.getX(), robotToTarget.getY());
+  }
+
+  /**
+   * Returns the distance from the robot to the currently active target.
+   *
+   * @return Distance to the active target
+   */
+  @AutoLogOutput(key = "RobotState/DistanceToActiveTarget_m")
+  public Distance getDistanceToActiveTarget() {
+    return getDistanceToTarget(getActiveTarget());
+  }
+
+  /**
+   * Returns the distance from the robot to a specific target.
+   *
+   * @param target The target to measure distance to
+   * @return Distance to the target
+   */
+  public Distance getDistanceToTarget(Target target) {
+    return getDistanceToPoint(target.getPosition().toTranslation2d());
+  }
+
+  // ==================== TRIGGERS ====================
+
+  /**
+   * Tolerance (in degrees) for determining if the robot is facing its target.
+   *
+   * <p>Used by the {@link #facingTarget} trigger.
+   */
+  private static final double SHOOT_TOLERANCE_DEGREES = 5.0;
+
+  /**
+   * Trigger that fires when the robot is facing the active target within tolerance.
+   *
+   * <p>This can be used to gate shooting — only feed the game piece when the robot is aimed
+   * correctly. Checks if the difference between the robot's current heading and the angle to the
+   * target is within {@link #SHOOT_TOLERANCE_DEGREES}.
+   *
+   * <p><b>Usage:</b>
+   *
+   * <pre>
+   * RobotState.getInstance().facingTarget
+   *     .and(() -> shooter.areFlywheelsAtTargetSpeed())
+   *     .onTrue(FeederCommands.runFeeder(feeder));
+   * </pre>
+   */
+  public final Trigger facingTarget =
+      new Trigger(
+          () ->
+              Math.abs(
+                      getAngleToActiveTarget().minus(getEstimatedPose().getRotation()).getDegrees())
+                  < SHOOT_TOLERANCE_DEGREES);
+
+  // ==================== TRENCH TRIGGERS (for robots with adjustable hoods) ====================
+
+  /**
+   * Maximum time (in seconds) to look ahead when predicting trench entry.
+   *
+   * <p>If the robot will enter a trench within this time window, the {@link #enteringTrench}
+   * trigger fires. This gives mechanisms time to retract before hitting the trench ceiling.
+   */
+  private static final double MAX_TRENCH_RETRACT_TIME = 0.2;
+
+  /**
+   * Trigger that fires when the robot is about to enter a bump trench.
+   *
+   * <p><b>Purpose:</b> On robots with an adjustable hood or tall mechanisms, this trigger can be
+   * used to force retraction before the robot drives under the trench ceiling (22" clearance).
+   *
+   * <p><b>How it works:</b> Projects the robot's current position forward using its velocity and
+   * checks if the projected position would be inside a trench within {@link
+   * #MAX_TRENCH_RETRACT_TIME} seconds.
+   *
+   * <p><b>Note:</b> This trigger is defined but NOT used by the current robot (fixed hood). It is
+   * provided for reference and for robots that need trench-aware hood retraction.
+   *
+   * <p><b>Usage (for a robot with an adjustable hood):</b>
+   *
+   * <pre>
+   * RobotState.getInstance().enteringTrench
+   *     .onTrue(HoodCommands.retractHood(hood));
+   * </pre>
+   */
+  public final Trigger enteringTrench =
+      new Trigger(
+          () -> {
+            // Get the robot's current velocity in field-relative coordinates
+            ChassisSpeeds fieldVelocity = getFieldRelativeVelocity();
+            double vx = fieldVelocity.vxMetersPerSecond;
+            double vy = fieldVelocity.vyMetersPerSecond;
+            double speed = MetersPerSecond.of(Math.hypot(vx, vy)).in(MetersPerSecond);
+
+            // If the robot is barely moving, it's not entering anything
+            if (speed < 0.1) {
+              return false;
+            }
+
+            // Project the robot's position forward by the retract time
+            Translation2d currentPos = getEstimatedPose().getTranslation();
+            Translation2d projectedPos =
+                currentPos.plus(
+                    new Translation2d(vx * MAX_TRENCH_RETRACT_TIME, vy * MAX_TRENCH_RETRACT_TIME));
+
+            // Un-flip to blue coordinates for polygon check
+            Translation2d blueProjected = AllianceFlipUtil.apply(projectedPos);
+
+            // Check if the projected position is inside either trench
+            return isInLeftBumpTrench(blueProjected) || isInRightBumpTrench(blueProjected);
+          });
+
+  /**
+   * Trigger that fires when the hood is safe to actuate for a hub shot in autonomous.
+   *
+   * <p>The hood is considered safe when:
+   *
+   * <ul>
+   *   <li>The robot is in the alliance zone (near our hub)
+   *   <li>The robot is NOT about to enter a trench
+   * </ul>
+   *
+   * <p><b>Note:</b> This trigger is defined but NOT used by the current robot (fixed hood). It is
+   * provided for reference and for robots with adjustable hoods that need trench awareness.
+   *
+   * <p><b>Usage (for a robot with an adjustable hood):</b>
+   *
+   * <pre>
+   * RobotState.getInstance().hoodSafe
+   *     .onTrue(HoodCommands.setHoodForDistance(hood));
+   * </pre>
+   */
+  public final Trigger hoodSafe =
+      new Trigger(
+          () ->
+              getFieldRegion() == FieldRegion.ALLIANCE_ZONE
+                  && enteringTrench.negate().getAsBoolean());
 }

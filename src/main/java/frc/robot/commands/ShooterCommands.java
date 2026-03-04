@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.RobotState;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.shooter.Shooter;
@@ -264,5 +265,65 @@ public class ShooterCommands {
                     FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
                         .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.3))))
         .withName("ShootToHubSequence");
+  }
+
+  // ==================== ACTIVE TARGET COMMANDS ====================
+
+  /**
+   * Creates a command to continuously update flywheel speed for the active target.
+   *
+   * <p>The active target is determined by the robot's field position via {@link
+   * RobotState#getActiveTarget()}:
+   *
+   * <ul>
+   *   <li>Alliance zone or trench → HUB (direct shot with hub speed map)
+   *   <li>Neutral zone or opponent zone → FEED_LEFT or FEED_RIGHT (lob shot with feed speed map)
+   * </ul>
+   *
+   * <p>Updates every 20ms as the robot moves. The target and speed map can change mid-command if
+   * the robot crosses a zone boundary.
+   *
+   * <p>Runs until interrupted — typically used with {@code whileTrue()} button binding.
+   *
+   * @param shooter The shooter subsystem
+   * @return A command that continuously updates flywheel speed for the active target
+   */
+  public static Command shootToActiveTarget(Shooter shooter) {
+    return Commands.run(
+            () -> {
+              shooter.updateSpeedForActiveTarget();
+            },
+            shooter)
+        .withName("ShootToActiveTarget");
+  }
+
+  /**
+   * Creates a complete shooting sequence that targets the active target based on field position.
+   *
+   * <p>This is the primary "shoot" command for teleop. It:
+   *
+   * <ol>
+   *   <li>Continuously adjusts flywheel speed for the active target (hub or feed)
+   *   <li>Waits for the flywheel to reach speed (2s timeout for safety)
+   *   <li>Runs the feeder and hopper to launch the game piece
+   * </ol>
+   *
+   * <p>Pair this with {@link frc.robot.commands.DriveCommands#joystickDriveAtAngle} using {@link
+   * RobotState#getAngleToActiveTarget()} for full auto-aim + auto-shoot.
+   *
+   * @param shooter The shooter subsystem
+   * @param feeder The feeder subsystem
+   * @param hopper The hopper subsystem
+   * @return A complete shooting sequence command targeting the active target
+   */
+  public static Command shootToActiveTargetSequence(Shooter shooter, Feeder feeder, Hopper hopper) {
+    return shootToActiveTarget(shooter)
+        .alongWith(
+            Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
+                .withTimeout(2.0)
+                .andThen(
+                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
+                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.3))))
+        .withName("ShootToActiveTargetSequence");
   }
 }
