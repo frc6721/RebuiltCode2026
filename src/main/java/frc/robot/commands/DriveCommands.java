@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.AllianceFlipUtil;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
@@ -186,6 +187,78 @@ public class DriveCommands {
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  /**
+   * Field relative drive command that snaps the robot to the nearest "straight" X-axis heading.
+   *
+   * <p>The two X-axis headings are 0° (facing the red alliance wall) and 180° (facing the blue
+   * alliance wall). The command picks whichever heading is closest to the robot's current heading
+   * so the robot doesn't spin around. For example:
+   *
+   * <ul>
+   *   <li>If the robot is roughly facing the red wall (heading between -90° and 90°), it snaps to
+   *       0°.
+   *   <li>If the robot is roughly facing the blue wall (heading outside that range), it snaps to
+   *       180°.
+   * </ul>
+   *
+   * <p>This is useful for quickly straightening out to drive through the trench.
+   *
+   * @param drive The drive subsystem
+   * @param xSupplier Joystick X axis (left/right translation)
+   * @param ySupplier Joystick Y axis (forward/back translation)
+   */
+  public static Command joystickDriveSnapToNearestXHeading(
+      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+
+    return joystickDriveAtAngle(
+        drive,
+        xSupplier,
+        ySupplier,
+        () -> {
+          // Get the robot's current heading in radians (-PI to PI)
+          double currentRadians = drive.getRotation().getRadians();
+
+          // If the absolute heading is <= 90° (PI/2), the robot is closer to 0° (facing red wall)
+          // Otherwise, it's closer to 180° (facing blue wall)
+          if (Math.abs(currentRadians) <= Math.PI / 2.0) {
+            return Rotation2d.kZero; // Snap to 0°
+          } else {
+            return Rotation2d.kPi; // Snap to 180°
+          }
+        });
+  }
+
+  /**
+   * Field relative drive command that rotates the robot so the intake (front) faces the alliance
+   * wall.
+   *
+   * <p>Uses {@link AllianceFlipUtil} to determine which wall to face:
+   *
+   * <ul>
+   *   <li><b>Blue alliance:</b> Intake faces 180° (toward the blue wall at X = 0)
+   *   <li><b>Red alliance:</b> Intake faces 0° (toward the red wall at X = fieldLength)
+   * </ul>
+   *
+   * <p>This is useful for lining up to drive through the trench with the intake leading.
+   *
+   * @param drive The drive subsystem
+   * @param xSupplier Joystick X axis (left/right translation)
+   * @param ySupplier Joystick Y axis (forward/back translation)
+   */
+  public static Command joystickDriveIntakeAtAllianceWall(
+      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+
+    return joystickDriveAtAngle(
+        drive,
+        xSupplier,
+        ySupplier,
+        () -> {
+          // From blue perspective, intake (front) toward blue wall = 180°
+          // AllianceFlipUtil.apply rotates by 180° for red alliance → 0° (toward red wall)
+          return AllianceFlipUtil.apply(Rotation2d.kPi);
+        });
   }
 
   /**

@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Meters;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -146,37 +147,22 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    // autoChooser.addOption(
-    //     "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
     // Configure the button bindings
-    if (RobotBase.isSimulation()) {
-      //   configureSimButtonBindings();
+    if (DriverStation.isFMSAttached()) {
+      // Running in competition, only configure real button bindings
       configureButtonBindings();
+    } else if (RobotBase.isSimulation()) {
+      configureSimButtonBindings();
+      //   configureButtonBindings();
+      // Configure FuelSim for game piece visualization
+      configureFuelSim();
     } else {
       configureButtonBindings();
+      // Configure FuelSim for game piece visualization
+      configureFuelSim();
     }
 
-    SmartDashboard.putData(
-        "Retract Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
-    SmartDashboard.putData(
-        "Extend Intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
-
-    // Configure FuelSim for game piece visualization
-    configureFuelSim();
+    SmartDashboard.putData("Reset Intake Encoder", IntakeCommands.resetIntakeEncoder(intake));
   }
 
   /**
@@ -267,12 +253,12 @@ public class RobotContainer {
      *
      * <p>BUTTON BINDINGS:
      *
-     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
+     * <p>Right bumper: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
      * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
-     * while held, stop when released. A button: Run hopper at fixed speed while held, stop when
-     * released. X button: Manual control of intake linear slide forward while held, stop when
-     * released. Y button: Manual control of intake linear slide in reverse while held, stop when
-     * released.
+     * while held, stop when released. A button: Snap to nearest straight X-axis heading while held.
+     * B button: Point intake at alliance wall while held. X button: Manual control of intake linear
+     * slide forward while held, stop when released. Y button: Manual control of intake linear slide
+     * in reverse while held, stop when released.
      *
      * <p>****************************************************************
      */
@@ -384,6 +370,25 @@ public class RobotContainer {
         .leftTrigger(0.5)
         .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
 
+    // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
+    // Useful for straightening out to drive through the trench.
+    // The robot picks whichever direction (intake or shooter) is already closest to the X axis.
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveSnapToNearestXHeading(
+                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+    // B button: Point the intake (front) at the alliance wall while held.
+    // On blue alliance the intake faces 180° (toward blue wall).
+    // On red alliance the intake faces 0° (toward red wall).
+    // Uses AllianceFlipUtil so the correct heading is chosen automatically.
+    controller
+        .b()
+        .whileTrue(
+            DriveCommands.joystickDriveIntakeAtAllianceWall(
+                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
     // Reset gyro to 0° when left dpad is pressed
     controller
         .pov(270)
@@ -427,12 +432,12 @@ public class RobotContainer {
      *
      * <p>BUTTON BINDINGS:
      *
-     * <p>Right bumber: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
+     * <p>Right bumper: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
      * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
-     * while held, stop when released. A button: Run hopper at fixed speed while held, stop when
-     * released. X button: Manual control of intake linear slide forward while held, stop when
-     * released. Y button: Manual control of intake linear slide in reverse while held, stop when
-     * released.
+     * while held, stop when released. A button: Snap to nearest straight X-axis heading while held.
+     * B button: Point intake at alliance wall while held. X button: Manual control of intake linear
+     * slide forward while held, stop when released. Y button: Manual control of intake linear slide
+     * in reverse while held, stop when released.
      *
      * <p>****************************************************************
      */
@@ -542,6 +547,25 @@ public class RobotContainer {
     controller
         .leftTrigger(0.5)
         .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
+
+    // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
+    // Useful for straightening out to drive through the trench.
+    // The robot picks whichever direction (intake or shooter) is already closest to the X axis.
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveSnapToNearestXHeading(
+                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+    // B button: Point the intake (front) at the alliance wall while held.
+    // On blue alliance the intake faces 180° (toward blue wall).
+    // On red alliance the intake faces 0° (toward red wall).
+    // Uses AllianceFlipUtil so the correct heading is chosen automatically.
+    controller
+        .b()
+        .whileTrue(
+            DriveCommands.joystickDriveIntakeAtAllianceWall(
+                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
 
     // Reset gyro to 0° when left dpad is pressed
     controller
