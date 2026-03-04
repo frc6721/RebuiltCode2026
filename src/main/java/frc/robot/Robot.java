@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.VirtualHopper;
@@ -34,6 +36,10 @@ import org.littletonrobotics.urcl.URCL;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+
+  // Field2d widget to display the robot's current pose on the dashboard.
+  // This is updated every loop so the drive team can always see where the robot thinks it is.
+  private final Field2d fieldMap = new Field2d();
 
   public Robot() {
     // Record metadata
@@ -85,6 +91,9 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    // Publish the robot pose Field2d to the dashboard so we can see where the robot is
+    SmartDashboard.putData("Robot Pose Field Map", fieldMap);
   }
 
   /** This function is called periodically during all modes. */
@@ -111,7 +120,16 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+
+    // Update the robot's pose on the main field map dashboard widget
+    fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
+
+    // Update auto path preview and starting pose check
+    // This lets the drive team verify the selected auto path and robot placement
+    robotContainer.updateAutoPreview();
+    robotContainer.checkStartPose();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
@@ -130,7 +148,11 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    // Update the auto preview field with the robot's current pose during auto
+    // so we can see the robot following the path in real time
+    robotContainer.autoPreviewField.setRobotPose(RobotState.getInstance().getEstimatedPose());
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
