@@ -2,7 +2,6 @@ Without robot:
 
 - make autos
     - run autos in sim
-- auto pass in neutral zone
 - comp button mapping
     - button to auto shoot
     - button to toggle intake rollers?
