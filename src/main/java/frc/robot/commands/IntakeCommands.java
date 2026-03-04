@@ -78,6 +78,14 @@ public class IntakeCommands {
         intake);
   }
 
+  public static Command resetIntakeEncoder(Intake intake) {
+    return Commands.runOnce(
+        () -> {
+          intake.resetEncoder();
+        },
+        intake);
+  }
+
   /**
    * Creates a command to run the intake rollers at {@link
    * frc.robot.subsystems.intake.IntakeConstants.Roller#ACQUIRE_SPEED} for collecting game pieces.
