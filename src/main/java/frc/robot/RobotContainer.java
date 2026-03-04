@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -206,18 +207,19 @@ public class RobotContainer {
     // Extend the intake out from the robot frame and spin up the rollers to collect fuel.
     // Sets position once (PID handles movement) and runs rollers — finishes immediately
     // so PathPlanner can continue to the next path segment while intake stays extended.
-    new EventTrigger("deploy-intake").onTrue(
-        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
-            .andThen(IntakeCommands.runIntakeRollers(intake)));
+    new EventTrigger("deploy-intake")
+        .onTrue(
+            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+                .andThen(IntakeCommands.runIntakeRollers(intake)));
 
     // ── retract-intake ────────────────────────────────────────────────────────
     // Pull the intake back inside the frame perimeter and stop the rollers.
     // This protects the intake during driving and stops collecting fuel.
-    new EventTrigger("retract-intake").onTrue(
-        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
-            .andThen(IntakeCommands.stopIntakeRollers(intake)));
+    new EventTrigger("retract-intake")
+        .onTrue(
+            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
+                .andThen(IntakeCommands.stopIntakeRollers(intake)));
   }
-
 
   /**
    * Registers named commands for use in PathPlanner autonomous routines.
@@ -241,9 +243,8 @@ public class RobotContainer {
     // Sets position once (PID handles movement) and runs rollers — finishes immediately
     // so PathPlanner can continue to the next path segment while intake stays extended.
     NamedCommands.registerCommand(
-        "deploy-intake",
-        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
-            // .andThen(IntakeCommands.runIntakeRollers(intake)));
+        "deploy-intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+    // .andThen(IntakeCommands.runIntakeRollers(intake)));
 
     // ── retract-intake ────────────────────────────────────────────────────────
     // Pull the intake back inside the frame perimeter and stop the rollers.
@@ -279,6 +280,13 @@ public class RobotContainer {
                   shooter.stopFlywheels();
                   hopper.stop();
                 }));
+
+    NamedCommands.registerCommand(
+        "stop-shooter",
+        new ParallelCommandGroup(
+            ShooterCommands.stopFlywheels(shooter),
+            FeederCommands.stopFeeder(feeder),
+            HopperCommands.stopHopper(hopper)));
   }
 
   /**
