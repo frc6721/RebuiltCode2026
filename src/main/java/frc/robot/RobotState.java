@@ -757,6 +757,11 @@ public class RobotState {
     Pose2d currentPose = getEstimatedPose();
     Translation2d targetPos = target.getPosition().toTranslation2d();
     Translation2d robotToTarget = targetPos.minus(currentPose.getTranslation());
+
+    // Log the target position and vector for debugging aim issues
+    Logger.recordOutput("RobotState/TargetPosition", targetPos);
+    Logger.recordOutput("RobotState/RobotToTargetVector", robotToTarget);
+
     return new Rotation2d(robotToTarget.getX(), robotToTarget.getY());
   }
 
@@ -808,10 +813,20 @@ public class RobotState {
   public final LoggedTrigger facingTarget =
       new LoggedTrigger(
           "RobotState/FacingTarget",
-          () ->
-              Math.abs(
-                      getAngleToActiveTarget().minus(getEstimatedPose().getRotation()).getDegrees())
-                  < SHOOT_TOLERANCE_DEGREES);
+          () -> {
+            Rotation2d targetAngle = getAngleToActiveTarget();
+            Rotation2d robotHeading = getEstimatedPose().getRotation();
+            double headingErrorDeg = targetAngle.minus(robotHeading).getDegrees();
+
+            // Log intermediate values so we can debug aiming in AdvantageScope
+            Logger.recordOutput("RobotState/FacingTarget/TargetAngleDeg", targetAngle.getDegrees());
+            Logger.recordOutput(
+                "RobotState/FacingTarget/RobotHeadingDeg", robotHeading.getDegrees());
+            Logger.recordOutput("RobotState/FacingTarget/HeadingErrorDeg", headingErrorDeg);
+            Logger.recordOutput("RobotState/FacingTarget/ToleranceDeg", SHOOT_TOLERANCE_DEGREES);
+
+            return Math.abs(headingErrorDeg) < SHOOT_TOLERANCE_DEGREES;
+          });
 
   // ==================== TRENCH TRIGGERS (for robots with adjustable hoods) ====================
 

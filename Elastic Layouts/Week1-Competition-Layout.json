@@ -92,7 +92,7 @@
             "title": "Match Time",
             "x": 512.0,
             "y": 0.0,
-            "width": 512.0,
+            "width": 256.0,
             "height": 256.0,
             "type": "Large Text Display",
             "properties": {
@@ -103,14 +103,44 @@
           },
           {
             "title": "Alerts",
-            "x": 1024.0,
+            "x": 1280.0,
             "y": 0.0,
-            "width": 640.0,
+            "width": 384.0,
             "height": 256.0,
             "type": "Alerts",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Alerts",
               "period": 0.06
+            }
+          },
+          {
+            "title": "Active Target",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/RobotState/ActiveTarget",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "FacingTarget",
+            "x": 768.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/RobotState/FacingTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]

@@ -110,6 +110,10 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // Update the robot's pose on the main field map dashboard widget every loop
+    // This must be in robotPeriodic() so it runs in ALL modes (disabled, teleop, auto, test)
+    fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
+
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
   }
@@ -121,9 +125,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
-
-    // Update the robot's pose on the main field map dashboard widget
-    fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
 
     // Update auto path preview and starting pose check
     // This lets the drive team verify the selected auto path and robot placement

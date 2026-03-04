@@ -38,84 +38,83 @@ import org.littletonrobotics.junction.Logger;
  * }</pre>
  */
 public class LoggedTrigger extends Trigger {
-    private final String name;
+  private final String name;
 
-    /**
-     * Creates a new LoggedTrigger that logs state changes.
-     *
-     * @param name The name to use as the log key for AdvantageKit logging
-     * @param condition The condition to evaluate (typically a method reference or lambda)
-     */
-    public LoggedTrigger(String name, BooleanSupplier condition) {
-        super(new LoggingBooleanSupplier(name, condition));
-        this.name = name;
+  /**
+   * Creates a new LoggedTrigger that logs state changes.
+   *
+   * @param name The name to use as the log key for AdvantageKit logging
+   * @param condition The condition to evaluate (typically a method reference or lambda)
+   */
+  public LoggedTrigger(String name, BooleanSupplier condition) {
+    super(new LoggingBooleanSupplier(name, condition));
+    this.name = name;
+  }
+
+  /** Internal BooleanSupplier wrapper that logs state changes. */
+  private static class LoggingBooleanSupplier implements BooleanSupplier {
+    private final String logKey;
+    private final BooleanSupplier condition;
+    private boolean lastState = false;
+    private boolean initialized = false;
+
+    public LoggingBooleanSupplier(String logKey, BooleanSupplier condition) {
+      this.logKey = logKey;
+      this.condition = condition;
     }
 
-    /** Internal BooleanSupplier wrapper that logs state changes. */
-    private static class LoggingBooleanSupplier implements BooleanSupplier {
-        private final String logKey;
-        private final BooleanSupplier condition;
-        private boolean lastState = false;
-        private boolean initialized = false;
-
-        public LoggingBooleanSupplier(String logKey, BooleanSupplier condition) {
-            this.logKey = logKey;
-            this.condition = condition;
-        }
-
-        @Override
-        public boolean getAsBoolean() {
-            boolean currentState = condition.getAsBoolean();
-
-            // Log on state change or first evaluation
-            if (!initialized || currentState != lastState) {
-                Logger.recordOutput(logKey, currentState);
-                lastState = currentState;
-                initialized = true;
-            }
-
-            return currentState;
-        }
-    }
-
-    /**
-     * Composes two logged triggers with logical AND.
-     *
-     * <p>The resulting trigger uses a combined log name derived from both component triggers, so
-     * its AdvantageKit signal clearly represents the composite condition rather than reusing the
-     * base trigger's log key.
-     *
-     * @param trigger the condition to compose with
-     * @return A trigger which is active when both component triggers are active.
-     */
-    public LoggedTrigger and(LoggedTrigger trigger) {
-        String combinedName = this.name + "_AND_" + trigger.name;
-        return new LoggedTrigger(
-                combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
-    }
-
-    /**
-     * Creates a new debounced trigger from this trigger - it will become active when this trigger
-     * has been active for longer than the specified period.
-     *
-     * @param seconds The debounce period.
-     * @return The debounced trigger (rising edges debounced only)
-     */
     @Override
-    public LoggedTrigger debounce(double seconds) {
-        return debounce(seconds, Debouncer.DebounceType.kRising);
-    }
+    public boolean getAsBoolean() {
+      boolean currentState = condition.getAsBoolean();
 
-    /**
-     * Creates a new debounced trigger from this trigger - it will become active when this trigger
-     * has been active for longer than the specified period.
-     *
-     * @param seconds The debounce period.
-     * @param type The debounce type.
-     * @return The debounced trigger.
-     */
-    @Override
-    public LoggedTrigger debounce(double seconds, Debouncer.DebounceType type) {
-        return new LoggedTrigger(name, super.debounce(seconds, type));
+      // Log on state change or first evaluation
+      if (!initialized || currentState != lastState) {
+        Logger.recordOutput(logKey, currentState);
+        lastState = currentState;
+        initialized = true;
+      }
+
+      return currentState;
     }
+  }
+
+  /**
+   * Composes two logged triggers with logical AND.
+   *
+   * <p>The resulting trigger uses a combined log name derived from both component triggers, so its
+   * AdvantageKit signal clearly represents the composite condition rather than reusing the base
+   * trigger's log key.
+   *
+   * @param trigger the condition to compose with
+   * @return A trigger which is active when both component triggers are active.
+   */
+  public LoggedTrigger and(LoggedTrigger trigger) {
+    String combinedName = this.name + "_AND_" + trigger.name;
+    return new LoggedTrigger(combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
+  }
+
+  /**
+   * Creates a new debounced trigger from this trigger - it will become active when this trigger has
+   * been active for longer than the specified period.
+   *
+   * @param seconds The debounce period.
+   * @return The debounced trigger (rising edges debounced only)
+   */
+  @Override
+  public LoggedTrigger debounce(double seconds) {
+    return debounce(seconds, Debouncer.DebounceType.kRising);
+  }
+
+  /**
+   * Creates a new debounced trigger from this trigger - it will become active when this trigger has
+   * been active for longer than the specified period.
+   *
+   * @param seconds The debounce period.
+   * @param type The debounce type.
+   * @return The debounced trigger.
+   */
+  @Override
+  public LoggedTrigger debounce(double seconds, Debouncer.DebounceType type) {
+    return new LoggedTrigger(name, super.debounce(seconds, type));
+  }
 }
