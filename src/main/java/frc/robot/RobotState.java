@@ -23,7 +23,6 @@ import frc.lib.FieldConstants;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.PointInPolygon;
 import java.util.List;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -142,9 +141,10 @@ public class RobotState {
    *
    * @return The robot's current estimated pose
    */
-  @AutoLogOutput(key = "RobotState/EstimatedPose")
   public Pose2d getEstimatedPose() {
-    return poseEstimator.getEstimatedPosition();
+    Pose2d pose = poseEstimator.getEstimatedPosition();
+    Logger.recordOutput("RobotState/EstimatedPose", pose);
+    return pose;
   }
 
   /**
@@ -174,10 +174,12 @@ public class RobotState {
    *
    * @return Field-relative chassis speeds
    */
-  @AutoLogOutput(key = "RobotState/FieldRelativeVelocity")
   public ChassisSpeeds getFieldRelativeVelocity() {
     ChassisSpeeds robotRelative = getRobotRelativeVelocity();
-    return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelative, getRotation());
+    ChassisSpeeds fieldRelative =
+        ChassisSpeeds.fromRobotRelativeSpeeds(robotRelative, getRotation());
+    Logger.recordOutput("RobotState/FieldRelativeVelocity", fieldRelative);
+    return fieldRelative;
   }
 
   /**
@@ -193,9 +195,10 @@ public class RobotState {
    *
    * @return Robot-relative chassis speeds
    */
-  @AutoLogOutput(key = "RobotState/RobotRelativeVelocity")
   public ChassisSpeeds getRobotRelativeVelocity() {
-    return kinematics.toChassisSpeeds(currentModuleStates);
+    ChassisSpeeds speeds = kinematics.toChassisSpeeds(currentModuleStates);
+    Logger.recordOutput("RobotState/RobotRelativeVelocity", speeds);
+    return speeds;
   }
 
   // ==================== DISTANCE CALCULATIONS ====================
@@ -214,10 +217,11 @@ public class RobotState {
    *
    * @return Distance to the alliance hub as a Distance measure
    */
-  @AutoLogOutput(key = "RobotState/DistanceToAllianceHub_m")
   public Distance getDistanceToAllianceHub() {
     Translation3d hubTarget = getAllianceHubTarget();
-    return getDistanceToPoint(hubTarget.toTranslation2d());
+    Distance distance = getDistanceToPoint(hubTarget.toTranslation2d());
+    Logger.recordOutput("RobotState/DistanceToAllianceHub_m", distance.in(Meters));
+    return distance;
   }
 
   /**
@@ -232,10 +236,11 @@ public class RobotState {
    *
    * @return Distance to the opposing hub as a Distance measure
    */
-  @AutoLogOutput(key = "RobotState/DistanceToOpposingHub_m")
   public Distance getDistanceToOpposingHub() {
     Translation3d hubTarget = getOpposingHubTarget();
-    return getDistanceToPoint(hubTarget.toTranslation2d());
+    Distance distance = getDistanceToPoint(hubTarget.toTranslation2d());
+    Logger.recordOutput("RobotState/DistanceToOpposingHub_m", distance.in(Meters));
+    return distance;
   }
 
   /**
@@ -343,9 +348,10 @@ public class RobotState {
    *
    * @return The heading the robot should face to point the front of the robot at the alliance hub
    */
-  @AutoLogOutput(key = "RobotState/AngleToAllianceHub")
   public Rotation2d getAngleToAllianceHub() {
-    return getAngleToAllianceHub(false);
+    Rotation2d angle = getAngleToAllianceHub(false);
+    Logger.recordOutput("RobotState/AngleToAllianceHub", angle);
+    return angle;
   }
 
   /**
@@ -596,7 +602,6 @@ public class RobotState {
    *
    * @return The {@link FieldRegion} the robot is currently in
    */
-  @AutoLogOutput(key = "RobotState/FieldRegion")
   public FieldRegion getFieldRegion() {
     // Un-flip the robot's position to blue-alliance coordinates so we can use
     // a single set of polygon definitions for both alliances.
@@ -604,21 +609,26 @@ public class RobotState {
 
     // Check trenches first (they are sub-regions of the alliance zone)
     if (isInLeftBumpTrench(robotPos)) {
+      Logger.recordOutput("RobotState/FieldRegion", FieldRegion.LEFT_BUMP_TRENCH.name());
       return FieldRegion.LEFT_BUMP_TRENCH;
     }
     if (isInRightBumpTrench(robotPos)) {
+      Logger.recordOutput("RobotState/FieldRegion", FieldRegion.RIGHT_BUMP_TRENCH.name());
       return FieldRegion.RIGHT_BUMP_TRENCH;
     }
 
     // Check main zones by X position (blue alliance perspective)
     double x = robotPos.getX();
+    FieldRegion region;
     if (x <= FieldConstants.LinesVertical.neutralZoneNear) {
-      return FieldRegion.ALLIANCE_ZONE;
+      region = FieldRegion.ALLIANCE_ZONE;
     } else if (x <= FieldConstants.LinesVertical.neutralZoneFar) {
-      return FieldRegion.NEUTRAL_ZONE;
+      region = FieldRegion.NEUTRAL_ZONE;
     } else {
-      return FieldRegion.OPPONENT_ALLIANCE_ZONE;
+      region = FieldRegion.OPPONENT_ALLIANCE_ZONE;
     }
+    Logger.recordOutput("RobotState/FieldRegion", region.name());
+    return region;
   }
 
   /**
@@ -675,23 +685,27 @@ public class RobotState {
    *
    * @return The {@link Target} the robot should shoot at
    */
-  @AutoLogOutput(key = "RobotState/ActiveTarget")
   public Target getActiveTarget() {
     FieldRegion region = getFieldRegion();
 
+    Target target;
     switch (region) {
       case ALLIANCE_ZONE:
       case LEFT_BUMP_TRENCH:
       case RIGHT_BUMP_TRENCH:
         // Close to our hub — shoot directly at it
-        return Target.HUB;
+        target = Target.HUB;
+        break;
 
       case NEUTRAL_ZONE:
       case OPPONENT_ALLIANCE_ZONE:
       default:
         // Too far from hub — lob a feed shot to our alliance side
-        return getFeedTargetForCurrentPosition();
+        target = getFeedTargetForCurrentPosition();
+        break;
     }
+    Logger.recordOutput("RobotState/ActiveTarget", target.name());
+    return target;
   }
 
   /**
@@ -724,9 +738,10 @@ public class RobotState {
    *
    * @return The heading to face the active target
    */
-  @AutoLogOutput(key = "RobotState/AngleToActiveTarget")
   public Rotation2d getAngleToActiveTarget() {
-    return getAngleToTarget(getActiveTarget());
+    Rotation2d angle = getAngleToTarget(getActiveTarget());
+    Logger.recordOutput("RobotState/AngleToActiveTarget", angle);
+    return angle;
   }
 
   /**
@@ -749,9 +764,10 @@ public class RobotState {
    *
    * @return Distance to the active target
    */
-  @AutoLogOutput(key = "RobotState/DistanceToActiveTarget_m")
   public Distance getDistanceToActiveTarget() {
-    return getDistanceToTarget(getActiveTarget());
+    Distance distance = getDistanceToTarget(getActiveTarget());
+    Logger.recordOutput("RobotState/DistanceToActiveTarget_m", distance.in(Meters));
+    return distance;
   }
 
   /**
