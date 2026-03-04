@@ -17,7 +17,9 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -168,6 +170,13 @@ public class RobotContainer {
         break;
     }
 
+    // ── Register Named Commands for PathPlanner ───────────────────────────────
+    // These must be registered BEFORE creating any PathPlanner autos or paths.
+    // The string names here must exactly match what's used in the PathPlanner GUI.
+    registerNamedCommands();
+
+    registerEventMarkers();
+
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -190,6 +199,86 @@ public class RobotContainer {
     }
 
     SmartDashboard.putData("Reset Intake Encoder", IntakeCommands.resetIntakeEncoder(intake));
+  }
+
+  private void registerEventMarkers() {
+    // ── extend-intake ─────────────────────────────────────────────────────────
+    // Extend the intake out from the robot frame and spin up the rollers to collect fuel.
+    // Sets position once (PID handles movement) and runs rollers — finishes immediately
+    // so PathPlanner can continue to the next path segment while intake stays extended.
+    new EventTrigger("deploy-intake").onTrue(
+        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+            .andThen(IntakeCommands.runIntakeRollers(intake)));
+
+    // ── retract-intake ────────────────────────────────────────────────────────
+    // Pull the intake back inside the frame perimeter and stop the rollers.
+    // This protects the intake during driving and stops collecting fuel.
+    new EventTrigger("retract-intake").onTrue(
+        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
+            .andThen(IntakeCommands.stopIntakeRollers(intake)));
+  }
+
+
+  /**
+   * Registers named commands for use in PathPlanner autonomous routines.
+   *
+   * <p><b>Important:</b> This must be called BEFORE creating any PathPlanner autos or paths. The
+   * string names used here must exactly match the event marker names in the PathPlanner GUI.
+   *
+   * <p>Registered commands:
+   *
+   * <ul>
+   *   <li>{@code "extend-intake"} — Extends the intake linear slide out and runs rollers to collect
+   *       game pieces
+   *   <li>{@code "retract-intake"} — Retracts the intake linear slide and stops the rollers
+   *   <li>{@code "shoot-fuel"} — Aims the robot's back (shooter) at the alliance hub, spins up the
+   *       flywheel based on distance, waits for ready, then feeds. Stops everything when done.
+   * </ul>
+   */
+  private void registerNamedCommands() {
+    // ── extend-intake ─────────────────────────────────────────────────────────
+    // Extend the intake out from the robot frame and spin up the rollers to collect fuel.
+    // Sets position once (PID handles movement) and runs rollers — finishes immediately
+    // so PathPlanner can continue to the next path segment while intake stays extended.
+    NamedCommands.registerCommand(
+        "deploy-intake",
+        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+            // .andThen(IntakeCommands.runIntakeRollers(intake)));
+
+    // ── retract-intake ────────────────────────────────────────────────────────
+    // Pull the intake back inside the frame perimeter and stop the rollers.
+    // This protects the intake during driving and stops collecting fuel.
+    NamedCommands.registerCommand(
+        "retract-intake",
+        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
+            .andThen(IntakeCommands.stopIntakeRollers(intake)));
+
+    // ── shoot-fuel ────────────────────────────────────────────────────────────
+    // Full auto-aim + shoot sequence for autonomous:
+    // 1. Rotate the robot so the BACK (rear-mounted shooter) faces the alliance hub
+    // 2. Continuously spin up the flywheel based on distance to the hub
+    // 3. Wait until flywheel is at speed AND robot is facing the target (2s safety timeout)
+    // 4. Feed the game piece through the feeder and hopper
+    // 5. When the command ends, stop the feeder and flywheels
+    NamedCommands.registerCommand(
+        "shoot-fuel",
+        // Aim the back of the robot at the hub (no translation — robot stays in place)
+        // while simultaneously running the shoot-to-hub sequence
+        DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> 0.0, // No forward/back translation during auto shooting
+                () -> 0.0, // No left/right translation during auto shooting
+                () -> RobotState.getInstance().getAngleToAllianceHub(),
+                true) // true = aim BACK of robot (where the shooter is) at the hub
+            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
+            // When the command ends (interrupted by PathPlanner), clean up:
+            // stop the feeder and return flywheels to idle
+            .finallyDo(
+                () -> {
+                  feeder.stop();
+                  shooter.stopFlywheels();
+                  hopper.stop();
+                }));
   }
 
   /**
