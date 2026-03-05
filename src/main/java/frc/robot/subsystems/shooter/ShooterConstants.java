@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
@@ -193,7 +192,9 @@ public class ShooterConstants {
     static {
       SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1500.0).in(RPM));
       SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2000.0).in(RPM)); // about the tower position
-      SPEED_MAP.put(Inches.of(251.1).in(Meters), RPM.of(3000.0).in(RPM)); // about the Human player and trench position
+      SPEED_MAP.put(
+          Inches.of(251.1).in(Meters),
+          RPM.of(3000.0).in(RPM)); // about the Human player and trench position
     }
 
     /**
