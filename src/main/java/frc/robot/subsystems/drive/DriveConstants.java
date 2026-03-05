@@ -67,7 +67,7 @@ public class DriveConstants {
   public static final int kRearRightTurningCanId = 3;
 
   // Drive motor configuration
-  public static final int driveMotorCurrentLimit = 50;
+  public static final int driveMotorCurrentLimit = 40;
   public static final double wheelRadiusMeters = Units.inchesToMeters(2);
   // TODO: Update based on your swerve module's documentation
   public static final double driveMotorReduction = 6.75;
@@ -84,8 +84,8 @@ public class DriveConstants {
   // TODO: Tune these after initial setup by following the instructions
   public static final double driveKp = 0.0;
   public static final double driveKd = 0.0;
-  public static final double driveKs = 0.0;
-  public static final double driveKv = 0.1;
+  public static final double driveKs = 0.1631;
+  public static final double driveKv = 0.1358;
   public static final double driveSimP = 0.05;
   public static final double driveSimD = 0.0;
   public static final double driveSimKs = 0.0;
