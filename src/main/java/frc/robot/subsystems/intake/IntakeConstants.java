@@ -176,7 +176,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 20.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 24.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
@@ -190,7 +190,7 @@ public class IntakeConstants {
        * position error is large. Tune this to keep the intake from slamming into the hard stops.
        */
       public static final LoggedNetworkNumber MAX_VELOCITY_MPS =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.4);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.6);
 
       /**
        * Maximum acceleration of the linear slide in meters per second squared.
@@ -199,7 +199,7 @@ public class IntakeConstants {
        * smoother, gentler motion; higher values produce faster but jerkier starts and stops.
        */
       public static final LoggedNetworkNumber MAX_ACCELERATION_MPSS =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxAcceleration_mpss", 0.8);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxAcceleration_mpss", 1.2);
     }
 
     /** Simulation PID values - tuned for physics simulation */
@@ -270,7 +270,7 @@ public class IntakeConstants {
   /** Roller motor settings. */
   public static class Roller {
     public static final LoggedNetworkNumber ACQUIRE_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", 1);
+        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", 6);
 
     public static final LoggedNetworkNumber CURRENT_CUTOFF =
         new LoggedNetworkNumber("Intake/Roller/Current Cutoff", 40);

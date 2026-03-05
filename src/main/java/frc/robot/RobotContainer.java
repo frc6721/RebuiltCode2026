@@ -15,6 +15,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -189,8 +190,8 @@ public class RobotContainer {
       // Running in competition, only configure real button bindings
       configureButtonBindings();
     } else if (RobotBase.isSimulation()) {
-      configureSimButtonBindings();
-      //   configureButtonBindings();
+      // configureSimButtonBindings();
+      configureButtonBindings();
       // Configure FuelSim for game piece visualization
       configureFuelSim();
     } else {
@@ -482,7 +483,9 @@ public class RobotContainer {
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
         .rightTrigger(0.5)
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+        .onTrue(
+            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+                .andThen(IntakeCommands.runIntakeRollers(intake)));
 
     /*
      * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
@@ -493,7 +496,9 @@ public class RobotContainer {
     //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
         .leftTrigger(0.5)
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
+        .onTrue(
+            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
+                .andThen(IntakeCommands.stopIntakeRollers(intake)));
 
     // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
     // Useful for straightening out to drive through the trench.
@@ -513,6 +518,20 @@ public class RobotContainer {
         .whileTrue(
             DriveCommands.joystickDriveIntakeAtAllianceWall(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+    controller
+        .x()
+        .onTrue(
+            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+                .andThen(IntakeCommands.stopIntakeRollers(intake))
+                .andThen(
+                    FeederCommands.stopFeeder(feeder)
+                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, -0.5))))
+        .onFalse(
+            IntakeCommands.setIntakeRollersVoltage(intake, -6)
+                .andThen(
+                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(-6))
+                        .andThen(HopperCommands.stopHopper(hopper))));
 
     // Reset gyro to 0° when left dpad is pressed
     controller
