@@ -176,12 +176,12 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 24.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 27.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 0.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 3.0);
 
       /**
        * Maximum velocity of the linear slide in meters per second.
@@ -190,7 +190,7 @@ public class IntakeConstants {
        * position error is large. Tune this to keep the intake from slamming into the hard stops.
        */
       public static final LoggedNetworkNumber MAX_VELOCITY_MPS =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.6);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.75);
 
       /**
        * Maximum acceleration of the linear slide in meters per second squared.

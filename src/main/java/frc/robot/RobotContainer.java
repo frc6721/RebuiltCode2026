@@ -433,20 +433,14 @@ public class RobotContainer {
                     true) // true = aim back of robot (shooter) at the active target
                 .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
         .onFalse(
-            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+            new ParallelCommandGroup(
+                FeederCommands.stopFeeder(feeder),
+                HopperCommands.stopHopper(hopper),
+                ShooterCommands.runFlywheelsAtIdle(shooter)));
 
     // controller
     //     .rightBumper()
     //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
-    //     .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
-
-    // controller
-    //     .rightBumper()
-    //     .onTrue(
-    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
-    //             .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
-    //     .onFalse(
-    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
     //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
 
     // TESTING COMMAND
@@ -519,19 +513,27 @@ public class RobotContainer {
             DriveCommands.joystickDriveIntakeAtAllianceWall(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
 
+    // X button: Reverse the ball collection system (eject fuel back out).
+    // - Extends the intake so game pieces can exit
+    // - Stops the intake rollers (don't spin them backward, just let pieces fall out)
+    // - Runs the feeder and hopper in reverse to push fuel back out
+    // Uses startEnd() so the feeder and hopper always stop cleanly when the button is released.
     controller
         .x()
-        .onTrue(
-            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
-                .andThen(IntakeCommands.stopIntakeRollers(intake))
-                .andThen(
-                    FeederCommands.stopFeeder(feeder)
-                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, -0.5))))
-        .onFalse(
-            IntakeCommands.setIntakeRollersVoltage(intake, -6)
-                .andThen(
-                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(-6))
-                        .andThen(HopperCommands.stopHopper(hopper))));
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED))
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  feeder.runFeederAtVoltage(Volts.of(-6));
+                  hopper.setHopperSpeed(-0.5);
+                },
+                () -> {
+                  feeder.stop();
+                  hopper.stop();
+                },
+                feeder,
+                hopper))
+        .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
     // Reset gyro to 0° when left dpad is pressed
     controller
@@ -631,7 +633,10 @@ public class RobotContainer {
                     true) // true = aim back of robot (shooter) at the active target
                 .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
         .onFalse(
-            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+            new ParallelCommandGroup(
+                FeederCommands.stopFeeder(feeder),
+                HopperCommands.stopHopper(hopper),
+                ShooterCommands.runFlywheelsAtIdle(shooter)));
 
     // controller
     //     .rightBumper()

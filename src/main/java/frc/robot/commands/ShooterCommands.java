@@ -278,8 +278,19 @@ public class ShooterCommands {
                             && RobotState.getInstance().facingTarget.getAsBoolean())
                 .withTimeout(2.0)
                 .andThen(
-                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
-                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.3))))
+                    // startEnd() runs the motor on start and stops it when interrupted/finished,
+                    // so the feeder and hopper always stop cleanly when the sequence ends.
+                    Commands.startEnd(
+                        () -> {
+                          feeder.runFeederAtVoltage(Volts.of(9));
+                          hopper.setHopperSpeed(0.3);
+                        },
+                        () -> {
+                          feeder.stop();
+                          hopper.stop();
+                        },
+                        feeder,
+                        hopper)))
         .withName("ShootToHubSequence");
   }
 
@@ -353,8 +364,19 @@ public class ShooterCommands {
                             && RobotState.getInstance().facingTarget.getAsBoolean())
                 .withTimeout(2.0)
                 .andThen(
-                    FeederCommands.runFeederAtVoltage(feeder, Volts.of(9))
-                        .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.3))))
+                    // startEnd() runs the motor on start and stops it when interrupted/finished,
+                    // so the feeder and hopper always stop cleanly when the sequence ends.
+                    Commands.startEnd(
+                        () -> {
+                          feeder.runFeederAtVoltage(Volts.of(9));
+                          hopper.setHopperSpeed(0.3);
+                        },
+                        () -> {
+                          feeder.stop();
+                          hopper.stop();
+                        },
+                        feeder,
+                        hopper)))
         .withName("ShootToActiveTargetSequence");
   }
 }
