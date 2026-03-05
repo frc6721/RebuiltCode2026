@@ -15,6 +15,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -34,6 +35,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -50,6 +52,7 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederConstants;
 import frc.robot.subsystems.feeder.io.FeederIO;
 import frc.robot.subsystems.feeder.io.RealFeederIO;
 import frc.robot.subsystems.feeder.io.SimFeederIO;
@@ -395,7 +398,7 @@ public class RobotContainer {
             drive,
             () -> -controller.getLeftY(),
             () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+            () -> -controller.getRightX() * 0.75));
 
     // sim controller in MAC os
     // drive.setDefaultCommand(
@@ -420,6 +423,24 @@ public class RobotContainer {
     // - Automatically rotates robot so the BACK (shooter) faces the active target
     // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
     // - Driver maintains full control of translation (forward/back, left/right)
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         // Combine auto-aim driving with shooting sequence
+    //         // useBackOfRobot = true because the shooter is rear-mounted
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true) // true = aim back of robot (shooter) at the active target
+    //             .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
+    //     .onFalse(
+    //         new ParallelCommandGroup(
+    //             FeederCommands.stopFeeder(feeder),
+    //             HopperCommands.stopHopper(hopper),
+    //             ShooterCommands.runFlywheelsAtIdle(shooter)));
+
     controller
         .rightBumper()
         .whileTrue(
@@ -431,7 +452,13 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true) // true = aim back of robot (shooter) at the active target
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
+                .alongWith(
+                    ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000))
+                        .andThen(new WaitCommand(3.5))
+                        .andThen(
+                            FeederCommands.runFeederAtVoltage(
+                                feeder, FeederConstants.DEFAULT_FEED_VOLTAGE)))
+                .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0.5)))
         .onFalse(
             new ParallelCommandGroup(
                 FeederCommands.stopFeeder(feeder),
@@ -542,7 +569,7 @@ public class RobotContainer {
             Commands.runOnce(
                     () ->
                         drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d().k180deg)),
                     drive)
                 .ignoringDisable(true));
 

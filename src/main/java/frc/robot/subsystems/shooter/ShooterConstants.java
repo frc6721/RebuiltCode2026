@@ -191,8 +191,9 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      SPEED_MAP.put(Feet.of(1).in(Meters), RPM.of(400.0).in(RPM));
-      SPEED_MAP.put(Feet.of(10.0).in(Meters), RPM.of(2500.0).in(RPM));
+      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1500.0).in(RPM));
+      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2000.0).in(RPM)); // about the tower position
+      SPEED_MAP.put(Inches.of(251.1).in(Meters), RPM.of(3000.0).in(RPM)); // about the Human player and trench position
     }
 
     /**

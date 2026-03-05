@@ -3,11 +3,13 @@ package frc.robot.subsystems.feeder;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -107,6 +109,8 @@ public class FeederConstants {
     }
   }
 
+  public static final Voltage DEFAULT_FEED_VOLTAGE = Volts.of(12);
+
   // ── Mode-selected getter methods ──
   // These return the appropriate constant based on whether we're running on real hardware or in
   // sim.
@@ -145,7 +149,7 @@ public class FeederConstants {
      * Set to {@code true} to enable current limiting on the feeder motors, or {@code false} to
      * disable it (useful during testing/characterization).
      */
-    public static final boolean ENABLE_CURRENT_LIMITS = true;
+    public static final boolean ENABLE_CURRENT_LIMITS = false;
 
     public static final int SMART_CURRENT_LIMIT = 80;
     public static final double SECONDARY_CURRENT_LIMIT = 100;

@@ -3,6 +3,7 @@ Without robot:
 - comp button mapping
     - button to toggle intake rollers?
     - button to shoot from tower
+        - button to run shooter sequence but for a fixed for the flywheel
     - climber up
     - climber down
     - joystick curves
@@ -17,3 +18,9 @@ With robot:
 - Tune shooter RPMs for distance
 - tune cameras
     - verify cameras connect to robot
+
+Setpoints:
+
+2000 RPM - 125in
+3000 RPM - 251.1in
+

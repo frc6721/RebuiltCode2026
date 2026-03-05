@@ -114,6 +114,8 @@ public class Robot extends LoggedRobot {
     // This must be in robotPeriodic() so it runs in ALL modes (disabled, teleop, auto, test)
     fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
 
+    Logger.recordOutput(
+        "Flywheel_tuning/distance_to_hub", RobotState.getInstance().getDistanceToAllianceHub());
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
   }

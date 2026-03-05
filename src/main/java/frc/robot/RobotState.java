@@ -310,7 +310,7 @@ public class RobotState {
         new Translation2d(hubCenter.getX() - offsetDistance.in(Meters), hubCenter.getY());
 
     // Build the pose facing the hub (+X direction = toward hub) before flipping
-    Pose2d poseBlue = new Pose2d(positionBlue, Rotation2d.kZero);
+    Pose2d poseBlue = new Pose2d(positionBlue, Rotation2d.k180deg); // shooter facing the hub
 
     // AllianceFlipUtil mirrors both position and rotation for red alliance
     return AllianceFlipUtil.apply(poseBlue);
