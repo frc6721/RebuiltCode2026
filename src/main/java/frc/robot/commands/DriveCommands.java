@@ -13,6 +13,8 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -147,7 +149,6 @@ public class DriveCommands {
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
-    Logger.recordOutput("Drive/rotationPID/setpoint", rotationSupplier.get());
 
     // Construct command
     return Commands.run(
@@ -162,10 +163,19 @@ public class DriveCommands {
                 targetAngle = targetAngle.plus(Rotation2d.kPi);
               }
 
+              // Capture current heading for PID and logging
+              Rotation2d currentAngle = drive.getRotation();
+
               // Calculate angular speed
               double omega =
-                  angleController.calculate(
-                      drive.getRotation().getRadians(), targetAngle.getRadians());
+                  angleController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+
+              // Log PID setpoint and measurement so we can tune and debug in AdvantageScope
+              // Rotation2d is a struct type — AdvantageKit logs it with built-in unit metadata
+              Logger.recordOutput("Drive/AnglePID/Setpoint", targetAngle);
+              Logger.recordOutput("Drive/AnglePID/Measurement", currentAngle);
+              Logger.recordOutput("Drive/AnglePID/Error", targetAngle.minus(currentAngle));
+              Logger.recordOutput("Drive/AnglePID/Omega", RadiansPerSecond.of(omega));
 
               // Convert to field relative speeds & send command
               ChassisSpeeds speeds =

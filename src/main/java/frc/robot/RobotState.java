@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -221,7 +222,7 @@ public class RobotState {
   public Distance getDistanceToAllianceHub() {
     Translation3d hubTarget = getAllianceHubTarget();
     Distance distance = getDistanceToPoint(hubTarget.toTranslation2d());
-    Logger.recordOutput("RobotState/DistanceToAllianceHub_m", distance.in(Meters));
+    Logger.recordOutput("RobotState/DistanceToAllianceHub", distance);
     return distance;
   }
 
@@ -240,7 +241,7 @@ public class RobotState {
   public Distance getDistanceToOpposingHub() {
     Translation3d hubTarget = getOpposingHubTarget();
     Distance distance = getDistanceToPoint(hubTarget.toTranslation2d());
-    Logger.recordOutput("RobotState/DistanceToOpposingHub_m", distance.in(Meters));
+    Logger.recordOutput("RobotState/DistanceToOpposingHub", distance);
     return distance;
   }
 
@@ -423,8 +424,23 @@ public class RobotState {
     // Update pose estimator
     poseEstimator.update(gyroRotation, modulePositions);
 
-    // Log the update
+    // ── Per-loop logging ───────────────────────────────────────────────────────
+    // Log the raw gyro rotation (Rotation2d struct carries unit metadata automatically)
     Logger.recordOutput("RobotState/GyroRotation", gyroRotation);
+
+    // Log the fused estimated heading — easy to plot alongside target angles
+    Rotation2d estimatedHeading = poseEstimator.getEstimatedPosition().getRotation();
+    Logger.recordOutput("RobotState/RobotAngle", estimatedHeading);
+
+    // Angle to every fixed target (always logged, regardless of which is active).
+    // This lets you plot all targets on one graph in AdvantageScope to see how
+    // the target selection switches as the robot moves around the field.
+    Logger.recordOutput("RobotState/AngleToTarget/Hub", getAngleToTarget(Target.HUB));
+    Logger.recordOutput("RobotState/AngleToTarget/FeedLeft", getAngleToTarget(Target.FEED_LEFT));
+    Logger.recordOutput("RobotState/AngleToTarget/FeedRight", getAngleToTarget(Target.FEED_RIGHT));
+
+    // Active target angle — what the robot is actually trying to rotate toward
+    Logger.recordOutput("RobotState/AngleToTarget/ActiveTarget", getAngleToActiveTarget());
   }
 
   /**
@@ -772,7 +788,7 @@ public class RobotState {
    */
   public Distance getDistanceToActiveTarget() {
     Distance distance = getDistanceToTarget(getActiveTarget());
-    Logger.recordOutput("RobotState/DistanceToActiveTarget_m", distance.in(Meters));
+    Logger.recordOutput("RobotState/DistanceToActiveTarget", distance);
     return distance;
   }
 
@@ -816,16 +832,17 @@ public class RobotState {
           () -> {
             Rotation2d targetAngle = getAngleToActiveTarget();
             Rotation2d robotHeading = getEstimatedPose().getRotation();
-            double headingErrorDeg = targetAngle.minus(robotHeading).getDegrees();
+            Rotation2d headingError = targetAngle.minus(robotHeading);
 
             // Log intermediate values so we can debug aiming in AdvantageScope
-            Logger.recordOutput("RobotState/FacingTarget/TargetAngleDeg", targetAngle.getDegrees());
+            // Rotation2d is a struct type — AdvantageKit carries unit metadata automatically
+            Logger.recordOutput("RobotState/FacingTarget/TargetAngle", targetAngle);
+            Logger.recordOutput("RobotState/FacingTarget/RobotHeading", robotHeading);
+            Logger.recordOutput("RobotState/FacingTarget/HeadingError", headingError);
             Logger.recordOutput(
-                "RobotState/FacingTarget/RobotHeadingDeg", robotHeading.getDegrees());
-            Logger.recordOutput("RobotState/FacingTarget/HeadingErrorDeg", headingErrorDeg);
-            Logger.recordOutput("RobotState/FacingTarget/ToleranceDeg", SHOOT_TOLERANCE_DEGREES);
+                "RobotState/FacingTarget/Tolerance", Degrees.of(SHOOT_TOLERANCE_DEGREES));
 
-            return Math.abs(headingErrorDeg) < SHOOT_TOLERANCE_DEGREES;
+            return Math.abs(headingError.getDegrees()) < SHOOT_TOLERANCE_DEGREES;
           });
 
   // ==================== TRENCH TRIGGERS (for robots with adjustable hoods) ====================

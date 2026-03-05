@@ -62,6 +62,23 @@ The **CommandScheduler** manages which commands run when, ensuring subsystems ar
 - **Declare requirements**: Every command must declare which subsystems it requires
 - **Default commands for continuous actions**: Set default commands for subsystems that need constant control (e.g., drivetrain)
 - **Log everything**: Use AdvantageKit's `@AutoLog` for all sensor inputs
+- **Log with units metadata**: When logging with `Logger.recordOutput`, always include unit information so AdvantageScope can display values with proper units. AdvantageKit supports three approaches:
+  - **Struct types** (preferred for geometry): Log `Rotation2d`, `Pose2d`, `Pose3d`, `Translation2d`, `SwerveModuleState`, etc. directly — AdvantageKit serializes them with built-in unit metadata.
+    ```java
+    Logger.recordOutput("Drive/Setpoint", targetAngle);       // Rotation2d
+    Logger.recordOutput("Drive/Pose", currentPose);            // Pose2d
+    ```
+  - **Measure values** (preferred for physical quantities): Pass a WPILib `Measure` object (e.g. `Meters.of(3.14)`, `Degrees.of(45.0)`, `RPM.of(3500)`). The unit is stored as metadata automatically.
+    ```java
+    Logger.recordOutput("Shooter/Distance", Meters.of(distanceMeters));
+    Logger.recordOutput("Drive/Omega", RadiansPerSecond.of(omega));
+    Logger.recordOutput("State/Tolerance", Degrees.of(toleranceDeg));
+    ```
+  - **Double with unit object**: Pass the raw double and a unit as the third argument.
+    ```java
+    Logger.recordOutput("Intake/Position", positionMeters, Meters);
+    ```
+  - **Avoid** logging raw doubles with unit suffixes in the key name (e.g. `"Distance_m"` or `"AngleDeg"`). Let AdvantageKit handle unit display via metadata instead.
 - **One IO implementation per hardware type**: Separate real vs. simulation, different motor controllers, etc.
 - **Constants in separate classes**: Keep tunable values organized and easy to find
 

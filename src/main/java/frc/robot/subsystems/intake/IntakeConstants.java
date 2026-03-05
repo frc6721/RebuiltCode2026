@@ -270,7 +270,7 @@ public class IntakeConstants {
   /** Roller motor settings. */
   public static class Roller {
     public static final LoggedNetworkNumber ACQUIRE_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", 6);
+        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", -4);
 
     public static final LoggedNetworkNumber CURRENT_CUTOFF =
         new LoggedNetworkNumber("Intake/Roller/Current Cutoff", 40);
