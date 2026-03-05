@@ -419,45 +419,44 @@ public class RobotContainer {
     // - Automatically rotates robot so the BACK (shooter) faces the active target
     // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
     // - Driver maintains full control of translation (forward/back, left/right)
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         // Combine auto-aim driving with shooting sequence
-    //         // useBackOfRobot = true because the shooter is rear-mounted
-    //         DriveCommands.joystickDriveAtAngle(
-    //                 drive,
-    //                 () -> -controller.getLeftY(),
-    //                 () -> -controller.getLeftX(),
-    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-    //                 true) // true = aim back of robot (shooter) at the active target
-    //             .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
-    //     .onFalse(
-    //
-    // FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
+    controller
+        .rightBumper()
+        .whileTrue(
+            // Combine auto-aim driving with shooting sequence
+            // useBackOfRobot = true because the shooter is rear-mounted
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true) // true = aim back of robot (shooter) at the active target
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
+        .onFalse(
+            FeederCommands.stopFeeder(feeder).andThen(ShooterCommands.runFlywheelsAtIdle(shooter)));
 
     // controller
     //     .rightBumper()
     //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
     //     .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
 
-    controller
-        .rightBumper()
-        .onTrue(
-            ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
-                .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
-        .onFalse(
-            ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
-                .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
+    // controller
+    //     .rightBumper()
+    //     .onTrue(
+    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
+    //             .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
+    //     .onFalse(
+    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
+    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
 
     // TESTING COMMAND
     // run the shooter and feeder at a fixed voltage
     // update these values to run faster or slower.
     // Max motor power is 12 volts
-    controller
-        .leftBumper()
-        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-        .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
-        .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
+    // controller
+    //     .leftBumper()
+    //     // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+    //     .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
+    //     .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
 
     // controller
     //     .leftBumper()
