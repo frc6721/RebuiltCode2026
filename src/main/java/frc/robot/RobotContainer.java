@@ -135,7 +135,7 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
+                new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())));
         break;
       case SIM:
         // Sim robot, instantiate physics sim IO implementations

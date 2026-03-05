@@ -9,6 +9,8 @@ Without robot:
     - joystick curves
 - Constants for common voltages and setpoints (no magic numbers)
 - Clean up command compositions in robot container (move to command files)
+- fix bug in elastic auto dashbaord
+- auto does not stop shooting
 
 With robot:
 
