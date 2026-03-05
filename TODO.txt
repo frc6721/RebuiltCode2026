@@ -1,12 +1,50 @@
-Without robot:
+Implementation plan:
 
+The context for this plan is I am less than 24 hours from competition. We are getting this code competition ready. Its close but has a few items left to do.
+
+Phase 1:
+- debug and fix why shooter did not stop planning when the stop-shooter named command was called in auto
+- apply exponential curves to the joystick values passed to the drive commands.
+    -  this should be done via helper function in the drive commands and should be applied to all driving commands
+    - use a cubic expontential curve
+- move drive turn to angle PID controller constants to the drive constants and not the command
+
+Phase 2:
+- code clean up
+- remove "magic numbers"
+- reorder robotcontainer.java to be the constructor, regstered commands, named commands, configurebuttonbindings, and then other functions
+- put voltage, rpm, and other constants in the subsystem constants files
+    - for example, the hopper rollers or other commands in robotcontainer.java
+    - create useful constants in the subsytem constants files if not present
+            - for example, a "aquire intake roller" and " slow aquire intake roller" and a "spit intake roller" and a "slow spit intake rollow"
+            - the same thing for the hopper.
+- clean up commands
+    - combine or move common operators of commands from robotcontainer.java into command files in the commands folder
+    - the goal is to make the robotcontainer easier to read, maintain, and to adjust on the fly.
+    - i need commands most commadns I am currently using. but they can be cleaned up, some of the can be consolidated.
+    - i need it to be clear during competition what commands to call to make a new button or behavior on the fly.
+    - see the button mapping list below for a list of commands we need.
+
+
+TODOs (not in priority order):
+
+Without robot:
 - comp button mapping
-    - button to toggle intake rollers?
-    - button to shoot from tower
+    - button to toggle intake rollers on and off to aquire game piece (Left trigger and right trigger)
+    - button to extend intake (B button)
+    - button to retract intake (A button)
+    - button for full automated shooting sequence (right bumber)
+        - this includes spinning up the flywheels, waiting for them to reach their speed with a timeout, and then spinning up the feeder wheels (no waiting for them to reach the setpoint), turning on the hopper rollers, and auto aiming and adjusting the RPM.
+        - this also includes extending and rectracting the intake automatically to jostle the hopper.
+        - will need to make a new command for the intake jostle
+    - button to shoot from tower (right d pad)
         - button to run shooter sequence but for a fixed for the flywheel
-    - climber up
-    - climber down
-    - joystick curves
+    - climber up (Y button)
+    - climber down (x button)
+    - spit out fuel (extend the intake, spit out fuel from feeder, hopper, and intake rollers) (up button)
+    - a button to auto align to the trench heading (left bumber)
+    - button to zero robot heading (left d pad)
+    - button to put robot odomentry at hub (down d pad)
 - Constants for common voltages and setpoints (no magic numbers)
 - Clean up command compositions in robot container (move to command files)
 - fix bug in elastic auto dashbaord

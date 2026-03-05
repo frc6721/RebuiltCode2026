@@ -114,6 +114,22 @@ public class DriveConstants {
   public static final double turnPIDMinInput = 0; // Radians
   public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
+  // ── Turn-to-Angle (Heading Lock) PID constants ───────────────────────────
+  // These are used by DriveCommands.joystickDriveAtAngle() to rotate the robot
+  // to face a specific field-relative heading while the driver controls translation.
+  //
+  // kP: How aggressively to correct heading error (higher = snappier but may oscillate)
+  // kD: Dampens oscillation (start at 0, increase if robot overshoots)
+  // Max velocity: Maximum rotation speed the PID can command (rad/s)
+  // Max acceleration: How quickly the PID can ramp rotation speed (rad/s²)
+  //
+  // TODO: Tune these on the real robot — start with kP and adjust if the robot
+  //       overshoots (increase kD) or is too slow to snap to heading (increase kP).
+  public static final double turnToAngleKP = 7.0;
+  public static final double turnToAngleKD = 0.4;
+  public static final double turnToAngleMaxVelocity = 8.0; // rad/s
+  public static final double turnToAngleMaxAcceleration = 20.0; // rad/s²
+
   // PathPlanner configuration
   // TODO: Update these with your robots physical properties
   public static final double robotMassKg = 37.0; // ~80lbs

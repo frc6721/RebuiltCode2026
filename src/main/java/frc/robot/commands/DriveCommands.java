@@ -43,10 +43,9 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 7.0;
-  private static final double ANGLE_KD = 0.4;
-  private static final double ANGLE_MAX_VELOCITY = 8.0;
-  private static final double ANGLE_MAX_ACCELERATION = 20.0;
+  // Note: Turn-to-angle PID constants have been moved to DriveConstants for easy tuning.
+  // See DriveConstants.turnToAngleKP, turnToAngleKD, turnToAngleMaxVelocity,
+  // turnToAngleMaxAcceleration
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -54,13 +53,39 @@ public class DriveCommands {
 
   private DriveCommands() {}
 
+  /**
+   * Applies a cubic exponential curve to a joystick input value.
+   *
+   * <p>A cubic curve (x³) gives the driver very fine control at low stick deflections while still
+   * allowing full speed at maximum deflection. This feels more natural than a linear response,
+   * especially for precise movements.
+   *
+   * <p>Because x³ preserves the sign of x (e.g., (-0.5)³ = -0.125), no special sign handling is
+   * needed — the direction of the input is always maintained.
+   *
+   * <p>Example values:
+   *
+   * <ul>
+   *   <li>10% stick → 0.1³ = 0.001 (very slow)
+   *   <li>50% stick → 0.5³ = 0.125 (moderate)
+   *   <li>100% stick → 1.0³ = 1.0 (full speed)
+   * </ul>
+   *
+   * @param value The raw joystick value, already deadbanded, in the range [-1, 1]
+   * @return The curved output in the range [-1, 1]
+   */
+  private static double applyCubicCurve(double value) {
+    // x^3 naturally preserves sign, so no Math.copySign() needed
+    return value * value * value;
+  }
+
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-    // Square magnitude for more precise control
-    linearMagnitude = linearMagnitude * linearMagnitude;
+    // Apply cubic curve for more precise control at low speeds
+    linearMagnitude = applyCubicCurve(linearMagnitude);
 
     // Return new linear velocity
     return new Pose2d(new Translation2d(), linearDirection)
@@ -85,8 +110,9 @@ public class DriveCommands {
           // Apply rotation deadband
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
-          // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
+          // Apply cubic curve for more precise rotation control at low speeds.
+          // applyCubicCurve() preserves the sign so the rotation direction is maintained.
+          omega = applyCubicCurve(omega);
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
@@ -141,13 +167,15 @@ public class DriveCommands {
       Supplier<Rotation2d> rotationSupplier,
       boolean useBackOfRobot) {
 
-    // Create PID controller
+    // Create PID controller using constants from DriveConstants so they're easy to tune
+    // in one place without touching this file.
     ProfiledPIDController angleController =
         new ProfiledPIDController(
-            ANGLE_KP,
+            DriveConstants.turnToAngleKP,
             0.0,
-            ANGLE_KD,
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+            DriveConstants.turnToAngleKD,
+            new TrapezoidProfile.Constraints(
+                DriveConstants.turnToAngleMaxVelocity, DriveConstants.turnToAngleMaxAcceleration));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Construct command

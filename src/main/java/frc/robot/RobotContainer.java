@@ -261,7 +261,11 @@ public class RobotContainer {
     // 2. Continuously spin up the flywheel based on distance to the hub
     // 3. Wait until flywheel is at speed AND robot is facing the target (2s safety timeout)
     // 4. Feed the game piece through the feeder and hopper
-    // 5. When the command ends, stop the feeder and flywheels
+    // 5. After the shooting window completes, stop the feeder and flywheels
+    //
+    // IMPORTANT: This command has a 5-second timeout so that PathPlanner's sequential
+    // auto can continue to the next command (e.g., "stop-shooter" or a new path).
+    // Without a timeout, shootToHubSequence runs forever and the auto stalls here.
     NamedCommands.registerCommand(
         "shoot-fuel",
         // Aim the back of the robot at the hub (no translation — robot stays in place)
@@ -273,18 +277,26 @@ public class RobotContainer {
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true) // true = aim BACK of robot (where the shooter is) at the hub
             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
-            // When the command ends (interrupted by PathPlanner), clean up:
-            // stop the feeder and return flywheels to idle
+            // 5-second timeout: gives enough time to spin up, aim, and shoot, then
+            // allows the sequential auto to advance to the next named command.
+            .withTimeout(5.0)
+            // When the command ends (by timeout OR interruption), always clean up:
+            // stop the feeder, hopper, and return flywheels to idle
             .finallyDo(
                 () -> {
                   feeder.stop();
-                  shooter.stopFlywheels();
                   hopper.stop();
+                  shooter.stopFlywheels();
                 }));
 
+    // ── stop-shooter ──────────────────────────────────────────────────────────
+    // Emergency stop for all shooting mechanisms. Can be placed after a shoot-fuel
+    // command in auto to ensure everything is stopped before moving on.
+    // Uses Commands.parallel() so each sub-command properly declares its subsystem
+    // requirement and will interrupt any conflicting commands that are still running.
     NamedCommands.registerCommand(
         "stop-shooter",
-        new ParallelCommandGroup(
+        Commands.parallel(
             ShooterCommands.stopFlywheels(shooter),
             FeederCommands.stopFeeder(feeder),
             HopperCommands.stopHopper(hopper)));
