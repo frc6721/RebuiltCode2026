@@ -400,47 +400,12 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX() * 0.75));
 
-    // sim controller in MAC os
-    // drive.setDefaultCommand(
-    //  DriveCommands.joystickDrive(
-    //    drive,
-    //  () -> -controller.getLeftY(),
-    // () -> -controller.getLeftX(),
-    // () -> -(controller.getRightTriggerAxis())));
-
-    // Always run the flywheels a little bit during the match so they can spin up quicker when we
-    // need them
-    // shooter.setDefaultCommand(ShooterCommands.runFlywheelsAtIdle(shooter));
-
-    // controller
-    //     .leftBumper()
-    //     .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
-    //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
-
     // Dynamic shooting with auto-aiming:
     // - Automatically determines target based on field position (hub, feed left, feed right)
     // - Continuously adjusts flywheel speed based on distance to the active target
     // - Automatically rotates robot so the BACK (shooter) faces the active target
     // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
     // - Driver maintains full control of translation (forward/back, left/right)
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         // Combine auto-aim driving with shooting sequence
-    //         // useBackOfRobot = true because the shooter is rear-mounted
-    //         DriveCommands.joystickDriveAtAngle(
-    //                 drive,
-    //                 () -> -controller.getLeftY(),
-    //                 () -> -controller.getLeftX(),
-    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-    //                 true) // true = aim back of robot (shooter) at the active target
-    //             .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
-    //     .onFalse(
-    //         new ParallelCommandGroup(
-    //             FeederCommands.stopFeeder(feeder),
-    //             HopperCommands.stopHopper(hopper),
-    //             ShooterCommands.runFlywheelsAtIdle(shooter)));
-
     controller
         .rightBumper()
         .whileTrue(
@@ -452,13 +417,7 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true) // true = aim back of robot (shooter) at the active target
-                .alongWith(
-                    ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000))
-                        .andThen(new WaitCommand(3.5))
-                        .andThen(
-                            FeederCommands.runFeederAtVoltage(
-                                feeder, FeederConstants.DEFAULT_FEED_VOLTAGE)))
-                .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0.5)))
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
         .onFalse(
             new ParallelCommandGroup(
                 FeederCommands.stopFeeder(feeder),
@@ -467,59 +426,41 @@ public class RobotContainer {
 
     // controller
     //     .rightBumper()
-    //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
-    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
+    //     .whileTrue(
+    //         // Combine auto-aim driving with shooting sequence
+    //         // useBackOfRobot = true because the shooter is rear-mounted
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true) // true = aim back of robot (shooter) at the active target
+    //             .alongWith(
+    //                 ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000))
+    //                     .andThen(new WaitCommand(3.5))
+    //                     .andThen(
+    //                         FeederCommands.runFeederAtVoltage(
+    //                             feeder, FeederConstants.DEFAULT_FEED_VOLTAGE)))
+    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0.5)))
+    //     .onFalse(
+    //         new ParallelCommandGroup(
+    //             FeederCommands.stopFeeder(feeder),
+    //             HopperCommands.stopHopper(hopper),
+    //             ShooterCommands.runFlywheelsAtIdle(shooter)));
 
-    // TESTING COMMAND
-    // run the shooter and feeder at a fixed voltage
-    // update these values to run faster or slower.
-    // Max motor power is 12 volts
-    // controller
-    //     .leftBumper()
-    //     // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-    //     .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
-    //     .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
-
-    // controller
-    //     .leftBumper()
-    //     .whileTrue(ShooterCommands.feedforwardCharacterization(shooter))
-    //     .onFalse(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
-
-    /*
-     * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
-     * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
-     */
-    // controller
-    //     .a()
-    //     .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
-    //     .onFalse(HopperCommands.stopHopper(hopper));
-
-    /*
-     * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
-     *
-     */
-    // controller
-    //     .leftBumper()
-    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
-    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
         .rightTrigger(0.5)
         .onTrue(
             IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
                 .andThen(IntakeCommands.runIntakeRollers(intake)));
 
-    /*
-     * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
-     */
-    // controller
-    //     .y()
-    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
-    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
     controller
         .leftTrigger(0.5)
         .onTrue(
             IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
                 .andThen(IntakeCommands.stopIntakeRollers(intake)));
+
+    controller.leftBumper().whileTrue(FeederCommands.feedforwardCharacterization(feeder));
 
     // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
     // Useful for straightening out to drive through the trench.
