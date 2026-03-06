@@ -371,12 +371,10 @@ public class RobotContainer {
     // ── RIGHT TRIGGER: Acquire game piece ─────────────────────────────────────
     // While held: extend intake and run rollers to pull in game pieces.
     // On release: retract intake and stop rollers.
-    // controller
-    //     .rightTrigger(0.5)
-    //     .whileTrue(IntakeCommands.runIntakeRollers(intake))
-    //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
-
-    controller.rightTrigger(0.5).whileTrue(FeederCommands.feedforwardCharacterization(feeder));
+    controller
+        .rightTrigger(0.5)
+        .whileTrue(IntakeCommands.runIntakeRollers(intake))
+        .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
     // ── LEFT TRIGGER: Spit fuel ───────────────────────────────────────────────
     // While held: extend intake and reverse all mechanisms to eject game pieces.

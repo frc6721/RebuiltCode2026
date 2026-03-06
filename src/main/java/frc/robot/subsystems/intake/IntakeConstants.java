@@ -175,14 +175,14 @@ public class IntakeConstants {
      * cycle to shake fuel loose in the hopper. Tunable from the dashboard.
      */
     public static final LoggedNetworkNumber JOSTLE_EXTENDED =
-        new LoggedNetworkNumber("Intake/Position/JostleExtended", Inches.of(6.0).in(Meters));
+        new LoggedNetworkNumber("Intake/Position/JostleExtended", Inches.of(10.0).in(Meters));
 
     /**
      * Jostle-retract position in meters. The intake moves here during the inward half of a jostle
      * cycle. Tunable from the dashboard.
      */
     public static final LoggedNetworkNumber JOSTLE_RETRACTED =
-        new LoggedNetworkNumber("Intake/Position/JostleRetracted", Inches.of(1.0).in(Meters));
+        new LoggedNetworkNumber("Intake/Position/JostleRetracted", Inches.of(4.0).in(Meters));
   }
 
   /** PID tuning constants for the linear slide position control. */
@@ -190,7 +190,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 27.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 33.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
@@ -204,7 +204,7 @@ public class IntakeConstants {
        * position error is large. Tune this to keep the intake from slamming into the hard stops.
        */
       public static final LoggedNetworkNumber MAX_VELOCITY_MPS =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 0.75);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxVelocity_mps", 1);
 
       /**
        * Maximum acceleration of the linear slide in meters per second squared.
@@ -213,7 +213,7 @@ public class IntakeConstants {
        * smoother, gentler motion; higher values produce faster but jerkier starts and stops.
        */
       public static final LoggedNetworkNumber MAX_ACCELERATION_MPSS =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxAcceleration_mpss", 1.2);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/MaxAcceleration_mpss", 2);
     }
 
     /** Simulation PID values - tuned for physics simulation */
@@ -308,7 +308,7 @@ public class IntakeConstants {
    * the dashboard.
    */
   public static final LoggedNetworkNumber JOSTLE_HALF_CYCLE_DURATION_SECONDS =
-      new LoggedNetworkNumber("Intake/Jostle/Half Cycle Duration", 0.25);
+      new LoggedNetworkNumber("Intake/Jostle/Half Cycle Duration", 0.15);
 
   /** Software tuning settings. */
   public static class Software {
