@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right Trench"
+            "pathName": "right bump"
           }
         },
         {
@@ -17,9 +17,22 @@
           }
         },
         {
-          "type": "wait",
+          "type": "race",
           "data": {
-            "waitTime": 10.0
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shoot-fuel"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              }
+            ]
           }
         },
         {
@@ -32,6 +45,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Test Autos",
   "choreoAuto": false
 }
