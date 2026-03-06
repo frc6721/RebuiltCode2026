@@ -63,7 +63,7 @@ public class ShooterConstants {
     public static class Real {
       public static final LoggedNetworkNumber KP =
           new LoggedNetworkNumber(
-              "Shooter/FLYWHEEL_PID/Real/kP", 0.000045); // 0.00009 -> halved to reduce oscillation
+              "Shooter/FLYWHEEL_PID/Real/kP", 0.00007); // crept back up now that kV is corrected
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
@@ -97,7 +97,9 @@ public class ShooterConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00178); // 0.001735
+          new LoggedNetworkNumber(
+              "Shooter/FLYWHEEL_FF/Real/kV",
+              0.001735); // 0.00178 -> back to original, kV was over-driving setpoint
     }
 
     /** Simulation feedforward values */
@@ -203,12 +205,12 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1700.0).in(RPM));
-      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2150.0).in(RPM));
-      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2150.0).in(RPM)); // about the tower position
+      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1750.0).in(RPM));
+      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2200.0).in(RPM));
+      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2250.0).in(RPM)); // about the tower position
       SPEED_MAP.put(
           Inches.of(170.1).in(Meters),
-          RPM.of(2450.0).in(RPM)); // about the Human player and trench position
+          RPM.of(2550.0).in(RPM)); // about the Human player and trench position
     }
 
     /**
@@ -225,11 +227,11 @@ public class ShooterConstants {
     static {
       // Feed shots — lower RPM for arcing lob shots
       // TODO: Characterize feed shot distances and RPMs on the actual field
-      FEED_SPEED_MAP.put(Meters.of(3.0).in(Meters), RPM.of(1700.0).in(RPM));
-      FEED_SPEED_MAP.put(Meters.of(5.0).in(Meters), RPM.of(2000.0).in(RPM));
-      FEED_SPEED_MAP.put(Meters.of(7.0).in(Meters), RPM.of(2500.0).in(RPM));
-      FEED_SPEED_MAP.put(Meters.of(9.0).in(Meters), RPM.of(2900.0).in(RPM));
-      FEED_SPEED_MAP.put(Meters.of(11.0).in(Meters), RPM.of(3200.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(3.0).in(Meters), RPM.of(3500.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(5.0).in(Meters), RPM.of(3500.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(7.0).in(Meters), RPM.of(3500.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(9.0).in(Meters), RPM.of(3500.0).in(RPM));
+      FEED_SPEED_MAP.put(Meters.of(11.0).in(Meters), RPM.of(3500.0).in(RPM));
       FEED_SPEED_MAP.put(Meters.of(13.0).in(Meters), RPM.of(3500.0).in(RPM));
     }
   }
