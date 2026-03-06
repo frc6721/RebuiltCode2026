@@ -404,9 +404,8 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
-                .alongWith(
-                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    IntakeCommands.jostleIntake(intake)))
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
+        // IntakeCommands.jostleIntake(intake)))
         .onFalse(
             new ParallelCommandGroup(
                 FeederCommands.stopFeeder(feeder),

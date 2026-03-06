@@ -1,25 +1,36 @@
 {
   "hubs": [
     {
-      "x": -7,
-      "y": -7,
-      "width": 2264,
-      "height": 1474,
+      "x": 0,
+      "y": 44,
+      "width": 1800,
+      "height": 1054,
       "state": {
         "sidebar": {
-          "width": 393,
+          "width": 256,
           "expanded": [
             "/RealOutputs/Odometry/Robot",
-            "/RealOutputs/Drive/SwerveChassisSpeeds",
-            "/RealOutputs/Drive/SwerveStates",
             "/RealOutputs/Feeder/FeederSpeed",
-            "/RealOutputs",
             "/RealOutputs/Vision/Summary",
-            "/RealOutputs/Simulation/VirtualHopper"
+            "/RealOutputs/Simulation/VirtualHopper",
+            "/RealOutputs/Drive/SwerveChassisSpeeds/Measured",
+            "/RealOutputs/Simulation/FuelSim",
+            "/RealOutputs/VisionProcessor/back",
+            "/RealOutputs/Drive/Skid",
+            "/PathPlanner",
+            "/NetworkInputs/Intake/Linear",
+            "/NetworkInputs/Intake/Linear/PID",
+            "/NetworkInputs/Intake/Linear/PID/Real",
+            "/NetworkInputs/Shooter/FLYWHEEL_PID",
+            "/NetworkInputs/Shooter/FLYWHEEL_PID/Sim",
+            "/NetworkInputs/SmartDashboard",
+            "/RealOutputs",
+            "/RealOutputs/Drive/AnglePID",
+            "/RealOutputs/Flywheel_tuning"
           ]
         },
         "tabs": {
-          "selected": 2,
+          "selected": 4,
           "tabs": [
             {
               "type": 0,
@@ -90,6 +101,16 @@
               "controlsHeight": 364
             },
             {
+              "type": 5,
+              "title": "Console",
+              "controller": "/RealOutputs/Console",
+              "controllerUUID": "dmhlzgmuvw3cu5nfkqd8pa0jt7hbjeo8",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
               "type": 3,
               "title": "3D Field",
               "controller": {
@@ -139,6 +160,15 @@
                       "model": "2026 KitBot",
                       "color": "#00ff00"
                     }
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "/RealOutputs/Simulation/FuelSim/Fuels",
+                    "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
                   }
                 ],
                 "game": "FRC:2026 Field"
@@ -148,17 +178,17 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -11.482167098815987,
-                  11.512762163711804,
-                  15.26273219127537
+                  8.8509534244178,
+                  10.222727120616764,
+                  -6.867595454213909
                 ],
                 "cameraTarget": [
-                  0,
-                  0.5,
-                  0
+                  2.0383539704950473,
+                  -1.1638532882850672,
+                  -3.881615755837868
                 ]
               },
-              "controlsHeight": 372
+              "controlsHeight": 213
             },
             {
               "type": 1,
@@ -186,7 +216,18 @@
                     }
                   }
                 ],
-                "rightSources": [],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Flywheel_tuning/distance_to_hub",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#80588e",
+                      "size": "normal"
+                    }
+                  }
+                ],
                 "discreteSources": [
                   {
                     "type": "stripes",
@@ -206,12 +247,62 @@
                 },
                 "rightUnitConversion": {
                   "autoTarget": null,
-                  "preset": null
+                  "preset": {
+                    "type": "length",
+                    "factor": 1,
+                    "from": "meters",
+                    "to": "inches"
+                  }
                 },
                 "leftFilter": 0,
                 "rightFilter": 0
               },
               "controllerUUID": "k555coza4oxszgpwbic8xwyb6t97h4nb",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Drive Angle PID",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/AnglePID/Setpoint/value",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/AnglePID/Measurement/value",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "iwer9frrpytkqzlglshboifmo9fed0cl",
               "renderer": null,
               "controlsHeight": 200
             },
@@ -331,7 +422,12 @@
                 "rightLockedRange": null,
                 "leftUnitConversion": {
                   "autoTarget": null,
-                  "preset": null
+                  "preset": {
+                    "type": "length",
+                    "factor": 1,
+                    "from": "meters",
+                    "to": "inches"
+                  }
                 },
                 "rightUnitConversion": {
                   "autoTarget": null,
@@ -455,7 +551,7 @@
                     "type": "stepped",
                     "logKey": "/Shooter/_leftFlywheelMotorVoltage",
                     "logType": "Number",
-                    "visible": true,
+                    "visible": false,
                     "options": {
                       "color": "#af2437",
                       "size": "normal"
@@ -465,7 +561,7 @@
                     "type": "stepped",
                     "logKey": "/Shooter/_rightFlywheelMotorVoltage",
                     "logType": "Number",
-                    "visible": true,
+                    "visible": false,
                     "options": {
                       "color": "#80588e",
                       "size": "normal"
@@ -567,7 +663,7 @@
                     "type": "stepped",
                     "logKey": "/Feeder/_rightFeederMotorVoltage",
                     "logType": "Number",
-                    "visible": true,
+                    "visible": false,
                     "options": {
                       "color": "#af2437",
                       "size": "normal"
@@ -577,7 +673,7 @@
                     "type": "stepped",
                     "logKey": "/Feeder/_leftFeederMotorVoltage",
                     "logType": "Number",
-                    "visible": true,
+                    "visible": false,
                     "options": {
                       "color": "#80588e",
                       "size": "normal"

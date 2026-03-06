@@ -82,3 +82,4 @@ with robot:
 
 - tune intake to be faster
 - tune shooter and feeder
+- the driver cannot move while the right bumber shoot button is pressed

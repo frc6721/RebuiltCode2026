@@ -96,7 +96,7 @@ public class ShooterConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00170);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00173);
     }
 
     /** Simulation feedforward values */
@@ -202,11 +202,11 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1500.0).in(RPM));
-      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2000.0).in(RPM)); // about the tower position
+      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1700.0).in(RPM));
+      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2250.0).in(RPM)); // about the tower position
       SPEED_MAP.put(
-          Inches.of(251.1).in(Meters),
-          RPM.of(3000.0).in(RPM)); // about the Human player and trench position
+          Inches.of(170.1).in(Meters),
+          RPM.of(2350.0).in(RPM)); // about the Human player and trench position
     }
 
     /**

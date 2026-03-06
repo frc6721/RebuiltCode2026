@@ -66,11 +66,11 @@ public class FeederConstants {
     /** Real robot PID values - tune these on the actual robot */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kP", 0.003);
+          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kP", 0.000);
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kD", 0.002);
+          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kD", 0.000);
     }
 
     /** Simulation PID values */
@@ -123,7 +123,7 @@ public class FeederConstants {
      * Voltages#SHOOT_FEED_VOLTAGE}. Tune by running the feeder at different speeds and finding the
      * RPM that reliably pushes game pieces into the flywheel.
      */
-    public static final AngularVelocity SHOOT_FEED_RPM = RPM.of(3000);
+    public static final AngularVelocity SHOOT_FEED_RPM = RPM.of(4000);
   }
 
   /**
@@ -178,7 +178,7 @@ public class FeederConstants {
      * Set to {@code true} to enable current limiting on the feeder motors, or {@code false} to
      * disable it (useful during testing/characterization).
      */
-    public static final boolean ENABLE_CURRENT_LIMITS = false;
+    public static final boolean ENABLE_CURRENT_LIMITS = true;
 
     public static final int SMART_CURRENT_LIMIT = 80;
     public static final double SECONDARY_CURRENT_LIMIT = 100;
