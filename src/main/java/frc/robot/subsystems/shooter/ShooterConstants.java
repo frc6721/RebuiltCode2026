@@ -62,12 +62,12 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00011); // 0.00025
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00011); // 0.000115
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.0001); // 0.00175
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00010); // 0.00175
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
@@ -96,7 +96,7 @@ public class ShooterConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00173);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.001735);
     }
 
     /** Simulation feedforward values */
@@ -203,6 +203,7 @@ public class ShooterConstants {
 
     static {
       SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1700.0).in(RPM));
+      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2100.0).in(RPM));
       SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2250.0).in(RPM)); // about the tower position
       SPEED_MAP.put(
           Inches.of(170.1).in(Meters),

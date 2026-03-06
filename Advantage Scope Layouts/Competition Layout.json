@@ -26,11 +26,11 @@
             "/NetworkInputs/SmartDashboard",
             "/RealOutputs",
             "/RealOutputs/Drive/AnglePID",
-            "/RealOutputs/Flywheel_tuning"
+            "/RealOutputs/Drive"
           ]
         },
         "tabs": {
-          "selected": 4,
+          "selected": 6,
           "tabs": [
             {
               "type": 0,
@@ -178,9 +178,9 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  8.8509534244178,
-                  10.222727120616764,
-                  -6.867595454213909
+                  10.82725167199333,
+                  8.817253624358306,
+                  -6.730226202717237
                 ],
                 "cameraTarget": [
                   2.0383539704950473,
@@ -189,6 +189,71 @@
                 ]
               },
               "controlsHeight": 213
+            },
+            {
+              "type": 5,
+              "title": "Console",
+              "controller": "/RealOutputs/Console",
+              "controllerUUID": "gct67hmoxaq9txvhy8r7q6uhhw2lmuyn",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Drive Angle PID",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/AnglePID/Setpoint/value",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/AnglePID/Measurement/value",
+                    "logType": "Number",
+                    "visible": false,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/AnglePID/Error/value",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": "degrees",
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "iwer9frrpytkqzlglshboifmo9fed0cl",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 1,
@@ -258,51 +323,6 @@
                 "rightFilter": 0
               },
               "controllerUUID": "k555coza4oxszgpwbic8xwyb6t97h4nb",
-              "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 1,
-              "title": "Drive Angle PID",
-              "controller": {
-                "leftSources": [
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Drive/AnglePID/Setpoint/value",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#2b66a2",
-                      "size": "normal"
-                    }
-                  },
-                  {
-                    "type": "stepped",
-                    "logKey": "/RealOutputs/Drive/AnglePID/Measurement/value",
-                    "logType": "Number",
-                    "visible": true,
-                    "options": {
-                      "color": "#e5b31b",
-                      "size": "normal"
-                    }
-                  }
-                ],
-                "rightSources": [],
-                "discreteSources": [],
-                "leftLockedRange": null,
-                "rightLockedRange": null,
-                "leftUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "rightUnitConversion": {
-                  "autoTarget": null,
-                  "preset": null
-                },
-                "leftFilter": 0,
-                "rightFilter": 0
-              },
-              "controllerUUID": "iwer9frrpytkqzlglshboifmo9fed0cl",
               "renderer": null,
               "controlsHeight": 200
             },
