@@ -38,8 +38,8 @@ public class ShooterConstants {
      */
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0004);
 
-    /** Motor type for the flywheel (1x NEO Vortex per side, used with SparkFlex) */
-    public static final DCMotor MOTOR = DCMotor.getNeoVortex(1);
+    /** Motor type for the flywheel (2x NEO Vortex per side, used with SparkFlex) */
+    public static final DCMotor MOTOR = DCMotor.getNeoVortex(2);
 
     /**
      * Base motor inversion flag. The left motor uses this value, the right motor is always inverted
@@ -62,7 +62,7 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00025);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.0025);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
@@ -96,7 +96,7 @@ public class ShooterConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00170);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00175);
     }
 
     /** Simulation feedforward values */

@@ -161,4 +161,11 @@ public class SimFeederIO implements FeederIO {
     _velocityControlActive = false;
     _appliedVoltage = voltage.in(Volts);
   }
+
+  @Override
+  public void stopFeeder() {
+    _velocityControlActive = false;
+    _appliedVoltage = 0.0;
+    _targetVelocityRPM = 0.0;
+  }
 }

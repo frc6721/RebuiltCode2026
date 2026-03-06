@@ -187,7 +187,8 @@ public class FeederCommands {
                   System.out.println("\tkS (Volts): " + formatter.format(kS));
                   System.out.println("\tkV (Volts per RPM): " + formatter.format(kV));
                   System.out.println("Enter these values into FeederConstants.Feedforward.Real");
-                }));
+                })
+            .andThen(FeederCommands.stopFeeder(feeder)));
   }
 
   public static Command runFeederAtVoltage(Feeder feeder, Voltage voltage) {

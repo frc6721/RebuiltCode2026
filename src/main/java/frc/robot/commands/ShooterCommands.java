@@ -284,7 +284,7 @@ public class ShooterCommands {
                     // so the feeder and hopper always stop cleanly when the sequence ends.
                     Commands.startEnd(
                         () -> {
-                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
                           hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
                         },
                         () -> {
@@ -370,7 +370,7 @@ public class ShooterCommands {
                     // so the feeder and hopper always stop cleanly when the sequence ends.
                     Commands.startEnd(
                         () -> {
-                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
                           hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
                         },
                         () -> {
@@ -424,7 +424,7 @@ public class ShooterCommands {
                 .andThen(
                     Commands.startEnd(
                         () -> {
-                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
                           hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
                         },
                         () -> {

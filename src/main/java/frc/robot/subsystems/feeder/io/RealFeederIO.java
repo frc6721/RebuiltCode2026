@@ -149,4 +149,11 @@ public class RealFeederIO implements FeederIO {
     // Only set on leader; follower follows automatically
     _leftFeederMotor.setVoltage(voltage);
   }
+
+  @Override
+  public void stopFeeder() {
+    // Reset the integral accumulator to prevent integral windup on next start
+    _leftFeederMotor.getClosedLoopController().setIAccum(0);
+    _leftFeederMotor.stopMotor();
+  }
 }

@@ -197,6 +197,6 @@ public class Feeder extends SubsystemBase {
    */
   public void stop() {
     _targetFeederSpeed = RadiansPerSecond.of(0);
-    _feederIO.setMotorVoltage(Volts.of(0.0));
+    _feederIO.stopFeeder();
   }
 }

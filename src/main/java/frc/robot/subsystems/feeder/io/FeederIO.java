@@ -41,4 +41,10 @@ public interface FeederIO {
    * @param voltage The voltage to apply to the motor
    */
   public default void setMotorVoltage(Voltage voltage) {}
+
+  /**
+   * Stops the feeder motor and resets the PID integral accumulator to prevent integral windup on
+   * the next start. Matches the pattern used by ShooterIO.stopFlywheel().
+   */
+  public default void stopFeeder() {}
 }

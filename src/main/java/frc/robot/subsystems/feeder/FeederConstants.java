@@ -19,10 +19,10 @@ public class FeederConstants {
   /** Mechanical properties of the feeder mechanism. */
   public static class Mechanical {
     /** Gear ratio from motor to feeder mechanism (motor rotations per mechanism rotation) */
-    public static final double GEAR_RATIO = 1.0;
+    public static final double GEAR_RATIO = 4.0;
 
-    /** Motor type for the feeder (1x NEO per side) */
-    public static final DCMotor MOTOR = DCMotor.getNEO(1);
+    /** Motor type for the feeder (2x NEO per side) */
+    public static final DCMotor MOTOR = DCMotor.getNEO(2);
 
     /**
      * Moment of inertia for the feeder wheels and belt system. Estimated for 4" Thrifty Squish
@@ -49,13 +49,13 @@ public class FeederConstants {
     public static final AngularVelocity MIN_SPEED = RPM.of(50);
 
     /** Maximum feeder speed - limited by NEO through 4:1 gearbox (~1400 RPM output) */
-    public static final AngularVelocity MAX_SPEED = RPM.of(1400);
+    public static final AngularVelocity MAX_SPEED = RPM.of(5000);
 
     /**
      * Maximum acceleration for Motion Magic profiling. Controls how quickly the feeder ramps up to
      * target speed. Higher = faster response but more current draw.
      */
-    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(2000); // 2000 RPM/s
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(8000); // 2000 RPM/s
   }
 
   /**
@@ -66,11 +66,11 @@ public class FeederConstants {
     /** Real robot PID values - tune these on the actual robot */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kP", 0.0003);
+          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kP", 0.003);
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kD", 0.0002);
+          new LoggedNetworkNumber("Feeder/FEEDER_PID/Real/kD", 0.002);
     }
 
     /** Simulation PID values */
@@ -93,11 +93,11 @@ public class FeederConstants {
     public static class Real {
       /** Static friction voltage (voltage needed to overcome friction and start moving) */
       public static final LoggedNetworkNumber KS =
-          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kS", 0.25);
+          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kS", 0.19124); // was .25
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kV", 0.002);
+          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kV", 0.00204); // was .002
     }
 
     /** Simulation feedforward values */
@@ -110,6 +110,21 @@ public class FeederConstants {
   }
 
   public static final Voltage DEFAULT_FEED_VOLTAGE = Volts.of(12);
+
+  /**
+   * Target velocities for feeder operations using closed-loop PID + feedforward control.
+   *
+   * <p>These replace the open-loop voltage presets in {@link Voltages}. Closed-loop velocity
+   * control provides more consistent feeding regardless of battery voltage.
+   */
+  public static class Speeds {
+    /**
+     * Target feeder RPM during a shooting sequence. This is the closed-loop equivalent of {@link
+     * Voltages#SHOOT_FEED_VOLTAGE}. Tune by running the feeder at different speeds and finding the
+     * RPM that reliably pushes game pieces into the flywheel.
+     */
+    public static final AngularVelocity SHOOT_FEED_RPM = RPM.of(3000);
+  }
 
   /**
    * Common voltage presets for feeder operations.
