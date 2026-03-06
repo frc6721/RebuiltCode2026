@@ -125,8 +125,8 @@ public class DriveConstants {
   //
   // TODO: Tune these on the real robot — start with kP and adjust if the robot
   //       overshoots (increase kD) or is too slow to snap to heading (increase kP).
-  public static final double turnToAngleKP = 7.0;
-  public static final double turnToAngleKD = 0.4;
+  public static final double turnToAngleKP = 5.0;
+  public static final double turnToAngleKD = 0.5;
   public static final double turnToAngleMaxVelocity = 8.0; // rad/s
   public static final double turnToAngleMaxAcceleration = 20.0; // rad/s²
 

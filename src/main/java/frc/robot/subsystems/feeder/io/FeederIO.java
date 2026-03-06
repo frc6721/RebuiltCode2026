@@ -21,6 +21,12 @@ public interface FeederIO {
     public AngularVelocity _rightFeederMotorVelocity;
     public Voltage _rightFeederMotorVoltage;
     public Current _rightFeederMotorCurrent;
+
+    // High-frequency samples from the 100Hz odometry thread.
+    // Each loop the thread collects up to 2 samples (100Hz / 50Hz loop = 2 per loop).
+    // The timestamps and velocities arrays are always the same length.
+    public double[] odometryTimestamps = new double[] {};
+    public double[] odometryVelocitiesRPM = new double[] {};
   }
 
   /** Updates the set of loggable inputs. */

@@ -104,6 +104,12 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/FlywheelSpeed/Desired_RPM", _targetFlywheelSpeed.in(RPM));
     Logger.recordOutput("Shooter/AtTargetSpeed", this.areFlywheelsAtTargetSpeed());
 
+    // Log the high-frequency velocity samples collected by the 100Hz odometry thread.
+    // Each 20ms loop typically provides ~2 samples; these are logged as arrays so
+    // AdvantageScope can display them at their actual timestamps for precise analysis.
+    Logger.recordOutput("Shooter/OdometryTimestamps", _shooterInputs.odometryTimestamps);
+    Logger.recordOutput("Shooter/OdometryVelocitiesRPM", _shooterInputs.odometryVelocitiesRPM);
+
     // ==================== FUEL SIM INTEGRATION ====================
     // Update trajectory visualization every loop so driver sees real-time prediction
     LinearVelocity linearSpeed =

@@ -16,6 +16,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -148,6 +149,11 @@ public class SimFeederIO implements FeederIO {
     inputs._rightFeederMotorVelocity = RPM.of(_feederPhysicsSim.getAngularVelocityRPM());
     inputs._rightFeederMotorVoltage = Volts.of(_appliedVoltage);
     inputs._rightFeederMotorCurrent = Amps.of(_feederPhysicsSim.getCurrentDrawAmps() / 2.0);
+
+    // Simulation runs at 50Hz (one sample per 20ms loop), so we provide a single timestamp
+    // and velocity sample to match the shape of what RealFeederIO sends from the 100Hz thread.
+    inputs.odometryTimestamps = new double[] {RobotController.getFPGATime() / 1e6};
+    inputs.odometryVelocitiesRPM = new double[] {_feederPhysicsSim.getAngularVelocityRPM()};
   }
 
   @Override

@@ -97,7 +97,7 @@ public class FeederConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kV", 0.00204); // was .002
+          new LoggedNetworkNumber("Feeder/FEEDER_FF/Real/kV", 0.00195); // was .002
     }
 
     /** Simulation feedforward values */
@@ -180,8 +180,8 @@ public class FeederConstants {
      */
     public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART_CURRENT_LIMIT = 80;
-    public static final double SECONDARY_CURRENT_LIMIT = 100;
+    public static final int SMART_CURRENT_LIMIT = 60;
+    public static final double SECONDARY_CURRENT_LIMIT = 80;
   }
 
   /** Software tuning settings for the feeder. */

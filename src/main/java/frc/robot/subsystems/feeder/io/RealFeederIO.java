@@ -19,7 +19,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.SparkOdometryThread;
 import frc.robot.subsystems.feeder.FeederConstants;
+import java.util.Queue;
 
 /**
  * Real hardware implementation of FeederIO using two SparkMax motor controllers in a
@@ -36,11 +39,22 @@ public class RealFeederIO implements FeederIO {
   private final SparkMax _leftFeederMotor;
   private final SparkMax _rightFeederMotor;
 
+  // High-frequency queues fed by the 100Hz odometry thread
+  private final Queue<Double> _timestampQueue;
+  private final Queue<Double> _velocityQueue;
+
   public RealFeederIO() {
     _leftFeederMotor = new SparkMax(Constants.CanIds.FEEDER_LEFT_MOTOR_ID, MotorType.kBrushless);
     _rightFeederMotor = new SparkMax(Constants.CanIds.FEEDER_RIGHT_MOTOR_ID, MotorType.kBrushless);
 
     configFeederMotors();
+
+    // Register the left motor's velocity signal with the shared 100Hz odometry thread.
+    // This gives us ~2 velocity samples per 20ms robot loop instead of just 1.
+    _timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+    _velocityQueue =
+        SparkOdometryThread.getInstance()
+            .registerSignal(_leftFeederMotor, _leftFeederMotor.getEncoder()::getVelocity);
   }
 
   /**
@@ -70,6 +84,16 @@ public class RealFeederIO implements FeederIO {
     // Configure Motion Magic (MAXMotion) acceleration limit for smooth ramp-up
     leftConfig.closedLoop.maxMotion.maxAcceleration(
         FeederConstants.Limits.MAX_ACCEL.in(RPM.per(Second)));
+
+    // Configure the encoder velocity signal to publish at the odometry thread frequency.
+    // This ensures the SparkOdometryThread can collect fresh samples every 10ms (100Hz).
+    leftConfig
+        .signals
+        .primaryEncoderVelocityAlwaysOn(true)
+        .primaryEncoderVelocityPeriodMs((int) (1000.0 / DriveConstants.odometryFrequency))
+        .appliedOutputPeriodMs(20)
+        .busVoltagePeriodMs(20)
+        .outputCurrentPeriodMs(20);
 
     tryUntilOk(
         _leftFeederMotor,
@@ -115,6 +139,14 @@ public class RealFeederIO implements FeederIO {
     inputs._rightFeederMotorVoltage =
         Volts.of(_rightFeederMotor.getAppliedOutput() * _rightFeederMotor.getBusVoltage());
     inputs._rightFeederMotorCurrent = Amps.of(_rightFeederMotor.getOutputCurrent());
+
+    // Drain the high-frequency queues collected by the 100Hz odometry thread.
+    // Convert the raw RPM doubles into a primitive array for AdvantageKit logging.
+    inputs.odometryTimestamps = _timestampQueue.stream().mapToDouble(Double::doubleValue).toArray();
+    inputs.odometryVelocitiesRPM =
+        _velocityQueue.stream().mapToDouble(Double::doubleValue).toArray();
+    _timestampQueue.clear();
+    _velocityQueue.clear();
   }
 
   /**

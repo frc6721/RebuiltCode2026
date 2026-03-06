@@ -16,6 +16,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -149,6 +150,11 @@ public class SimShooterIO implements ShooterIO {
     inputs._rightFlywheelMotorVelocity = RPM.of(_flywheelPhysicsSim.getAngularVelocityRPM());
     inputs._rightFlywheelMotorVoltage = Volts.of(_appliedVoltage);
     inputs._rightFlywheelMotorCurrent = Amps.of(_flywheelPhysicsSim.getCurrentDrawAmps() / 2.0);
+
+    // Simulation runs at 50Hz (one sample per 20ms loop), so we provide a single timestamp
+    // and velocity sample to match the shape of what RealShooterIO sends from the 100Hz thread.
+    inputs.odometryTimestamps = new double[] {RobotController.getFPGATime() / 1e6};
+    inputs.odometryVelocitiesRPM = new double[] {_flywheelPhysicsSim.getAngularVelocityRPM()};
   }
 
   @Override

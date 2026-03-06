@@ -54,7 +54,7 @@ public class ShooterConstants {
 
     public static final AngularVelocity MAX_SPEED = RPM.of(5600);
 
-    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(3000); // 3000 RPM/s
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(5200); // 3000 RPM/s
   }
 
   /** PID and feedforward tuning constants. */
@@ -62,12 +62,12 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00025);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00011); // 0.00025
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.000175);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.0001); // 0.00175
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }

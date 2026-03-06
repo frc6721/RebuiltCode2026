@@ -93,6 +93,12 @@ public class Feeder extends SubsystemBase {
         "Feeder/FeederSpeed/Desired_RadPerSec", _targetFeederSpeed.in(RadiansPerSecond));
     Logger.recordOutput("Feeder/FeederSpeed/Desired_RPM", _targetFeederSpeed.in(RPM));
     Logger.recordOutput("Feeder/AtTargetSpeed", this.areFeederWheelsAtTargetSpeed());
+
+    // Log the high-frequency velocity samples collected by the 100Hz odometry thread.
+    // Each 20ms loop typically provides ~2 samples; these are logged as arrays so
+    // AdvantageScope can display them at their actual timestamps for precise analysis.
+    Logger.recordOutput("Feeder/OdometryTimestamps", _feederInputs.odometryTimestamps);
+    Logger.recordOutput("Feeder/OdometryVelocitiesRPM", _feederInputs.odometryVelocitiesRPM);
   }
 
   // ==================== DUTY CYCLE CONTROL ====================

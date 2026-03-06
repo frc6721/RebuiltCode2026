@@ -17,7 +17,10 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.SparkOdometryThread;
 import frc.robot.subsystems.shooter.ShooterConstants;
+import java.util.Queue;
 
 /**
  * Real hardware implementation of ShooterIO using two REV SparkFlex motor controllers in a
@@ -31,6 +34,10 @@ public class RealShooterIO implements ShooterIO {
   private final SparkFlex _leftFlywheelMotor;
   private final SparkFlex _rightFlywheelMotor;
 
+  // High-frequency queues fed by the 100Hz odometry thread
+  private final Queue<Double> _timestampQueue;
+  private final Queue<Double> _velocityQueue;
+
   public RealShooterIO() {
     _leftFlywheelMotor =
         new SparkFlex(Constants.CanIds.FLYWHEEL_LEFT_MOTOR_ID, MotorType.kBrushless);
@@ -38,6 +45,13 @@ public class RealShooterIO implements ShooterIO {
         new SparkFlex(Constants.CanIds.FLYWHEEL_RIGHT_MOTOR_ID, MotorType.kBrushless);
 
     configFlywheelMotors();
+
+    // Register the left motor's velocity signal with the shared 100Hz odometry thread.
+    // This gives us ~2 velocity samples per 20ms robot loop instead of just 1.
+    _timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+    _velocityQueue =
+        SparkOdometryThread.getInstance()
+            .registerSignal(_leftFlywheelMotor, _leftFlywheelMotor.getEncoder()::getVelocity);
   }
 
   /** Configures both flywheel motors. Left is leader, right follows inverted. */
@@ -61,6 +75,16 @@ public class RealShooterIO implements ShooterIO {
         ShooterConstants.getFlywheelKD());
     leftConfig.closedLoop.maxMotion.maxAcceleration(
         ShooterConstants.Limits.MAX_ACCEL.in(RPM.per(Second)));
+
+    // Configure the encoder velocity signal to publish at the odometry thread frequency.
+    // This ensures the SparkOdometryThread can collect fresh samples every 10ms (100Hz).
+    leftConfig
+        .signals
+        .primaryEncoderVelocityAlwaysOn(true)
+        .primaryEncoderVelocityPeriodMs((int) (1000.0 / DriveConstants.odometryFrequency))
+        .appliedOutputPeriodMs(20)
+        .busVoltagePeriodMs(20)
+        .outputCurrentPeriodMs(20);
 
     tryUntilOk(
         _leftFlywheelMotor,
@@ -106,6 +130,14 @@ public class RealShooterIO implements ShooterIO {
     inputs._rightFlywheelMotorVoltage =
         Volts.of(_rightFlywheelMotor.getAppliedOutput() * _rightFlywheelMotor.getBusVoltage());
     inputs._rightFlywheelMotorCurrent = Amps.of(_rightFlywheelMotor.getOutputCurrent());
+
+    // Drain the high-frequency queues collected by the 100Hz odometry thread.
+    // Convert the raw RPM doubles into a primitive array for AdvantageKit logging.
+    inputs.odometryTimestamps = _timestampQueue.stream().mapToDouble(Double::doubleValue).toArray();
+    inputs.odometryVelocitiesRPM =
+        _velocityQueue.stream().mapToDouble(Double::doubleValue).toArray();
+    _timestampQueue.clear();
+    _velocityQueue.clear();
   }
 
   // ── Flywheel motor methods (commands go to leader only; follower follows automatically) ──
