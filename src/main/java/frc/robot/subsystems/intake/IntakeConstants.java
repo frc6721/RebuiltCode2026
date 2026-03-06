@@ -275,8 +275,8 @@ public class IntakeConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
-    public static final int LINEAR_SMART = 40;
-    public static final double LINEAR_SECONDARY = 55;
+    public static final int LINEAR_SMART = 80;
+    public static final double LINEAR_SECONDARY = 100;
     public static final int ROLLER_SMART = 50;
     public static final double ROLLER_SECONDARY = 60;
   }
