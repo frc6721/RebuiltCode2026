@@ -158,17 +158,7 @@ public class IntakeCommands {
   }
 
   /**
-   * Jostles the intake by repeatedly cycling between {@link IntakePosition#JOSTLE_EXTENDED} and
-   * {@link IntakePosition#JOSTLE_RETRACTED}.
-   *
-   * <p>This shakes game pieces loose in the hopper so they feed into the shooter more reliably.
-   * Runs continuously until interrupted — use with {@code whileTrue()} or as part of a parallel
-   * composition.
-   *
-   * <p>Jostle positions are tunable via NetworkTables ({@code Intake/Position/JostleExtended} and
-   * {@code Intake/Position/JostleRetracted}). Timing is tunable at {@code Intake/Jostle/Half Cycle
-   * Duration}.
-   *
+   * Jostles the hopper fueld by running the intake rollers at a slow speed. Use to help settle game pieces before shooting.
    * @param intake The intake subsystem
    * @return A repeating jostle command that runs until interrupted
    */

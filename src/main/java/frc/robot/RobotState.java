@@ -830,7 +830,10 @@ public class RobotState {
       new LoggedTrigger(
           "RobotState/FacingTarget",
           () -> {
-            Rotation2d targetAngle = getAngleToActiveTarget();
+            // The shooter is rear-mounted, so the BACK of the robot faces the target.
+            // We need to compare against targetAngle + 180° (the heading when the back
+            // is aimed at the target), not the raw front-facing angle.
+            Rotation2d targetAngle = getAngleToActiveTarget().plus(Rotation2d.kPi);
             Rotation2d robotHeading = getEstimatedPose().getRotation();
             Rotation2d headingError = targetAngle.minus(robotHeading);
 
