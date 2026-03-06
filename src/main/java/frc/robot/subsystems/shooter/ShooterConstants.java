@@ -62,12 +62,12 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00011); // 0.000115
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00009); // 0.00011
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00010); // 0.00175
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00025); // 0.00010
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
@@ -96,13 +96,13 @@ public class ShooterConstants {
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.001735);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kV", 0.00178); // 0.001735
     }
 
     /** Simulation feedforward values */
     public static class Sim {
       public static final LoggedNetworkNumber KS =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Sim/kS", 0.0);
+          new LoggedNetworkNumber("Shootzer/FLYWHEEL_FF/Sim/kS", 0.0);
       public static final LoggedNetworkNumber KV =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Sim/kV", 0.0018);
     }
