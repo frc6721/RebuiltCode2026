@@ -111,6 +111,20 @@ public class FeederConstants {
 
   public static final Voltage DEFAULT_FEED_VOLTAGE = Volts.of(12);
 
+  /**
+   * Common voltage presets for feeder operations.
+   *
+   * <p>Positive voltage feeds game pieces toward the shooter. Negative voltage pushes them back
+   * toward the intake (spit).
+   */
+  public static class Voltages {
+    /** Voltage applied to feeder during a shooting sequence to push fuel into the flywheel. */
+    public static final Voltage SHOOT_FEED_VOLTAGE = Volts.of(9);
+
+    /** Voltage applied to feeder when spitting game pieces back out through the intake. */
+    public static final Voltage SPIT_VOLTAGE = Volts.of(-6);
+  }
+
   // ── Mode-selected getter methods ──
   // These return the appropriate constant based on whether we're running on real hardware or in
   // sim.

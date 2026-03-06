@@ -163,6 +163,18 @@ public class ShooterConstants {
 
     /** Idle duty cycle when shooter is not actively shooting */
     public static final double IDLE_DUTY_CYCLE = 0.0;
+
+    /**
+     * Fixed flywheel RPM for shooting from the tower position. Used when the driver presses the
+     * tower shot button instead of the distance-based auto-aim shot.
+     */
+    public static final AngularVelocity TOWER_SHOT_RPM = RPM.of(2000);
+
+    /**
+     * Maximum time (seconds) to wait for the flywheel to reach speed AND the robot to face the
+     * target before feeding anyway. Acts as a safety timeout so the robot doesn't stall forever.
+     */
+    public static final double SHOOT_SEQUENCE_TIMEOUT_SECONDS = 2.0;
   }
 
   /** 3D visualization constants for AdvantageScope. */

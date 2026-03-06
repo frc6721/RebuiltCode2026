@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotState;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederConstants;
 import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperConstants;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import java.text.DecimalFormat;
@@ -271,19 +273,19 @@ public class ShooterCommands {
     return shootToHub(shooter)
         .alongWith(
             // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
-            // or give up waiting after 2 seconds (safety timeout)
+            // or give up waiting after the configured timeout (safety fallback)
             Commands.waitUntil(
                     () ->
                         shooter.areFlywheelsAtTargetSpeed()
                             && RobotState.getInstance().facingTarget.getAsBoolean())
-                .withTimeout(2.0)
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
                 .andThen(
                     // startEnd() runs the motor on start and stops it when interrupted/finished,
                     // so the feeder and hopper always stop cleanly when the sequence ends.
                     Commands.startEnd(
                         () -> {
-                          feeder.runFeederAtVoltage(Volts.of(9));
-                          hopper.setHopperSpeed(0.3);
+                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
                         },
                         () -> {
                           feeder.stop();
@@ -357,19 +359,19 @@ public class ShooterCommands {
     return shootToActiveTarget(shooter)
         .alongWith(
             // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
-            // or give up waiting after 2 seconds (safety timeout)
+            // or give up waiting after the configured timeout (safety fallback)
             Commands.waitUntil(
                     () ->
                         shooter.areFlywheelsAtTargetSpeed()
                             && RobotState.getInstance().facingTarget.getAsBoolean())
-                .withTimeout(2.0)
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
                 .andThen(
                     // startEnd() runs the motor on start and stops it when interrupted/finished,
                     // so the feeder and hopper always stop cleanly when the sequence ends.
                     Commands.startEnd(
                         () -> {
-                          feeder.runFeederAtVoltage(Volts.of(9));
-                          hopper.setHopperSpeed(0.3);
+                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
                         },
                         () -> {
                           feeder.stop();
@@ -378,5 +380,59 @@ public class ShooterCommands {
                         feeder,
                         hopper)))
         .withName("ShootToActiveTargetSequence");
+  }
+
+  // ==================== TOWER SHOT COMMANDS ====================
+
+  /**
+   * Creates a command to set the flywheel to the fixed tower shot RPM. Uses the constant {@link
+   * ShooterConstants.Software#TOWER_SHOT_RPM} instead of calculating speed from distance.
+   *
+   * <p>Use this when the robot is at the tower (close range) and distance-based aiming is not
+   * needed.
+   *
+   * @param shooter The shooter subsystem
+   * @return A command that continuously maintains the tower shot RPM
+   */
+  public static Command shootFromTower(Shooter shooter) {
+    return Commands.run(
+            () -> {
+              shooter.setFlywheelSpeed(ShooterConstants.Software.TOWER_SHOT_RPM);
+            },
+            shooter)
+        .withName("ShootFromTower");
+  }
+
+  /**
+   * Creates a complete tower shot shooting sequence: spins flywheel to tower RPM, waits for speed,
+   * then feeds game pieces.
+   *
+   * <p>Unlike {@link #shootToHubSequence}, this uses a fixed RPM from {@link
+   * ShooterConstants.Software#TOWER_SHOT_RPM} rather than distance-based speed calculation. No
+   * auto-aim is included — pair with a drive command for aiming if needed.
+   *
+   * @param shooter The shooter subsystem
+   * @param feeder The feeder subsystem
+   * @param hopper The hopper subsystem
+   * @return A complete tower shot sequence command
+   */
+  public static Command shootFromTowerSequence(Shooter shooter, Feeder feeder, Hopper hopper) {
+    return shootFromTower(shooter)
+        .alongWith(
+            Commands.waitUntil(() -> shooter.areFlywheelsAtTargetSpeed())
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
+                .andThen(
+                    Commands.startEnd(
+                        () -> {
+                          feeder.runFeederAtVoltage(FeederConstants.Voltages.SHOOT_FEED_VOLTAGE);
+                          hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                        },
+                        () -> {
+                          feeder.stop();
+                          hopper.stop();
+                        },
+                        feeder,
+                        hopper)))
+        .withName("ShootFromTowerSequence");
   }
 }

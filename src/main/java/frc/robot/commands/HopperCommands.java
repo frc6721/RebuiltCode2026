@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperConstants;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -58,5 +59,43 @@ public class HopperCommands {
    */
   public static Command stopHopper(Hopper hopper) {
     return Commands.runOnce(() -> hopper.stop(), hopper);
+  }
+
+  // ==================== NAMED SPEED COMMANDS ====================
+
+  /**
+   * Runs the hopper forward at {@link HopperConstants.Speeds#ACQUIRE_SPEED} to help game pieces
+   * settle toward the shooter.
+   *
+   * @param hopper The hopper subsystem
+   * @return A command that runs the hopper for acquiring
+   */
+  public static Command runHopperToAcquire(Hopper hopper) {
+    return runHopperAtPercentOutput(hopper, HopperConstants.Speeds.ACQUIRE_SPEED)
+        .withName("RunHopperToAcquire");
+  }
+
+  /**
+   * Runs the hopper in reverse at {@link HopperConstants.Speeds#SPIT_SPEED} to eject game pieces
+   * back toward the intake.
+   *
+   * @param hopper The hopper subsystem
+   * @return A command that runs the hopper in reverse for spitting
+   */
+  public static Command runHopperToSpit(Hopper hopper) {
+    return runHopperAtPercentOutput(hopper, HopperConstants.Speeds.SPIT_SPEED)
+        .withName("RunHopperToSpit");
+  }
+
+  /**
+   * Runs the hopper forward at {@link HopperConstants.Speeds#FEED_SPEED} during a shooting sequence
+   * to push game pieces into the feeder.
+   *
+   * @param hopper The hopper subsystem
+   * @return A command that runs the hopper for feeding the shooter
+   */
+  public static Command runHopperForShooting(Hopper hopper) {
+    return runHopperAtPercentOutput(hopper, HopperConstants.Speeds.FEED_SPEED)
+        .withName("RunHopperForShooting");
   }
 }

@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakePosition;
+import frc.robot.subsystems.intake.IntakeConstants;
 
 /**
  * Factory class for creating intake-related commands using static factory methods. Keeps command
@@ -109,11 +110,75 @@ public class IntakeCommands {
     return Commands.runOnce(
         () -> {
           intake.homeIntake();
-          // while (intake._intakeIO._linearMotorCurrent < 10) {
-          //     intake.setIntakePosition( new Intakeposition(intake.getPosition() - .01);
-          // }
-          // intake.resetEncoder();
         },
         intake);
+  }
+
+  // ==================== COMPOSITION COMMANDS ====================
+
+  /**
+   * Extends the intake and runs rollers to acquire game pieces. Sets the position once (PID handles
+   * movement) and turns on rollers — finishes immediately so other commands can run.
+   *
+   * <p>Use with {@code whileTrue()} or pair with a trigger to stop rollers when done.
+   *
+   * @param intake The intake subsystem
+   * @return A command that extends and starts acquiring
+   */
+  public static Command acquireGamePiece(Intake intake) {
+    return setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+        .andThen(runIntakeRollers(intake))
+        .withName("AcquireGamePiece");
+  }
+
+  /**
+   * Retracts the intake and stops the rollers. Stows the intake safely inside the frame perimeter.
+   *
+   * @param intake The intake subsystem
+   * @return A command that retracts and stops rollers
+   */
+  public static Command stowIntake(Intake intake) {
+    return setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
+        .andThen(stopIntakeRollers(intake))
+        .withName("StowIntake");
+  }
+
+  /**
+   * Runs the intake rollers at the spit voltage to eject game pieces.
+   *
+   * @param intake The intake subsystem
+   * @return A command that runs the rollers in reverse to spit
+   */
+  public static Command spitIntakeRollers(Intake intake) {
+    return Commands.runOnce(
+        () -> {
+          intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SPIT_SPEED.get()));
+        },
+        intake);
+  }
+
+  /**
+   * Jostles the intake by repeatedly cycling between {@link IntakePosition#JOSTLE_EXTENDED} and
+   * {@link IntakePosition#JOSTLE_RETRACTED}.
+   *
+   * <p>This shakes game pieces loose in the hopper so they feed into the shooter more reliably.
+   * Runs continuously until interrupted — use with {@code whileTrue()} or as part of a parallel
+   * composition.
+   *
+   * <p>Jostle positions are tunable via NetworkTables ({@code Intake/Position/JostleExtended} and
+   * {@code Intake/Position/JostleRetracted}). Timing is tunable at {@code Intake/Jostle/Half Cycle
+   * Duration}.
+   *
+   * @param intake The intake subsystem
+   * @return A repeating jostle command that runs until interrupted
+   */
+  public static Command jostleIntake(Intake intake) {
+    return Commands.sequence(
+            setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
+            Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
+            setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
+            Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
+        .repeatedly()
+        .withName("JostleIntake");
   }
 }

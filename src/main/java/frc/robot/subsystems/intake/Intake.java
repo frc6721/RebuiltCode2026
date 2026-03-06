@@ -55,7 +55,11 @@ public class Intake extends SubsystemBase {
    */
   public enum IntakePosition {
     RETRACTED(IntakeConstants.Positions.RETRACTED),
-    EXTENDED(IntakeConstants.Positions.EXTENDED);
+    EXTENDED(IntakeConstants.Positions.EXTENDED),
+    /** Outward jostle position — moves intake out to shake fuel loose in the hopper. */
+    JOSTLE_EXTENDED(IntakeConstants.Positions.JOSTLE_EXTENDED),
+    /** Inward jostle position — moves intake back in during a jostle cycle. */
+    JOSTLE_RETRACTED(IntakeConstants.Positions.JOSTLE_RETRACTED);
 
     private final LoggedNetworkNumber _position;
 

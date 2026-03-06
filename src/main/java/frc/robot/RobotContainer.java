@@ -15,7 +15,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Volts;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -26,9 +25,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +36,7 @@ import frc.lib.VirtualHopper;
 import frc.lib.fuelSim.FuelSim;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.FeederCommands;
+import frc.robot.commands.GamePieceCommands;
 import frc.robot.commands.HopperCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.ShooterCommands;
@@ -79,9 +76,20 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
+ *
+ * <p><b>Section Order:</b>
+ *
+ * <ol>
+ *   <li>Fields (subsystems, controllers, dashboard)
+ *   <li>Constructor (subsystem instantiation, auto setup)
+ *   <li>Registered Commands (PathPlanner named commands and event markers)
+ *   <li>Button Bindings (configureButtonBindings)
+ *   <li>Helper Methods (auto preview, FuelSim, getters)
+ * </ol>
  */
 public class RobotContainer {
-  // Subsystems
+
+  // ==================== SUBSYSTEMS ====================
   private final Drive drive;
   private final Intake intake;
   private final Feeder feeder;
@@ -89,13 +97,14 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Vision vision;
 
-  // FuelSim instance - created once and passed to subsystems that need it
+  // ==================== SIMULATION ====================
+  /** FuelSim instance — created once and passed to subsystems that need it. */
   private final FuelSim fuelSim = new FuelSim();
 
-  // Controller
+  // ==================== CONTROLLERS ====================
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  // Dashboard inputs
+  // ==================== DASHBOARD ====================
   private final LoggedDashboardChooser<Command> autoChooser;
 
   // ── Auto Preview & Starting Pose Check ──────────────────────────────────────
@@ -115,14 +124,15 @@ public class RobotContainer {
   // How close (in degrees) the robot's heading needs to be to the auto's starting heading.
   private static final double STARTING_POSE_ROT_TOLERANCE_DEGREES = 5.0;
 
+  // ==================== CONSTRUCTOR ====================
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    // ── Instantiate subsystems based on robot mode ────────────────────────────
     switch (Constants.currentMode) {
       case REAL:
-        // Real robot, instantiate hardware IO implementations
         drive =
             new Drive(
-                // TODO: Change to GyroIONavX if using a NavX
                 new GyroIOPigeon2(),
                 new ModuleIOSpark(0),
                 new ModuleIOSpark(1),
@@ -137,8 +147,8 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())));
         break;
+
       case SIM:
-        // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -146,7 +156,6 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        // Use simulation IO implementations with physics simulation
         intake = new Intake(new SimIntakeIO());
         shooter = new Shooter(new SimShooterIO(), fuelSim);
         feeder = new Feeder(new SimFeederIO());
@@ -155,7 +164,7 @@ public class RobotContainer {
         break;
 
       default:
-        // Replayed robot, disable IO implementations
+        // Replayed robot — disable IO implementations
         drive =
             new Drive(
                 new GyroIO() {},
@@ -163,7 +172,6 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // For replay, use empty IO implementations
         intake = new Intake(new IntakeIO() {});
         shooter = new Shooter(new ShooterIO() {}, fuelSim);
         feeder = new Feeder(new FeederIO() {});
@@ -172,54 +180,33 @@ public class RobotContainer {
         break;
     }
 
-    // ── Register Named Commands for PathPlanner ───────────────────────────────
-    // These must be registered BEFORE creating any PathPlanner autos or paths.
-    // The string names here must exactly match what's used in the PathPlanner GUI.
+    // ── Register PathPlanner commands (MUST happen before building autos) ─────
     registerNamedCommands();
-
     registerEventMarkers();
 
-    // Set up auto routines
+    // ── Auto chooser ─────────────────────────────────────────────────────────
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    // Put the auto preview Field2d on the dashboard so we can see the selected path
     SmartDashboard.putData("Auto Preview", autoPreviewField);
 
-    // Configure the button bindings
-    if (DriverStation.isFMSAttached()) {
-      // Running in competition, only configure real button bindings
-      configureButtonBindings();
-    } else if (RobotBase.isSimulation()) {
-      // configureSimButtonBindings();
-      configureButtonBindings();
-      // Configure FuelSim for game piece visualization
-      configureFuelSim();
-    } else {
-      configureButtonBindings();
-      // Configure FuelSim for game piece visualization
+    // ── Button bindings ──────────────────────────────────────────────────────
+    configureButtonBindings();
+
+    // ── FuelSim (sim/practice only, not during FMS matches) ──────────────────
+    if (!DriverStation.isFMSAttached()) {
       configureFuelSim();
     }
 
+    // ── Dashboard utilities ──────────────────────────────────────────────────
     SmartDashboard.putData("Reset Intake Encoder", IntakeCommands.resetIntakeEncoder(intake));
   }
 
-  private void registerEventMarkers() {
-    // ── extend-intake ─────────────────────────────────────────────────────────
-    // Extend the intake out from the robot frame and spin up the rollers to collect fuel.
-    // Sets position once (PID handles movement) and runs rollers — finishes immediately
-    // so PathPlanner can continue to the next path segment while intake stays extended.
-    new EventTrigger("deploy-intake")
-        .onTrue(
-            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
-                .andThen(IntakeCommands.runIntakeRollers(intake)));
+  // ==================== REGISTERED COMMANDS (PathPlanner) ====================
 
-    // ── retract-intake ────────────────────────────────────────────────────────
-    // Pull the intake back inside the frame perimeter and stop the rollers.
-    // This protects the intake during driving and stops collecting fuel.
-    new EventTrigger("retract-intake")
-        .onTrue(
-            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
-                .andThen(IntakeCommands.stopIntakeRollers(intake)));
+  /** Registers event marker triggers for PathPlanner path following. */
+  private void registerEventMarkers() {
+    new EventTrigger("deploy-intake").onTrue(IntakeCommands.acquireGamePiece(intake));
+
+    new EventTrigger("retract-intake").onTrue(IntakeCommands.stowIntake(intake));
   }
 
   /**
@@ -227,61 +214,28 @@ public class RobotContainer {
    *
    * <p><b>Important:</b> This must be called BEFORE creating any PathPlanner autos or paths. The
    * string names used here must exactly match the event marker names in the PathPlanner GUI.
-   *
-   * <p>Registered commands:
-   *
-   * <ul>
-   *   <li>{@code "extend-intake"} — Extends the intake linear slide out and runs rollers to collect
-   *       game pieces
-   *   <li>{@code "retract-intake"} — Retracts the intake linear slide and stops the rollers
-   *   <li>{@code "shoot-fuel"} — Aims the robot's back (shooter) at the alliance hub, spins up the
-   *       flywheel based on distance, waits for ready, then feeds. Stops everything when done.
-   * </ul>
    */
   private void registerNamedCommands() {
-    // ── extend-intake ─────────────────────────────────────────────────────────
-    // Extend the intake out from the robot frame and spin up the rollers to collect fuel.
-    // Sets position once (PID handles movement) and runs rollers — finishes immediately
-    // so PathPlanner can continue to the next path segment while intake stays extended.
-    NamedCommands.registerCommand(
-        "deploy-intake", IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
-    // .andThen(IntakeCommands.runIntakeRollers(intake)));
+    NamedCommands.registerCommand("deploy-intake", IntakeCommands.acquireGamePiece(intake));
 
-    // ── retract-intake ────────────────────────────────────────────────────────
-    // Pull the intake back inside the frame perimeter and stop the rollers.
-    // This protects the intake during driving and stops collecting fuel.
-    NamedCommands.registerCommand(
-        "retract-intake",
-        IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
-            .andThen(IntakeCommands.stopIntakeRollers(intake)));
+    NamedCommands.registerCommand("retract-intake", IntakeCommands.stowIntake(intake));
 
-    // ── shoot-fuel ────────────────────────────────────────────────────────────
     // Full auto-aim + shoot sequence for autonomous:
     // 1. Rotate the robot so the BACK (rear-mounted shooter) faces the alliance hub
     // 2. Continuously spin up the flywheel based on distance to the hub
-    // 3. Wait until flywheel is at speed AND robot is facing the target (2s safety timeout)
+    // 3. Wait until flywheel is at speed AND robot is facing the target (timeout safety)
     // 4. Feed the game piece through the feeder and hopper
-    // 5. After the shooting window completes, stop the feeder and flywheels
-    //
-    // IMPORTANT: This command has a 5-second timeout so that PathPlanner's sequential
-    // auto can continue to the next command (e.g., "stop-shooter" or a new path).
-    // Without a timeout, shootToHubSequence runs forever and the auto stalls here.
+    // 5. When done, stop the feeder, hopper, and flywheels
     NamedCommands.registerCommand(
         "shoot-fuel",
-        // Aim the back of the robot at the hub (no translation — robot stays in place)
-        // while simultaneously running the shoot-to-hub sequence
         DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> 0.0, // No forward/back translation during auto shooting
-                () -> 0.0, // No left/right translation during auto shooting
+                () -> 0.0,
+                () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
-                true) // true = aim BACK of robot (where the shooter is) at the hub
+                true)
             .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
-            // 5-second timeout: gives enough time to spin up, aim, and shoot, then
-            // allows the sequential auto to advance to the next named command.
             .withTimeout(5.0)
-            // When the command ends (by timeout OR interruption), always clean up:
-            // stop the feeder, hopper, and return flywheels to idle
             .finallyDo(
                 () -> {
                   feeder.stop();
@@ -289,11 +243,7 @@ public class RobotContainer {
                   shooter.stopFlywheels();
                 }));
 
-    // ── stop-shooter ──────────────────────────────────────────────────────────
-    // Emergency stop for all shooting mechanisms. Can be placed after a shoot-fuel
-    // command in auto to ensure everything is stopped before moving on.
-    // Uses Commands.parallel() so each sub-command properly declares its subsystem
-    // requirement and will interrupt any conflicting commands that are still running.
+    // Emergency stop for all shooting mechanisms
     NamedCommands.registerCommand(
         "stop-shooter",
         Commands.parallel(
@@ -378,30 +328,39 @@ public class RobotContainer {
     }
   }
 
+  // ==================== BUTTON BINDINGS ====================
+
   /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+   * Configures controller button → command mappings for competition.
+   *
+   * <pre>
+   * ┌─────────────────────────────────────────────────────────────────┐
+   * │  LEFT STICK:  Translation (field-relative driving)             │
+   * │  RIGHT STICK: Rotation (field-relative driving)                │
+   * │                                                                │
+   * │  RIGHT TRIGGER: Acquire game piece (extend + rollers) — hold   │
+   * │  LEFT TRIGGER:  Spit fuel (reverse all mechanisms) — hold      │
+   * │                                                                │
+   * │  A BUTTON: Retract intake                                      │
+   * │  B BUTTON: Extend intake                                       │
+   * │  X BUTTON: (unassigned — reserved for climber)                 │
+   * │  Y BUTTON: (unassigned — reserved for climber)                 │
+   * │                                                                │
+   * │  RIGHT BUMPER: Full auto-aim shooting + jostle — hold          │
+   * │  LEFT BUMPER:  Auto-align to trench heading — hold             │
+   * │                                                                │
+   * │  D-PAD UP:    Spit fuel (same as left trigger)                 │
+   * │  D-PAD DOWN:  Set odometry pose to alliance hub                │
+   * │  D-PAD LEFT:  Zero robot heading                               │
+   * │  D-PAD RIGHT: Tower shot (fixed RPM) — hold                   │
+   * └─────────────────────────────────────────────────────────────────┘
+   * </pre>
    */
   private void configureButtonBindings() {
-    /**
-     * **************************************************************
-     *
-     * <p>BUTTON BINDINGS:
-     *
-     * <p>Right bumper: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
-     * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
-     * while held, stop when released. A button: Snap to nearest straight X-axis heading while held.
-     * B button: Point intake at alliance wall while held. X button: Manual control of intake linear
-     * slide forward while held, stop when released. Y button: Manual control of intake linear slide
-     * in reverse while held, stop when released.
-     *
-     * <p>****************************************************************
-     */
 
-    // Default command, normal field-relative drive
-    // real controller
+    // ── Default Drive Command ─────────────────────────────────────────────────
+    // Field-relative swerve drive with cubic input curves for fine control.
+    // Right stick X controls rotation, scaled to 75% for smoother turning.
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
@@ -409,314 +368,104 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX() * 0.75));
 
-    // Dynamic shooting with auto-aiming:
-    // - Automatically determines target based on field position (hub, feed left, feed right)
-    // - Continuously adjusts flywheel speed based on distance to the active target
-    // - Automatically rotates robot so the BACK (shooter) faces the active target
-    // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
-    // - Driver maintains full control of translation (forward/back, left/right)
+    // ── RIGHT TRIGGER: Acquire game piece ─────────────────────────────────────
+    // While held: extend intake and run rollers to pull in game pieces.
+    // On release: retract intake and stop rollers.
+    controller
+        .rightTrigger(0.5)
+        .whileTrue(IntakeCommands.runIntakeRollers(intake))
+        .onFalse(IntakeCommands.stopIntakeRollers(intake));
+
+    // ── LEFT TRIGGER: Spit fuel ───────────────────────────────────────────────
+    // While held: extend intake and reverse all mechanisms to eject game pieces.
+    // On release: all mechanisms stop automatically (handled by GamePieceCommands).
+    controller.leftTrigger(0.5).whileTrue(GamePieceCommands.spitFuel(intake, feeder, hopper));
+
+    // ── A BUTTON: Retract intake ──────────────────────────────────────────────
+    controller.a().onTrue(IntakeCommands.stowIntake(intake));
+
+    // ── B BUTTON: Extend intake ───────────────────────────────────────────────
+    controller.b().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+
+    // ── RIGHT BUMPER: Full auto-aim shooting sequence ─────────────────────────
+    // While held:
+    //   1. Auto-aim: rotates the BACK of the robot (shooter) toward the active target
+    //   2. Flywheel: spins up to the distance-based RPM
+    //   3. Wait: until flywheel at speed AND robot facing target (with timeout)
+    //   4. Feed: runs feeder and hopper to launch game pieces
+    //   5. Jostle: repeatedly extends/retracts intake to shake fuel loose in hopper
+    // On release: stops feeder, hopper, and sets flywheels to idle.
     controller
         .rightBumper()
         .whileTrue(
-            // Combine auto-aim driving with shooting sequence
-            // useBackOfRobot = true because the shooter is rear-mounted
             DriveCommands.joystickDriveAtAngle(
                     drive,
                     () -> -controller.getLeftY(),
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
-                    true) // true = aim back of robot (shooter) at the active target
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
+                    true)
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    IntakeCommands.jostleIntake(intake)))
         .onFalse(
             new ParallelCommandGroup(
                 FeederCommands.stopFeeder(feeder),
                 HopperCommands.stopHopper(hopper),
-                ShooterCommands.runFlywheelsAtIdle(shooter)));
+                ShooterCommands.runFlywheelsAtIdle(shooter),
+                IntakeCommands.stowIntake(intake)));
 
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         // Combine auto-aim driving with shooting sequence
-    //         // useBackOfRobot = true because the shooter is rear-mounted
-    //         DriveCommands.joystickDriveAtAngle(
-    //                 drive,
-    //                 () -> -controller.getLeftY(),
-    //                 () -> -controller.getLeftX(),
-    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-    //                 true) // true = aim back of robot (shooter) at the active target
-    //             .alongWith(
-    //                 ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000))
-    //                     .andThen(new WaitCommand(3.5))
-    //                     .andThen(
-    //                         FeederCommands.runFeederAtVoltage(
-    //                             feeder, FeederConstants.DEFAULT_FEED_VOLTAGE)))
-    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0.5)))
-    //     .onFalse(
-    //         new ParallelCommandGroup(
-    //             FeederCommands.stopFeeder(feeder),
-    //             HopperCommands.stopHopper(hopper),
-    //             ShooterCommands.runFlywheelsAtIdle(shooter)));
-
-    controller
-        .rightTrigger(0.5)
-        .onTrue(
-            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
-                .andThen(IntakeCommands.runIntakeRollers(intake)));
-
-    controller
-        .leftTrigger(0.5)
-        .onTrue(
-            IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
-                .andThen(IntakeCommands.stopIntakeRollers(intake)));
-
-    controller.leftBumper().whileTrue(FeederCommands.feedforwardCharacterization(feeder));
-
-    // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
-    // Useful for straightening out to drive through the trench.
-    // The robot picks whichever direction (intake or shooter) is already closest to the X axis.
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveSnapToNearestXHeading(
-                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-
-    // B button: Point the intake (front) at the alliance wall while held.
-    // On blue alliance the intake faces 180° (toward blue wall).
-    // On red alliance the intake faces 0° (toward red wall).
-    // Uses AllianceFlipUtil so the correct heading is chosen automatically.
-    controller
-        .b()
-        .whileTrue(
-            DriveCommands.joystickDriveIntakeAtAllianceWall(
-                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-
-    // X button: Reverse the ball collection system (eject fuel back out).
-    // - Extends the intake so game pieces can exit
-    // - Stops the intake rollers (don't spin them backward, just let pieces fall out)
-    // - Runs the feeder and hopper in reverse to push fuel back out
-    // Uses startEnd() so the feeder and hopper always stop cleanly when the button is released.
-    controller
-        .x()
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED))
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  feeder.runFeederAtVoltage(Volts.of(-6));
-                  hopper.setHopperSpeed(-0.5);
-                },
-                () -> {
-                  feeder.stop();
-                  hopper.stop();
-                },
-                feeder,
-                hopper))
-        .onFalse(IntakeCommands.stopIntakeRollers(intake));
-
-    // Reset gyro to 0° when left dpad is pressed
-    controller
-        .pov(270)
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d().k180deg)),
-                    drive)
-                .ignoringDisable(true));
-
-    // D-Pad up: Teleport the robot to directly in front of the alliance hub
-    // Useful for quickly positioning the robot for shooting tests.
-    // AllianceFlipUtil (inside RobotState) automatically handles red vs. blue alliance.
-    controller
-        .pov(0)
-        .onTrue(
-            Commands.runOnce(
-                    () -> drive.setPose(RobotState.getInstance().getPoseInFrontOfAllianceHub()),
-                    drive)
-                .ignoringDisable(true));
-
-    // controller
-    //     .x()
-    //     .onTrue(
-    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-    //     .onFalse(
-    //         ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
-
-    // Used for shooter characterization routines. Not for normal use.
-    // Original X binding replaced with shooter characterization bindings
-    // controller
-    //     .x()
-    //     .onTrue(Commands.run(() -> shooter.setFlyWheelDutyCycle(0.015), shooter))
-    //     .onFalse(Commands.run(() -> shooter.setFlyWheelDutyCycle(0.0), shooter));
-  }
-
-  private void configureSimButtonBindings() {
-    /**
-     * **************************************************************
-     *
-     * <p>BUTTON BINDINGS:
-     *
-     * <p>Right bumper: Run shooter and feeder at fixed voltage for testing. Driving joysticks: Same
-     * as default joystick swerve drive D-Pad left: Reset gyro to 0° Left bumper: Run intake rollers
-     * while held, stop when released. A button: Snap to nearest straight X-axis heading while held.
-     * B button: Point intake at alliance wall while held. X button: Manual control of intake linear
-     * slide forward while held, stop when released. Y button: Manual control of intake linear slide
-     * in reverse while held, stop when released.
-     *
-     * <p>****************************************************************
-     */
-
-    // Default command, normal field-relative drive
-    // real controller
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightTriggerAxis()));
-
-    // sim controller in MAC os
-    // drive.setDefaultCommand(
-    //  DriveCommands.joystickDrive(
-    //    drive,
-    //  () -> -controller.getLeftY(),
-    // () -> -controller.getLeftX(),
-    // () -> -(controller.getRightTriggerAxis())));
-
-    // Always run the flywheels a little bit during the match so they can spin up quicker when we
-    // need them
-    // shooter.setDefaultCommand(ShooterCommands.runFlywheelsAtIdle(shooter));
-
-    // controller
-    //     .leftBumper()
-    //     .whileTrue(IntakeCommands.setIntakeRollersVoltage(intake, 4.0))
-    //     .onFalse(IntakeCommands.stopIntakeRollers(intake));
-
-    // Dynamic shooting with auto-aiming:
-    // - Automatically determines target based on field position (hub, feed left, feed right)
-    // - Continuously adjusts flywheel speed based on distance to the active target
-    // - Automatically rotates robot so the BACK (shooter) faces the active target
-    // - Waits until BOTH flywheel is at speed AND robot is facing the target before feeding
-    // - Driver maintains full control of translation (forward/back, left/right)
-    controller
-        .y()
-        .whileTrue(
-            // Combine auto-aim driving with shooting sequence
-            // useBackOfRobot = true because the shooter is rear-mounted
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToActiveTarget(),
-                    true) // true = aim back of robot (shooter) at the active target
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
-        .onFalse(
-            new ParallelCommandGroup(
-                FeederCommands.stopFeeder(feeder),
-                HopperCommands.stopHopper(hopper),
-                ShooterCommands.runFlywheelsAtIdle(shooter)));
-
-    // controller
-    //     .rightBumper()
-    //     .onTrue(HopperCommands.runHopperAtPercentOutput(hopper, .5))
-    //     .onFalse(HopperCommands.runHopperAtPercentOutput(hopper, 0));
-
-    // controller
-    //     .x()
-    //     .onTrue(
-    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 3.5, 12)
-    //             .andThen(HopperCommands.runHopperAtPercentOutput(hopper, 0.7)))
-    //     .onFalse(
-    //         ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0, 0)
-    //             .alongWith(HopperCommands.runHopperAtPercentOutput(hopper, 0)));
-
-    // TESTING COMMAND
-    // run the shooter and feeder at a fixed voltage
-    // update these values to run faster or slower.
-    // Max motor power is 12 volts
+    // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
+    // While held: snaps the robot to the nearest 0° or 180° heading for driving
+    // straight through the trench. Driver keeps full translation control.
     controller
         .leftBumper()
-        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-        .onTrue(IntakeCommands.setIntakeRollersVoltage(intake, -6))
-        .onFalse(IntakeCommands.setIntakeRollersVoltage(intake, 0));
-
-    // controller
-    //     .leftBumper()
-    //     .whileTrue(ShooterCommands.feedforwardCharacterization(shooter))
-    //     .onFalse(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(0)));
-
-    /*
-     * Run hopper at fixed speed for testing. Adjust speed in command to change speed.
-     * NOTE: this is % output between -1 and 1, not voltage. So 0.3 means 30% of max speed.
-     */
-    // controller
-    //     .a()
-    //     .whileTrue(HopperCommands.runHopperAtPercentOutput(hopper, .3))
-    //     .onFalse(HopperCommands.stopHopper(hopper));
-
-    /*
-     * Manual control of intake linear slide for testing. Adjust voltage in command to change speed.
-     *
-     */
-    // controller
-    //     .leftBumper()
-    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, 3.0))
-    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
-    controller
-        .rightTrigger(0.5)
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
-
-    /*
-     * Manual control of intake linear slide in reverse for testing. Adjust voltage in command to change speed.
-     */
-    // controller
-    //     .y()
-    //     .onTrue(IntakeCommands.setIntakeLinearVoltage(intake, -3.0))
-    //     .onFalse(IntakeCommands.setIntakeLinearVoltage(intake, 0.0));
-    controller
-        .leftTrigger(0.5)
-        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.RETRACTED));
-
-    // A button: Snap to nearest straight X-axis heading (0° or 180°) while held.
-    // Useful for straightening out to drive through the trench.
-    // The robot picks whichever direction (intake or shooter) is already closest to the X axis.
-    controller
-        .a()
         .whileTrue(
             DriveCommands.joystickDriveSnapToNearestXHeading(
                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
 
-    // B button: Point the intake (front) at the alliance wall while held.
-    // On blue alliance the intake faces 180° (toward blue wall).
-    // On red alliance the intake faces 0° (toward red wall).
-    // Uses AllianceFlipUtil so the correct heading is chosen automatically.
-    controller
-        .b()
-        .whileTrue(
-            DriveCommands.joystickDriveIntakeAtAllianceWall(
-                drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-
-    // Reset gyro to 0° when left dpad is pressed
+    // ── D-PAD LEFT (270): Zero robot heading ──────────────────────────────────
+    // Resets the gyro so the robot's current heading is treated as 180°.
     controller
         .pov(270)
         .onTrue(
             Commands.runOnce(
                     () ->
                         drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.k180deg)),
                     drive)
                 .ignoringDisable(true));
 
-    // D-Pad up: Teleport the robot to directly in front of the alliance hub
-    // Useful for quickly positioning the robot for shooting tests.
-    // AllianceFlipUtil (inside RobotState) automatically handles red vs. blue alliance.
+    // ── D-PAD DOWN (180): Set odometry pose to alliance hub ───────────────────
+    // Teleports the robot's odometry to directly in front of the alliance hub.
+    // Useful for testing shooting without driving across the field.
     controller
-        .pov(0)
+        .pov(180)
         .onTrue(
             Commands.runOnce(
                     () -> drive.setPose(RobotState.getInstance().getPoseInFrontOfAllianceHub()),
                     drive)
                 .ignoringDisable(true));
+
+    // ── D-PAD UP (0): Spit fuel ───────────────────────────────────────────────
+    // Same as left trigger — extend intake and reverse all mechanisms.
+    controller.pov(0).whileTrue(GamePieceCommands.spitFuel(intake, feeder, hopper));
+
+    // ── D-PAD RIGHT (90): Tower shot ──────────────────────────────────────────
+    // While held: runs the shooting sequence at a fixed tower RPM.
+    // No auto-aim — the driver aims manually. Useful when near the tower.
+    // On release: stops feeder, hopper, and returns flywheels to idle.
+    controller
+        .pov(90)
+        .whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper))
+        .onFalse(
+            new ParallelCommandGroup(
+                FeederCommands.stopFeeder(feeder),
+                HopperCommands.stopHopper(hopper),
+                ShooterCommands.runFlywheelsAtIdle(shooter)));
   }
+
+  // ==================== PUBLIC GETTERS ====================
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -737,7 +486,7 @@ public class RobotContainer {
     return fuelSim;
   }
 
-  // ── Auto Preview & Starting Pose Check Methods ────────────────────────────
+  // ==================== AUTO PREVIEW & STARTING POSE CHECK ====================
 
   /** Tracks the last auto name so we only reload paths when the selection changes. */
   private String lastAutoName = "";

@@ -169,6 +169,20 @@ public class IntakeConstants {
     /** DELETE BELOW LINE AND REVERT EXTENDED VALUE TO ABOVE. JUST FOR PID TUNING TESTING */
     public static final LoggedNetworkNumber EXTENDED =
         new LoggedNetworkNumber("Intake/Position/Extended", Inches.of(11.0).in(Meters));
+
+    /**
+     * Jostle-extend position in meters. The intake moves here during the outward half of a jostle
+     * cycle to shake fuel loose in the hopper. Tunable from the dashboard.
+     */
+    public static final LoggedNetworkNumber JOSTLE_EXTENDED =
+        new LoggedNetworkNumber("Intake/Position/JostleExtended", Inches.of(6.0).in(Meters));
+
+    /**
+     * Jostle-retract position in meters. The intake moves here during the inward half of a jostle
+     * cycle. Tunable from the dashboard.
+     */
+    public static final LoggedNetworkNumber JOSTLE_RETRACTED =
+        new LoggedNetworkNumber("Intake/Position/JostleRetracted", Inches.of(1.0).in(Meters));
   }
 
   /** PID tuning constants for the linear slide position control. */
@@ -269,12 +283,32 @@ public class IntakeConstants {
 
   /** Roller motor settings. */
   public static class Roller {
+    /** Voltage to run rollers when acquiring game pieces (negative = inward on our robot). */
     public static final LoggedNetworkNumber ACQUIRE_SPEED =
         new LoggedNetworkNumber("Intake/Roller/Acquire Speed", -4);
+
+    /** Voltage to run rollers slowly when acquiring game pieces. */
+    public static final LoggedNetworkNumber SLOW_ACQUIRE_SPEED =
+        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -2);
+
+    /** Voltage to run rollers when spitting game pieces out (positive = outward). */
+    public static final LoggedNetworkNumber SPIT_SPEED =
+        new LoggedNetworkNumber("Intake/Roller/Spit Speed", 4);
+
+    /** Voltage to run rollers slowly when spitting game pieces out. */
+    public static final LoggedNetworkNumber SLOW_SPIT_SPEED =
+        new LoggedNetworkNumber("Intake/Roller/Slow Spit Speed", 2);
 
     public static final LoggedNetworkNumber CURRENT_CUTOFF =
         new LoggedNetworkNumber("Intake/Roller/Current Cutoff", 40);
   }
+
+  /**
+   * Duration of one half of an intake jostle cycle (extend or retract), in seconds. Tunable from
+   * the dashboard.
+   */
+  public static final LoggedNetworkNumber JOSTLE_HALF_CYCLE_DURATION_SECONDS =
+      new LoggedNetworkNumber("Intake/Jostle/Half Cycle Duration", 0.25);
 
   /** Software tuning settings. */
   public static class Software {
