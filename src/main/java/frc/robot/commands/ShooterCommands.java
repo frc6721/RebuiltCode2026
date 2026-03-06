@@ -91,18 +91,17 @@ public class ShooterCommands {
   }
 
   /**
-   * Creates a command to run the flywheel at a low idle speed. Keeps the flywheel spinning slowly
-   * between shots to reduce spin-up time at the cost of more battery usage.
-   *
-   * <p>Idle speed is configured via {@link ShooterConstants.Software#IDLE_DUTY_CYCLE}.
+   * Creates a command to set the flywheel to idle (0 RPM) using velocity control mode. Keeps the
+   * shooter in closed-loop velocity mode so {@link Shooter#areFlywheelsAtTargetSpeed()} returns
+   * accurate results and the target speed is properly reset.
    *
    * @param shooter The shooter subsystem
-   * @return A command that sets the flywheel to idle speed once and finishes immediately
+   * @return A command that sets the flywheel to 0 RPM once and finishes immediately
    */
   public static Command runFlywheelsAtIdle(Shooter shooter) {
     return Commands.runOnce(
         () -> {
-          shooter.setFlyWheelDutyCycle(ShooterConstants.Software.IDLE_DUTY_CYCLE);
+          shooter.setFlywheelSpeed(RPM.of(0));
         },
         shooter);
   }
@@ -272,12 +271,12 @@ public class ShooterCommands {
       Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper) {
     return shootToHub(shooter)
         .alongWith(
-            // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
+            // Wait until BOTH the flywheel is at speed AND the robot's back is facing the hub,
             // or give up waiting after the configured timeout (safety fallback)
             Commands.waitUntil(
                     () ->
                         shooter.areFlywheelsAtTargetSpeed()
-                            && RobotState.getInstance().facingTarget.getAsBoolean())
+                            && RobotState.getInstance().isBackFacingAllianceHub())
                 .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
                 .andThen(
                     // startEnd() runs the motor on start and stops it when interrupted/finished,
@@ -379,6 +378,14 @@ public class ShooterCommands {
                         },
                         feeder,
                         hopper)))
+        // When the command ends (button released or interrupted), clean up all mechanisms.
+        // This replaces the separate onFalse handler in RobotContainer.
+        .finallyDo(
+            () -> {
+              feeder.stop();
+              hopper.stop();
+              shooter.setFlywheelSpeed(RPM.of(0));
+            })
         .withName("ShootToActiveTargetSequence");
   }
 
@@ -433,6 +440,14 @@ public class ShooterCommands {
                         },
                         feeder,
                         hopper)))
+        // When the command ends (button released or interrupted), clean up all mechanisms.
+        // This replaces the separate onFalse handler in RobotContainer.
+        .finallyDo(
+            () -> {
+              feeder.stop();
+              hopper.stop();
+              shooter.setFlywheelSpeed(RPM.of(0));
+            })
         .withName("ShootFromTowerSequence");
   }
 }

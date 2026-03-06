@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -370,11 +369,11 @@ public class RobotContainer {
             () -> -controller.getRightX() * 0.75));
 
     // ── RIGHT TRIGGER: Acquire game piece ─────────────────────────────────────
-    // While held: extend intake and run rollers to pull in game pieces.
-    // On release: retract intake and stop rollers.
+    // While held: extend intake and continuously run rollers to pull in game pieces.
+    // On release: stop rollers but keep the intake extended (driver retracts with A button).
     controller
         .rightTrigger(0.5)
-        .whileTrue(IntakeCommands.runIntakeRollers(intake))
+        .whileTrue(IntakeCommands.acquireGamePieceContinuous(intake))
         .onFalse(IntakeCommands.stopIntakeRollers(intake));
 
     // ── LEFT TRIGGER: Spit fuel ───────────────────────────────────────────────
@@ -394,8 +393,7 @@ public class RobotContainer {
     //   2. Flywheel: spins up to the distance-based RPM
     //   3. Wait: until flywheel at speed AND robot facing target (with timeout)
     //   4. Feed: runs feeder and hopper to launch game pieces
-    //   5. Jostle: repeatedly extends/retracts intake to shake fuel loose in hopper
-    // On release: stops feeder, hopper, and sets flywheels to idle.
+    // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
     controller
         .rightBumper()
         .whileTrue(
@@ -405,14 +403,7 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)))
-        // IntakeCommands.jostleIntake(intake)))
-        .onFalse(
-            new ParallelCommandGroup(
-                FeederCommands.stopFeeder(feeder),
-                HopperCommands.stopHopper(hopper),
-                ShooterCommands.runFlywheelsAtIdle(shooter),
-                IntakeCommands.stowIntake(intake)));
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
 
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
     // While held: snaps the robot to the nearest 0° or 180° heading for driving
@@ -453,15 +444,10 @@ public class RobotContainer {
     // ── D-PAD RIGHT (90): Tower shot ──────────────────────────────────────────
     // While held: runs the shooting sequence at a fixed tower RPM.
     // No auto-aim — the driver aims manually. Useful when near the tower.
-    // On release: stops feeder, hopper, and returns flywheels to idle.
+    // On release: the command's finallyDo stops feeder, hopper, and returns flywheels to idle.
     controller
         .pov(90)
-        .whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper))
-        .onFalse(
-            new ParallelCommandGroup(
-                FeederCommands.stopFeeder(feeder),
-                HopperCommands.stopHopper(hopper),
-                ShooterCommands.runFlywheelsAtIdle(shooter)));
+        .whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper));
   }
 
   // ==================== PUBLIC GETTERS ====================

@@ -132,6 +132,27 @@ public class IntakeCommands {
   }
 
   /**
+   * Extends the intake and continuously runs rollers to acquire game pieces. Unlike {@link
+   * #acquireGamePiece}, this command runs continuously every 20ms so it maintains the intake
+   * subsystem requirement for the full duration.
+   *
+   * <p>Use with {@code whileTrue()} — rollers run as long as the button is held. The intake
+   * position is set to EXTENDED on the first loop and the PID maintains it.
+   *
+   * @param intake The intake subsystem
+   * @return A command that extends and continuously runs rollers until interrupted
+   */
+  public static Command acquireGamePieceContinuous(Intake intake) {
+    return Commands.run(
+            () -> {
+              intake.setIntakePosition(IntakePosition.EXTENDED);
+              intake.turnOnIntakeRollers();
+            },
+            intake)
+        .withName("AcquireGamePieceContinuous");
+  }
+
+  /**
    * Retracts the intake and stops the rollers. Stows the intake safely inside the frame perimeter.
    *
    * @param intake The intake subsystem
@@ -166,7 +187,7 @@ public class IntakeCommands {
     return Commands.run(
       () -> {
         intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
-      }
+      }, intake
     )    .withName("runIntakeRollersForShooting");
     // return Commands.sequence(
     //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),

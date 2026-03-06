@@ -807,9 +807,38 @@ public class RobotState {
   /**
    * Tolerance (in degrees) for determining if the robot is facing its target.
    *
-   * <p>Used by the {@link #facingTarget} trigger.
+   * <p>Used by the {@link #facingTarget} trigger and {@link #isBackFacingTarget(Target)}.
    */
   private static final double SHOOT_TOLERANCE_DEGREES = 5.0;
+
+  /**
+   * Returns whether the back of the robot is facing a specific target within {@link
+   * #SHOOT_TOLERANCE_DEGREES}.
+   *
+   * <p>The shooter is rear-mounted, so we check if the robot's heading is within tolerance of
+   * {@code targetAngle + 180°} (i.e., the back is pointed at the target).
+   *
+   * @param target The target to check against
+   * @return true if the back of the robot is aimed at the target within tolerance
+   */
+  public boolean isBackFacingTarget(Target target) {
+    Rotation2d targetAngle = getAngleToTarget(target).plus(Rotation2d.kPi);
+    Rotation2d robotHeading = getEstimatedPose().getRotation();
+    Rotation2d headingError = targetAngle.minus(robotHeading);
+    return Math.abs(headingError.getDegrees()) < SHOOT_TOLERANCE_DEGREES;
+  }
+
+  /**
+   * Returns whether the back of the robot is facing the alliance hub within {@link
+   * #SHOOT_TOLERANCE_DEGREES}.
+   *
+   * <p>Convenience method that checks against {@link Target#HUB}.
+   *
+   * @return true if the back of the robot is aimed at the alliance hub within tolerance
+   */
+  public boolean isBackFacingAllianceHub() {
+    return isBackFacingTarget(Target.HUB);
+  }
 
   /**
    * Trigger that fires when the robot is facing the active target within tolerance.
