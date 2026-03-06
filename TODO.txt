@@ -69,3 +69,16 @@ Setpoints:
 Lime Light IPs:
 http://10.67.21.11:5801/
 http://10.67.21.12:5801/
+
+
+#TODOs
+
+- stop subsystems on teleop init
+- the jostle command needs to also run the intake rollers
+- plot auto trajectories in adkit
+
+
+with robot:
+
+- tune intake to be faster
+- tune shooter and feeder
