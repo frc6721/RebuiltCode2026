@@ -62,7 +62,7 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.0020);
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00025);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
