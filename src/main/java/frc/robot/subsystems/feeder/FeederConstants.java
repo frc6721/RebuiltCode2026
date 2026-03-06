@@ -123,7 +123,7 @@ public class FeederConstants {
      * Voltages#SHOOT_FEED_VOLTAGE}. Tune by running the feeder at different speeds and finding the
      * RPM that reliably pushes game pieces into the flywheel.
      */
-    public static final AngularVelocity SHOOT_FEED_RPM = RPM.of(4000);
+    public static final AngularVelocity SHOOT_FEED_RPM = RPM.of(4700);
   }
 
   /**

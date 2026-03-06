@@ -173,12 +173,17 @@ public class IntakeCommands {
    * @return A repeating jostle command that runs until interrupted
    */
   public static Command jostleIntake(Intake intake) {
-    return Commands.sequence(
-            setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
-            Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
-            setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
-            Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
-        .repeatedly()
-        .withName("JostleIntake");
+    return Commands.run(
+      () -> {
+        intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
+      }
+    )    .withName("runIntakeRollersForShooting");
+    // return Commands.sequence(
+    //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
+    //         Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
+    //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
+    //         Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
+    //     .repeatedly()
+    //     .withName("JostleIntake");
   }
 }

@@ -285,15 +285,15 @@ public class IntakeConstants {
   public static class Roller {
     /** Voltage to run rollers when acquiring game pieces (negative = inward on our robot). */
     public static final LoggedNetworkNumber ACQUIRE_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", -4);
+        new LoggedNetworkNumber("Intake/Roller/Acquire Speed", -7);
 
     /** Voltage to run rollers slowly when acquiring game pieces. */
     public static final LoggedNetworkNumber SLOW_ACQUIRE_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -2);
+        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -4);
 
     /** Voltage to run rollers when spitting game pieces out (positive = outward). */
     public static final LoggedNetworkNumber SPIT_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Spit Speed", 4);
+        new LoggedNetworkNumber("Intake/Roller/Spit Speed", 6);
 
     /** Voltage to run rollers slowly when spitting game pieces out. */
     public static final LoggedNetworkNumber SLOW_SPIT_SPEED =
