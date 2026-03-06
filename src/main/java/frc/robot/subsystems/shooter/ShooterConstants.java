@@ -62,7 +62,8 @@ public class ShooterConstants {
     /** Real robot PID values - tuned for actual hardware (on motor controller) */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kP", 0.00009); // 0.00011
+          new LoggedNetworkNumber(
+              "Shooter/FLYWHEEL_PID/Real/kP", 0.000045); // 0.00009 -> halved to reduce oscillation
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
@@ -203,11 +204,11 @@ public class ShooterConstants {
 
     static {
       SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1700.0).in(RPM));
-      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2100.0).in(RPM));
-      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2250.0).in(RPM)); // about the tower position
+      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2150.0).in(RPM));
+      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2150.0).in(RPM)); // about the tower position
       SPEED_MAP.put(
           Inches.of(170.1).in(Meters),
-          RPM.of(2350.0).in(RPM)); // about the Human player and trench position
+          RPM.of(2450.0).in(RPM)); // about the Human player and trench position
     }
 
     /**
