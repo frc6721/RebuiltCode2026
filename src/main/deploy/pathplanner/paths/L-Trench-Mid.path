@@ -68,24 +68,24 @@
         "y": 7.177678891782407
       },
       "prevControl": {
-        "x": 7.114608107431949,
-        "y": 6.451182499405472
+        "x": 7.319922093761427,
+        "y": 6.841868521879629
       },
       "nextControl": {
-        "x": 5.514741575325146,
-        "y": 7.731161899160276
+        "x": 5.469275114155251,
+        "y": 7.400051860373859
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.948103308509122,
-        "y": 7.427241082881984
+        "x": 3.089864217679795,
+        "y": 7.177678891782407
       },
       "prevControl": {
-        "x": 5.14455189367971,
-        "y": 7.15315503752852
+        "x": 4.5284065978167805,
+        "y": 7.700516641695206
       },
       "nextControl": null,
       "isLocked": false,
@@ -100,6 +100,18 @@
     {
       "waypointRelativePos": 2.0,
       "rotationDegrees": -90.05631671660376
+    },
+    {
+      "waypointRelativePos": 3,
+      "rotationDegrees": -122.21465639994815
+    },
+    {
+      "waypointRelativePos": 3.327811104910714,
+      "rotationDegrees": 93.50539018805686
+    },
+    {
+      "waypointRelativePos": 3.8736979166666674,
+      "rotationDegrees": 172.26990692401438
     }
   ],
   "constraintZones": [],
@@ -108,12 +120,6 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 0.1787109375,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "retract-intake",
-      "waypointRelativePos": 3.538384011382795,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -128,13 +134,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 95.4250556786412
+    "rotation": 178.02522595854887
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -89.90664224508623
+    "rotation": 1.3596783771381544
   },
   "useDefaultConstraints": true
 }
