@@ -358,6 +358,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
+    controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
     // ── Default Drive Command ─────────────────────────────────────────────────
     // Field-relative swerve drive with cubic input curves for fine control.
     // Right stick X controls rotation, scaled to 75% for smoother turning.
@@ -387,6 +388,26 @@ public class RobotContainer {
     // ── B BUTTON: Extend intake ───────────────────────────────────────────────
     controller.b().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
+    // ── Y BUTTON: Run shooter and feeder at fixed RPM for tuning different distance shots
+    // ───────────────────────────────────────────────
+    // controller
+    //     .y()
+    //     // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000)))
+    //     // .onFalse(ShooterCommands.stopFlywheels(shooter));
+
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true)
+    //             .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000)))
+    //             .andThen(new WaitCommand(2.0))
+    //             .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
+    //     .onFalse(
+    //         ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
+
     // ── RIGHT BUMPER: Full auto-aim shooting sequence ─────────────────────────
     // While held:
     //   1. Auto-aim: rotates the BACK of the robot (shooter) toward the active target
@@ -404,6 +425,17 @@ public class RobotContainer {
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
                 .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
+
+    controller
+        .y()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true)
+                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper, 3000)));
 
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
     // While held: snaps the robot to the nearest 0° or 180° heading for driving

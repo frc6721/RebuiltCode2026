@@ -70,6 +70,17 @@ Lime Light IPs:
 http://10.67.21.11:5801/
 http://10.67.21.12:5801/
 
+    Tuned Limelight webserver values for the Penn field:
+        LEFT/.12
+        exposure - 145
+        black level offset - 0
+        sensor gain - 11.4
+
+
+        RIGHT/.11
+        exposure - .10
+        black level offset - 0
+        sensor gain - .13
 
 #TODOs
 

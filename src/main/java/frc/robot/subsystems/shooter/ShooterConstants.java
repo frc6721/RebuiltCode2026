@@ -50,7 +50,7 @@ public class ShooterConstants {
 
   /** Velocity and acceleration limits for the flywheel. */
   public static class Limits {
-    public static final AngularVelocity MIN_SPEED = RPM.of(100);
+    public static final AngularVelocity MIN_SPEED = RPM.of(2200);
 
     public static final AngularVelocity MAX_SPEED = RPM.of(5600);
 
@@ -93,13 +93,15 @@ public class ShooterConstants {
     public static class Real {
       /** Static friction voltage (voltage to overcome friction) */
       public static final LoggedNetworkNumber KS =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_FF/Real/kS", 0.26750);
+          new LoggedNetworkNumber(
+              "Shooter/FLYWHEEL_FF/Real/kS", 0.29867); // prev (no metal flywheels) = .2675
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kV",
-              0.001735); // 0.00178 -> back to original, kV was over-driving setpoint
+              0.00169); // PREV = .00163 |||| PREVPREV = 0.00178 -> back to original, kV was
+      // over-driving setpoint
     }
 
     /** Simulation feedforward values */
@@ -205,12 +207,18 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(1750.0).in(RPM));
-      SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2200.0).in(RPM));
-      SPEED_MAP.put(Inches.of(125).in(Meters), RPM.of(2250.0).in(RPM)); // about the tower position
-      SPEED_MAP.put(
-          Inches.of(170.1).in(Meters),
-          RPM.of(2550.0).in(RPM)); // about the Human player and trench position
+      SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2250.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(101).in(Meters), RPM.of(2550.0).in(RPM)); // prev = 1750
+
+      SPEED_MAP.put(Inches.of(145).in(Meters), RPM.of(3500.0).in(RPM)); // prev = 1750
+
+      // SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2500.0).in(RPM)); // prev = 2200
+      // SPEED_MAP.put(
+      //     Inches.of(125).in(Meters),
+      //     RPM.of(2550.0).in(RPM)); // about the tower position - prev - 2250
+      // SPEED_MAP.put(
+      //     Inches.of(170.1).in(Meters),
+      //     RPM.of(2850.0).in(RPM)); // about the Human player and trench position - prev = 2550
     }
 
     /**

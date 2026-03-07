@@ -205,6 +205,8 @@ public class ShooterCommands {
                   System.out.println("********** Shooter FF Characterization Results **********");
                   System.out.println("\tkS (Volts): " + formatter.format(kS));
                   System.out.println("\tkV (Volts per RPM): " + formatter.format(kV));
+
+                  shooter.stopFlywheels();
                 }));
   }
 
@@ -223,6 +225,15 @@ public class ShooterCommands {
     return Commands.run(
             () -> {
               shooter.updateSpeedForHub();
+            },
+            shooter)
+        .withName("ShootToHub");
+  }
+
+  public static Command shootToHub(Shooter shooter, double rpm) {
+    return Commands.run(
+            () -> {
+              shooter.setFlywheelSpeed(RPM.of(rpm));
             },
             shooter)
         .withName("ShootToHub");
@@ -270,6 +281,34 @@ public class ShooterCommands {
   public static Command shootToHubSequence(
       Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper) {
     return shootToHub(shooter)
+        .alongWith(
+            // Wait until BOTH the flywheel is at speed AND the robot's back is facing the hub,
+            // or give up waiting after the configured timeout (safety fallback)
+            Commands.waitUntil(
+                    () ->
+                        shooter.areFlywheelsAtTargetSpeed()
+                            && RobotState.getInstance().isBackFacingAllianceHub())
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
+                .andThen(
+                    // startEnd() runs the motor on start and stops it when interrupted/finished,
+                    // so the feeder and hopper always stop cleanly when the sequence ends.
+                    Commands.startEnd(
+                        () -> {
+                          feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
+                          hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                        },
+                        () -> {
+                          feeder.stop();
+                          hopper.stop();
+                        },
+                        feeder,
+                        hopper)))
+        .withName("ShootToHubSequence");
+  }
+
+  public static Command shootToHubSequence(
+      Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper, double rpm) {
+    return shootToHub(shooter, rpm)
         .alongWith(
             // Wait until BOTH the flywheel is at speed AND the robot's back is facing the hub,
             // or give up waiting after the configured timeout (safety fallback)
