@@ -435,7 +435,9 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
-                .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper, 3000)));
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper, 3300)))
+        .onFalse(ShooterCommands.stopFlywheels(shooter));
 
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
     // While held: snaps the robot to the nearest 0° or 180° heading for driving

@@ -102,6 +102,13 @@ public class IntakeCommands {
         intake);
   }
 
+  // public static Command runUntilCurrentSpike(Intake intake){
+  //   return Commands.startEnd(() ->
+  //   {
+
+  //   }, intake.setLinearMotorVoltage(Volts.of(0)), intake);
+  // }
+
   /**
    * Creates a command to home the intake. Use when you need to reset the 0 position of the linear
    * slide motor controller

@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -424,6 +425,42 @@ public class ShooterCommands {
               feeder.stop();
               hopper.stop();
               shooter.setFlywheelSpeed(RPM.of(0));
+            })
+        .withName("ShootToActiveTargetSequence");
+  }
+
+  public static Command shootToActiveTargetSequence(
+      Shooter shooter, Feeder feeder, Hopper hopper, double RPM) {
+    return shootToHub(shooter, RPM)
+        .alongWith(
+            // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
+            // or give up waiting after the configured timeout (safety fallback)
+            Commands.waitUntil(
+                    () ->
+                        shooter.areFlywheelsAtTargetSpeed()
+                            && RobotState.getInstance().facingTarget.getAsBoolean())
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
+                .andThen(
+                    // startEnd() runs the motor on start and stops it when interrupted/finished,
+                    // so the feeder and hopper always stop cleanly when the sequence ends.
+                    Commands.startEnd(
+                        () -> {
+                          feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
+                          hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                        },
+                        () -> {
+                          feeder.stop();
+                          hopper.stop();
+                        },
+                        feeder,
+                        hopper)))
+        // When the command ends (button released or interrupted), clean up all mechanisms.
+        // This replaces the separate onFalse handler in RobotContainer.
+        .finallyDo(
+            () -> {
+              feeder.stop();
+              hopper.stop();
+              shooter.setFlywheelSpeed(RotationsPerSecond.of(0));
             })
         .withName("ShootToActiveTargetSequence");
   }
