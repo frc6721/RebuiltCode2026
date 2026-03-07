@@ -445,9 +445,7 @@ public class RobotContainer {
     // While held: runs the shooting sequence at a fixed tower RPM.
     // No auto-aim — the driver aims manually. Useful when near the tower.
     // On release: the command's finallyDo stops feeder, hopper, and returns flywheels to idle.
-    controller
-        .pov(90)
-        .whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper));
+    controller.pov(90).whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper));
   }
 
   // ==================== PUBLIC GETTERS ====================
