@@ -7,19 +7,26 @@
         {
           "type": "path",
           "data": {
-            "pathName": "L-Trench-Mid"
+            "pathName": "Left Trench"
           }
         },
         {
-          "type": "named",
+          "type": "race",
           "data": {
-            "name": "shoot-fuel"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 6.0
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shoot-fuel"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              }
+            ]
           }
         },
         {
