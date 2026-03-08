@@ -52,7 +52,7 @@ public class ShooterConstants {
   public static class Limits {
     public static final AngularVelocity MIN_SPEED = RPM.of(2200);
 
-    public static final AngularVelocity MAX_SPEED = RPM.of(5600);
+    public static final AngularVelocity MAX_SPEED = RPM.of(5400);
 
     public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(5200); // 3000 RPM/s
   }
@@ -208,11 +208,10 @@ public class ShooterConstants {
 
     static {
       // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3000.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(3500.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4000.0).in(RPM)); // prev = 1750
-            SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(3300.0).in(RPM)); // prev = 1750
-
+      SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3200.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(3700.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4200.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(3500.0).in(RPM)); // prev = 1750
 
       // SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2500.0).in(RPM)); // prev = 2200
       // SPEED_MAP.put(

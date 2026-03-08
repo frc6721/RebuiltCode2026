@@ -12,12 +12,10 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.VirtualHopper;
 import frc.lib.fuelSim.FuelSim;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
@@ -50,7 +48,7 @@ public class Shooter extends SubsystemBase {
   private AngularVelocity _targetFlywheelSpeed;
   private final SysIdRoutine _sysId;
 
-  private final FuelVisualizer _fuelSimVisualizer;
+  // private final FuelVisualizer _fuelSimVisualizer;
 
   /**
    * Creates a new Shooter subsystem.
@@ -66,7 +64,7 @@ public class Shooter extends SubsystemBase {
     this.stopFlywheels();
 
     // Initialize FuelSim visualizer for trajectory and launch simulation
-    _fuelSimVisualizer = new FuelVisualizer(fuelSim);
+    // _fuelSimVisualizer = new FuelVisualizer(fuelSim);
 
     // Configure SysId
     _sysId =
@@ -111,16 +109,16 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/OdometryVelocitiesRPM", _shooterInputs.odometryVelocitiesRPM);
 
     // ==================== FUEL SIM INTEGRATION ====================
-    // Update trajectory visualization every loop so driver sees real-time prediction
-    LinearVelocity linearSpeed =
-        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
-    _fuelSimVisualizer.updateTrajectory(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
+    // // Update trajectory visualization every loop so driver sees real-time prediction
+    // LinearVelocity linearSpeed =
+    //     _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
+    // _fuelSimVisualizer.updateTrajectory(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
 
-    // Check if we should launch fuel (for visualization)
-    Logger.recordOutput("Shooter/FuelSim/ShouldLaunch", shouldVisualizeLaunch());
+    // // Check if we should launch fuel (for visualization)
+    // Logger.recordOutput("Shooter/FuelSim/ShouldLaunch", shouldVisualizeLaunch());
 
     // Actually launch fuel if conditions are met
-    visualizeFuelLaunch();
+    // visualizeFuelLaunch();
   }
 
   /**
@@ -130,22 +128,23 @@ public class Shooter extends SubsystemBase {
    *
    * @return true if fuel should be visualized as launching
    */
-  private boolean shouldVisualizeLaunch() {
-    // Check flywheel is at target speed
-    boolean atTargetSpeed = areFlywheelsAtTargetSpeed();
+  // private boolean shouldVisualizeLaunch() {
+  //   // Check flywheel is at target speed
+  //   boolean atTargetSpeed = areFlywheelsAtTargetSpeed();
 
-    // Check target speed is above threshold (compare using same units)
-    double targetRPM = _targetFlywheelSpeed.in(RPM);
-    boolean aboveThreshold = targetRPM > ShooterConstants.FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM);
+  //   // Check target speed is above threshold (compare using same units)
+  //   double targetRPM = _targetFlywheelSpeed.in(RPM);
+  //   boolean aboveThreshold = targetRPM >
+  // ShooterConstants.FuelSim.RPM_THRESHOLD_FOR_LAUNCH.in(RPM);
 
-    // Check hopper has fuel
-    boolean hasFuel = VirtualHopper.getInstance().hasFuel();
+  //   // Check hopper has fuel
+  //   boolean hasFuel = VirtualHopper.getInstance().hasFuel();
 
-    // Check rate limit
-    boolean canLaunch = _fuelSimVisualizer.canLaunch();
+  //   // Check rate limit
+  //   // boolean canLaunch = _fuelSimVisualizer.canLaunch();
 
-    return atTargetSpeed && aboveThreshold && hasFuel && canLaunch;
-  }
+  //   return atTargetSpeed && aboveThreshold && hasFuel && canLaunch;
+  // }
 
   /**
    * Launches virtual fuel if all conditions are met.
@@ -153,18 +152,18 @@ public class Shooter extends SubsystemBase {
    * <p>This uses the MEASURED flywheel speed (not target) for realistic physics. The measured speed
    * reflects actual motor performance, giving more accurate trajectory prediction.
    */
-  private void visualizeFuelLaunch() {
-    if (!shouldVisualizeLaunch()) {
-      return;
-    }
+  // private void visualizeFuelLaunch() {
+  //   if (!shouldVisualizeLaunch()) {
+  //     return;
+  //   }
 
-    // Use MEASURED speed for realistic physics
-    LinearVelocity linearSpeed =
-        _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
+  // Use MEASURED speed for realistic physics
+  // LinearVelocity linearSpeed =
+  //     _fuelSimVisualizer.convertToLinearVelocity(_shooterInputs._leftFlywheelMotorVelocity);
 
-    // Launch with hood angle from constants
-    _fuelSimVisualizer.launchFuel(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
-  }
+  // // Launch with hood angle from constants
+  // _fuelSimVisualizer.launchFuel(linearSpeed, ShooterConstants.FuelSim.HOOD_ANGLE);
+  // }
 
   /**
    * Stops the flywheel by setting target speed to zero.
