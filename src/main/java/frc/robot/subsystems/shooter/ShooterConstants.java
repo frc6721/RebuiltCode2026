@@ -180,6 +180,18 @@ public class ShooterConstants {
      * target before feeding anyway. Acts as a safety timeout so the robot doesn't stall forever.
      */
     public static final double SHOOT_SEQUENCE_TIMEOUT_SECONDS = 2.0;
+
+    /**
+     * Minimum distance (meters) from the hub center that the robot must be before it is allowed to
+     * shoot when targeting the hub. If the robot is closer than this distance, the shooter will
+     * refuse to feed (and rumble the controller to alert the driver).
+     *
+     * <p>This restriction does NOT apply to feed shots (FEED_LEFT / FEED_RIGHT).
+     *
+     * <p>Set to 0 to effectively disable the restriction via constant, or use the runtime
+     * enable/disable commands on the Shooter subsystem.
+     */
+    public static final Distance HUB_MIN_SHOOTING_DISTANCE = Inches.of(138.0);
   }
 
   /** 3D visualization constants for AdvantageScope. */
@@ -243,6 +255,26 @@ public class ShooterConstants {
       FEED_SPEED_MAP.put(Meters.of(11.0).in(Meters), RPM.of(3500.0).in(RPM));
       FEED_SPEED_MAP.put(Meters.of(13.0).in(Meters), RPM.of(3500.0).in(RPM));
     }
+
+    /**
+     * Tuned hub shot distances (in meters) for the auto-distance shooting feature.
+     *
+     * <p>When using the "auto-distance" shooting command, the robot will automatically drive to the
+     * nearest distance in this list from the hub center. Each distance should correspond to a
+     * characterized shot that is known to score reliably.
+     *
+     * <p><b>To add/remove shot positions:</b> Simply add or remove entries from this array. No
+     * other code changes are needed — the system will automatically find the closest tuned
+     * distance.
+     *
+     * <p>These distances should also have corresponding entries in {@link #SPEED_MAP} so the
+     * flywheel can calculate the correct RPM for each distance.
+     */
+    public static final double[] TUNED_HUB_SHOT_DISTANCES_METERS = {
+      Inches.of(145).in(Meters),
+      Inches.of(167).in(Meters), // Mid-far shot
+      Inches.of(210).in(Meters), // Far shot
+    };
   }
 
   /** FuelSim constants for shooter trajectory visualization. */

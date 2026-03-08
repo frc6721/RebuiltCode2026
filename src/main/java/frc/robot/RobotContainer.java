@@ -349,10 +349,13 @@ public class RobotContainer {
    * │  RIGHT BUMPER: Full auto-aim shooting + jostle — hold          │
    * │  LEFT BUMPER:  Auto-align to trench heading — hold             │
    * │                                                                │
+   * │  X BUTTON: Auto-aim + auto-distance shooting — hold            │
    * │  D-PAD UP:    Spit fuel (same as left trigger)                 │
    * │  D-PAD DOWN:  Set odometry pose to alliance hub                │
    * │  D-PAD LEFT:  Zero robot heading                               │
    * │  D-PAD RIGHT: Tower shot (fixed RPM) — hold                   │
+   * │                                                                │
+   * │  BACK BUTTON: Toggle min shooting distance restriction         │
    * └─────────────────────────────────────────────────────────────────┘
    * </pre>
    */
@@ -414,6 +417,7 @@ public class RobotContainer {
     //   2. Flywheel: spins up to the distance-based RPM
     //   3. Wait: until flywheel at speed AND robot facing target (with timeout)
     //   4. Feed: runs feeder and hopper to launch game pieces
+    //   5. Rumble: vibrates the controller if shooting is blocked by min distance
     // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
     controller
         .rightBumper()
@@ -424,7 +428,32 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+
+    // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
+    // While held:
+    //   1. Auto-aim: rotates the BACK of the robot toward the active target
+    //   2. Auto-distance: if targeting the hub, drives to the nearest tuned shot distance
+    //   3. Flywheel: spins up to the distance-based RPM
+    //   4. Wait: until flywheel at speed, robot facing target, and not blocked by min distance
+    //   5. Feed: runs feeder and hopper to launch game pieces
+    //   6. Rumble: vibrates the controller if shooting is blocked by min distance
+    // On release: everything stops.
+    // NOTE: If the target is a feed shot, only the angle is auto-controlled (no distance adjust).
+    controller
+        .x()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngleAndDistance(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget())
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetWithAutoDistanceSequence(
+                        shooter, feeder, hopper),
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     controller
         .y()
@@ -481,6 +510,11 @@ public class RobotContainer {
     // No auto-aim — the driver aims manually. Useful when near the tower.
     // On release: the command's finallyDo stops feeder, hopper, and returns flywheels to idle.
     controller.pov(90).whileTrue(ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper));
+
+    // ── BACK BUTTON: Toggle min shooting distance restriction ─────────────────
+    // Toggles whether the shooter enforces a minimum distance from the hub before
+    // allowing the feed. Defaults to enabled. Useful for close-range override.
+    controller.back().onTrue(ShooterCommands.toggleMinDistance(shooter));
   }
 
   // ==================== PUBLIC GETTERS ====================

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -279,6 +280,33 @@ public class FieldConstants {
             (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(15).get().getY())
                 - innerOpeningWidth / 2
                 - Units.inchesToMeters(0.75));
+
+    /**
+     * Safety margin (meters) added around the tower footprint when checking if a drive target would
+     * collide with the tower. A larger value keeps the robot further from the tower.
+     */
+    public static final double COLLISION_MARGIN = Units.inchesToMeters(18.0); // ~half a robot width
+
+    /**
+     * Returns the rectangular footprint of the alliance tower as a polygon (4 corners), expanded by
+     * {@link #COLLISION_MARGIN} on all sides for safe path planning.
+     *
+     * <p>Defined from the blue alliance perspective. Use {@link AllianceFlipUtil} to mirror for red
+     * alliance if needed.
+     *
+     * @return List of 4 Translation2d corners defining the tower's collision boundary
+     */
+    public static List<Translation2d> getAllianceTowerFootprint() {
+      double halfWidth = (width / 2.0) + COLLISION_MARGIN;
+      double halfDepth = (depth / 2.0) + COLLISION_MARGIN;
+      double cx = centerPoint.getX();
+      double cy = centerPoint.getY();
+      return List.of(
+          new Translation2d(cx - halfDepth, cy - halfWidth),
+          new Translation2d(cx - halfDepth, cy + halfWidth),
+          new Translation2d(cx + halfDepth, cy + halfWidth),
+          new Translation2d(cx + halfDepth, cy - halfWidth));
+    }
   }
 
   public static class Depot {
