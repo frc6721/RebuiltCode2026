@@ -20,12 +20,12 @@
         "y": 4.909216867469879
       },
       "prevControl": {
-        "x": 2.9771181555914223,
-        "y": 4.654451474527171
+        "x": 2.9316962296106115,
+        "y": 4.551432128091861
       },
       "nextControl": {
-        "x": 1.7673703215455177,
-        "y": 5.0840854945699485
+        "x": 1.418325301204819,
+        "y": 5.357253012048193
       },
       "isLocked": false,
       "linkedName": null
@@ -33,15 +33,15 @@
     {
       "anchor": {
         "x": 0.5441084337349398,
-        "y": 4.909216867469879
+        "y": 5.237048192771084
       },
       "prevControl": {
-        "x": 0.9375060240963853,
-        "y": 4.69066265060241
+        "x": 0.35833734939759054,
+        "y": 4.024072289156626
       },
       "nextControl": {
-        "x": 0.32556911470455596,
-        "y": 5.030627600264536
+        "x": 0.6035030432511233,
+        "y": 5.624860054906164
       },
       "isLocked": false,
       "linkedName": null
@@ -86,22 +86,34 @@
       "rotationDegrees": 90.0
     },
     {
+      "waypointRelativePos": 1.5458267716535559,
+      "rotationDegrees": 108.6872643674878
+    },
+    {
       "waypointRelativePos": 3.7,
       "rotationDegrees": 90.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.9093525179856237,
+      "maxWaypointRelativePos": 2.7438848920863315,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "deploy-intake",
-      "waypointRelativePos": 1.2705035971223093,
-      "endWaypointRelativePos": 2.8820143884892055,
-      "command": null
-    },
-    {
-      "name": "retract-intake",
-      "waypointRelativePos": 2.899280575539561,
+      "waypointRelativePos": 0.4647482014388528,
       "endWaypointRelativePos": null,
       "command": null
     }
