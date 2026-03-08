@@ -436,7 +436,8 @@ public class RobotContainer {
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
                 .alongWith(
-                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper, 3450)))
+                    ShooterCommands.shootToActiveTargetSequence(
+                        shooter, feeder, hopper, 3500))) // prev RPM = 3450
         .onFalse(ShooterCommands.stopFlywheels(shooter));
 
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
