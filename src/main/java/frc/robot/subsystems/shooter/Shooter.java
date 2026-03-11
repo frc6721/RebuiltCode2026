@@ -113,6 +113,7 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput(
         "Shooter/FlywheelSpeed/Desired_RadPerSec", _targetFlywheelSpeed.in(RadiansPerSecond));
     Logger.recordOutput("Shooter/FlywheelSpeed/Desired_RPM", _targetFlywheelSpeed.in(RPM));
+    Logger.recordOutput("Shooter/FlywheelSpeed/RPM_Offset", _flyWheelRPMOffset);
     Logger.recordOutput("Shooter/AtTargetSpeed", this.areFlywheelsAtTargetSpeed());
 
     // Log the high-frequency velocity samples collected by the 100Hz odometry thread.
@@ -370,6 +371,7 @@ public class Shooter extends SubsystemBase {
 
   /**
    * Returns the current offset added to the flywheel speed
+   *
    * @return The current offset RPM
    */
   public double getFlyWheelRPMOffset() {
@@ -378,6 +380,7 @@ public class Shooter extends SubsystemBase {
 
   /**
    * Increase or decrease the current offset added to the flwheel target RPM
+   *
    * @param RPM the value to add to the current flwheel RPM offset. + for increase, - for decrease
    */
   public void incFlywheelRPMOffset(double RPM) {

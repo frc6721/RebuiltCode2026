@@ -361,7 +361,8 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
+    // controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
+
     // ── Default Drive Command ─────────────────────────────────────────────────
     // Field-relative swerve drive with cubic input curves for fine control.
     // Right stick X controls rotation, scaled to 75% for smoother turning.
@@ -526,7 +527,8 @@ public class RobotContainer {
     // ── BACK BUTTON: Toggle min shooting distance restriction ─────────────────
     // Toggles whether the shooter enforces a minimum distance from the hub before
     // allowing the feed. Defaults to enabled. Useful for close-range override.
-    controller.back().onTrue(ShooterCommands.toggleMinDistance(shooter));
+
+    // controller.back().onTrue(ShooterCommands.toggleMinDistance(shooter));
   }
 
   // ==================== PUBLIC GETTERS ====================

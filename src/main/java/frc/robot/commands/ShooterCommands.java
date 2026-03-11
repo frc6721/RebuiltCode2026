@@ -57,18 +57,18 @@ public class ShooterCommands {
 
   public static Command increaseFlywheelRPMOffset(Shooter shooter) {
     return Commands.runOnce(
-      () -> {
-        shooter.incFlywheelRPMOffset(100.0);
-      },
-      shooter);
+        () -> {
+          shooter.incFlywheelRPMOffset(25.0);
+        },
+        shooter);
   }
 
   public static Command decreaseFlywheelRPMOffset(Shooter shooter) {
     return Commands.runOnce(
-      () -> {
-        shooter.incFlywheelRPMOffset(-100.0);
-      },
-      shooter);
+        () -> {
+          shooter.incFlywheelRPMOffset(-25.0);
+        },
+        shooter);
   }
 
   public static Command runShooterAndFeederAtVoltage(
@@ -442,7 +442,8 @@ public class ShooterCommands {
             () -> {
               feeder.stop();
               hopper.stop();
-              shooter.setFlywheelSpeed(RPM.of(0));
+              shooter.setFlywheelSpeed(
+                  RPM.of(0).minus(RPM.of(shooter.getFlyWheelRPMOffset()))); // undo flywheel offset
             })
         .withName("ShootToActiveTargetSequence");
   }
