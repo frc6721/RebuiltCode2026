@@ -7,10 +7,12 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.RobotState;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederConstants;
@@ -525,5 +527,135 @@ public class ShooterCommands {
               shooter.setFlywheelSpeed(RPM.of(0));
             })
         .withName("ShootFromTowerSequence");
+  }
+
+  // ==================== MIN DISTANCE RESTRICTION COMMANDS ====================
+
+  /**
+   * Enables the minimum shooting distance restriction on the shooter.
+   *
+   * <p>When enabled, the shooter will not feed if the robot is closer to the hub than {@link
+   * ShooterConstants.Software#HUB_MIN_SHOOTING_DISTANCE}. This only affects hub shots — feed shots
+   * (left/right) are never restricted.
+   *
+   * @param shooter The shooter subsystem
+   * @return A command that enables the restriction and finishes immediately
+   */
+  public static Command enableMinDistance(Shooter shooter) {
+    return Commands.runOnce(() -> shooter.setMinDistanceEnabled(true))
+        .withName("EnableMinDistance");
+  }
+
+  /**
+   * Disables the minimum shooting distance restriction on the shooter.
+   *
+   * <p>Useful for close-range "dump" shots or emergency overrides during competition.
+   *
+   * @param shooter The shooter subsystem
+   * @return A command that disables the restriction and finishes immediately
+   */
+  public static Command disableMinDistance(Shooter shooter) {
+    return Commands.runOnce(() -> shooter.setMinDistanceEnabled(false))
+        .withName("DisableMinDistance");
+  }
+
+  /**
+   * Toggles the minimum shooting distance restriction on or off.
+   *
+   * @param shooter The shooter subsystem
+   * @return A command that toggles the restriction and finishes immediately
+   */
+  public static Command toggleMinDistance(Shooter shooter) {
+    return Commands.runOnce(() -> shooter.setMinDistanceEnabled(!shooter.isMinDistanceEnabled()))
+        .withName("ToggleMinDistance");
+  }
+
+  /**
+   * Creates a command that rumbles the driver controller while shooting is blocked.
+   *
+   * <p>Runs continuously — rumbles while the shooter reports shooting is blocked (too close to
+   * hub), and stops the rumble when shooting is no longer blocked or the command ends.
+   *
+   * <p>Should be run in parallel with a shooting command to provide haptic feedback.
+   *
+   * @param shooter The shooter subsystem
+   * @param controller The driver's Xbox controller to rumble
+   * @return A command that rumbles when shooting is blocked, stops rumble on end
+   */
+  public static Command rumbleWhenBlocked(Shooter shooter, CommandXboxController controller) {
+    return Commands.run(
+            () -> {
+              if (shooter.isShootingBlocked()) {
+                controller.getHID().setRumble(RumbleType.kRightRumble, 0.8);
+              } else {
+                controller.getHID().setRumble(RumbleType.kRightRumble, 0.0);
+              }
+            })
+        .finallyDo(() -> controller.getHID().setRumble(RumbleType.kRightRumble, 0.0))
+        .withName("RumbleWhenBlocked");
+  }
+
+  // ==================== AUTO-DISTANCE SHOOTING COMMANDS ====================
+
+  /**
+   * Creates a complete shooting sequence with automatic distance adjustment for the active target.
+   *
+   * <p>This is the "enhanced" version of {@link #shootToActiveTargetSequence}. It works the same
+   * way, but with the following additions:
+   *
+   * <ul>
+   *   <li>If the active target is the HUB, the robot will automatically drive to the nearest
+   *       "tuned" shot distance from the hub (from {@link
+   *       ShooterConstants.DistanceMap#TUNED_HUB_SHOT_DISTANCES_METERS})
+   *   <li>If the active target is a feed, the robot will NOT auto-adjust distance (same behavior as
+   *       the standard sequence)
+   *   <li>The minimum distance restriction is respected — if blocked, the feeder will not run
+   * </ul>
+   *
+   * <p>The old commands ({@link #shootToActiveTargetSequence}) are preserved for easy revert.
+   *
+   * @param shooter The shooter subsystem
+   * @param feeder The feeder subsystem
+   * @param hopper The hopper subsystem
+   * @return A complete shooting sequence with auto-distance for hub shots
+   */
+  public static Command shootToActiveTargetWithAutoDistanceSequence(
+      Shooter shooter, Feeder feeder, Hopper hopper) {
+    return shootToActiveTarget(shooter)
+        .alongWith(
+            // Wait until the flywheel is at speed, robot is facing the target, AND
+            // shooting is not blocked by the min distance restriction
+            Commands.waitUntil(
+                    () ->
+                        shooter.areFlywheelsAtTargetSpeed()
+                            && RobotState.getInstance().facingTarget.getAsBoolean()
+                            && !shooter.isShootingBlocked())
+                .withTimeout(ShooterConstants.Software.SHOOT_SEQUENCE_TIMEOUT_SECONDS)
+                .andThen(
+                    // Only feed if shooting is not blocked
+                    Commands.either(
+                        // ALLOWED: run feeder and hopper normally
+                        Commands.startEnd(
+                            () -> {
+                              feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
+                              hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                            },
+                            () -> {
+                              feeder.stop();
+                              hopper.stop();
+                            },
+                            feeder,
+                            hopper),
+                        // BLOCKED: do nothing (just idle — the rumble command handles feedback)
+                        Commands.none(),
+                        // Condition: shoot only if NOT blocked
+                        () -> !shooter.isShootingBlocked())))
+        .finallyDo(
+            () -> {
+              feeder.stop();
+              hopper.stop();
+              shooter.setFlywheelSpeed(RPM.of(0));
+            })
+        .withName("ShootToActiveTargetWithAutoDistanceSequence");
   }
 }

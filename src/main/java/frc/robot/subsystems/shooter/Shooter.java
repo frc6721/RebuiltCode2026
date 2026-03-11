@@ -48,6 +48,16 @@ public class Shooter extends SubsystemBase {
   private AngularVelocity _targetFlywheelSpeed;
   private final SysIdRoutine _sysId;
 
+  /**
+   * When true, the shooter will refuse to feed if the robot is closer to the hub than {@link
+   * ShooterConstants.Software#HUB_MIN_SHOOTING_DISTANCE}. This only applies when the active target
+   * is the hub — feed shots (left/right) are always allowed.
+   *
+   * <p>Defaults to {@code true}. Can be toggled at runtime via {@link
+   * #setMinDistanceEnabled(boolean)}.
+   */
+  private boolean _minDistanceEnabled = true;
+
   // private final FuelVisualizer _fuelSimVisualizer;
 
   /**
@@ -107,6 +117,11 @@ public class Shooter extends SubsystemBase {
     // AdvantageScope can display them at their actual timestamps for precise analysis.
     Logger.recordOutput("Shooter/OdometryTimestamps", _shooterInputs.odometryTimestamps);
     Logger.recordOutput("Shooter/OdometryVelocitiesRPM", _shooterInputs.odometryVelocitiesRPM);
+
+    // ==================== MIN DISTANCE SHOOTING RESTRICTION ====================
+    Logger.recordOutput("Shooter/MinDistance/Enabled", _minDistanceEnabled);
+    Logger.recordOutput("Shooter/MinDistance/BelowMinimum", isBelowMinShootingDistance());
+    Logger.recordOutput("Shooter/MinDistance/ShootingBlocked", isShootingBlocked());
 
     // ==================== FUEL SIM INTEGRATION ====================
     // // Update trajectory visualization every loop so driver sees real-time prediction
@@ -348,5 +363,82 @@ public class Shooter extends SubsystemBase {
    */
   public boolean isInShootingRange() {
     return ShotCalculator.getInstance().isInShootingRange();
+  }
+
+  // ==================== MIN DISTANCE SHOOTING RESTRICTION ====================
+
+  /**
+   * Enables or disables the minimum shooting distance restriction.
+   *
+   * <p>When enabled, the shooter will refuse to feed if the robot is closer to the hub than {@link
+   * ShooterConstants.Software#HUB_MIN_SHOOTING_DISTANCE}. This only applies when the active target
+   * is the hub — feed shots are always allowed.
+   *
+   * @param enabled true to enforce the minimum distance, false to allow shooting at any distance
+   */
+  public void setMinDistanceEnabled(boolean enabled) {
+    _minDistanceEnabled = enabled;
+    Logger.recordOutput("Shooter/MinDistance/Enabled", enabled);
+  }
+
+  /**
+   * Returns whether the minimum shooting distance restriction is currently enabled.
+   *
+   * @return true if the restriction is active
+   */
+  public boolean isMinDistanceEnabled() {
+    return _minDistanceEnabled;
+  }
+
+  /**
+   * Checks if the robot is closer to the hub than the minimum allowed shooting distance.
+   *
+   * <p>This only checks the distance — it does NOT consider whether the restriction is enabled or
+   * whether the target is the hub. Use {@link #isShootingBlocked()} for the full check.
+   *
+   * @return true if the robot is closer to the hub than {@link
+   *     ShooterConstants.Software#HUB_MIN_SHOOTING_DISTANCE}
+   */
+  public boolean isBelowMinShootingDistance() {
+    Distance distanceToHub = RobotState.getInstance().getDistanceToAllianceHub();
+    double minDistanceMeters = ShooterConstants.Software.HUB_MIN_SHOOTING_DISTANCE.in(Meters);
+    return distanceToHub.in(Meters) < minDistanceMeters;
+  }
+
+  /**
+   * Returns whether shooting is currently blocked by any safety restriction.
+   *
+   * <p>Shooting is blocked when ANY of the following are true:
+   *
+   * <ol>
+   *   <li><b>Min distance restriction:</b> The min distance feature is enabled AND the active
+   *       target is the HUB AND the robot is closer than {@link
+   *       ShooterConstants.Software#HUB_MIN_SHOOTING_DISTANCE}
+   *   <li><b>Tower collision:</b> The active target is the HUB AND every tuned shot distance would
+   *       place the robot inside the alliance tower's collision footprint (see {@link
+   *       ShotCalculator#isAutoDistanceBlocked()})
+   * </ol>
+   *
+   * <p>Feed shots (left/right) are never blocked by either restriction.
+   *
+   * @return true if the shooter should refuse to feed
+   */
+  public boolean isShootingBlocked() {
+    Target activeTarget = RobotState.getInstance().getActiveTarget();
+    if (activeTarget.isFeedTarget()) {
+      return false; // Feed shots are never blocked
+    }
+
+    // Check min distance restriction
+    if (_minDistanceEnabled && isBelowMinShootingDistance()) {
+      return true;
+    }
+
+    // Check tower collision (all tuned distances blocked)
+    if (ShotCalculator.getInstance().isAutoDistanceBlocked()) {
+      return true;
+    }
+
+    return false;
   }
 }

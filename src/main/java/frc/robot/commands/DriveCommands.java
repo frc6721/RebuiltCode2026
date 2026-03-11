@@ -31,12 +31,16 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.AllianceFlipUtil;
+import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -297,6 +301,150 @@ public class DriveCommands {
           // AllianceFlipUtil.apply rotates by 180° for red alliance → 0° (toward red wall)
           return AllianceFlipUtil.apply(Rotation2d.kPi);
         });
+  }
+
+  // ==================== AUTO-DISTANCE DRIVE COMMAND ====================
+
+  /**
+   * Proportional gain for the radial (distance-from-hub) PID controller used by {@link
+   * #joystickDriveAtAngleAndDistance}. Controls how aggressively the robot drives toward the target
+   * distance.
+   */
+  private static final double DISTANCE_KP = 4.0;
+
+  /**
+   * Tolerance in meters for the distance controller. When the robot is within this distance of the
+   * target radius, the radial drive effort drops to zero.
+   */
+  private static final double DISTANCE_TOLERANCE_METERS = 0.1; // ~4 inches
+
+  /**
+   * Field-relative drive command that auto-aims at the active target AND automatically drives to
+   * the closest tuned shot distance from the hub.
+   *
+   * <p><b>How it works:</b>
+   *
+   * <ol>
+   *   <li>Rotation: Uses a profiled PID controller to aim the back of the robot at the target (same
+   *       as {@link #joystickDriveAtAngle} with useBackOfRobot=true)
+   *   <li>Translation: The driver controls lateral (tangential) movement via the joystick.
+   *       Additionally, this command adds a radial velocity component that drives the robot toward
+   *       or away from the hub until it reaches the closest tuned shot distance (from {@link
+   *       ShotCalculator#getClosestTunedHubDistanceMeters()}).
+   * </ol>
+   *
+   * <p><b>When to use:</b> Bind this to a button for "auto-distance + auto-aim" shooting at the
+   * hub. For feed targets, only the angle is auto-controlled — no distance adjustment.
+   *
+   * @param drive The drive subsystem
+   * @param xSupplier Joystick X axis (forward/back translation)
+   * @param ySupplier Joystick Y axis (left/right translation)
+   * @param rotationSupplier Supplier for the target heading (e.g. angle to active target)
+   * @return A command that auto-aims and auto-distances for hub shots
+   */
+  public static Command joystickDriveAtAngleAndDistance(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Rotation2d> rotationSupplier) {
+
+    // Rotation PID (same as joystickDriveAtAngle)
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            DriveConstants.turnToAngleKP,
+            0.0,
+            DriveConstants.turnToAngleKD,
+            new TrapezoidProfile.Constraints(
+                DriveConstants.turnToAngleMaxVelocity, DriveConstants.turnToAngleMaxAcceleration));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return Commands.run(
+            () -> {
+              // ── Driver linear velocity (joystick input) ──
+              Translation2d driverLinearVelocity =
+                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+              // ── Rotation PID (aim back of robot at target) ──
+              Rotation2d targetAngle = rotationSupplier.get().plus(Rotation2d.kPi);
+              Rotation2d currentAngle = drive.getRotation();
+              double omega =
+                  angleController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+
+              // ── Radial distance correction (hub only) ──
+              double radialVx = 0.0;
+              double radialVy = 0.0;
+
+              Target activeTarget = RobotState.getInstance().getActiveTarget();
+              if (activeTarget == Target.HUB) {
+                Translation2d robotPos =
+                    RobotState.getInstance().getEstimatedPose().getTranslation();
+                Translation2d hubPos =
+                    RobotState.getInstance().getAllianceHubTarget().toTranslation2d();
+                double currentDistance = robotPos.getDistance(hubPos);
+                OptionalDouble targetDistanceOpt =
+                    ShotCalculator.getInstance().getClosestTunedHubDistanceMeters();
+
+                // Only apply radial correction if a safe tuned distance exists.
+                // If all tuned distances collide with the tower, skip distance
+                // adjustment — the shooting command will block feeding instead.
+                if (targetDistanceOpt.isPresent()) {
+                  double targetDistance = targetDistanceOpt.getAsDouble();
+                  double distanceError = currentDistance - targetDistance;
+
+                  // Only apply correction if outside tolerance
+                  if (Math.abs(distanceError) > DISTANCE_TOLERANCE_METERS) {
+                    // P-controller: positive error = too far → drive toward hub (negative radial)
+                    double radialSpeed = DISTANCE_KP * distanceError;
+
+                    // Clamp to a reasonable fraction of max speed so the robot doesn't lurch
+                    double maxRadialFraction = 0.7; // 60% of max speed
+                    radialSpeed =
+                        MathUtil.clamp(radialSpeed, -maxRadialFraction, maxRadialFraction);
+
+                    // Convert radial direction to field-relative velocity components
+                    // Direction from robot toward hub
+                    Translation2d robotToHub = hubPos.minus(robotPos);
+                    double dirAngle = Math.atan2(robotToHub.getY(), robotToHub.getX());
+
+                    // Positive radialSpeed = drive toward hub, negative = drive away
+                    radialVx = radialSpeed * Math.cos(dirAngle);
+                    radialVy = radialSpeed * Math.sin(dirAngle);
+                  }
+
+                  Logger.recordOutput("Drive/AutoDistance/TargetDistance_m", targetDistance);
+                  Logger.recordOutput("Drive/AutoDistance/CurrentDistance_m", currentDistance);
+                  Logger.recordOutput("Drive/AutoDistance/DistanceError_m", distanceError);
+                }
+
+                Logger.recordOutput("Drive/AutoDistance/Blocked", targetDistanceOpt.isEmpty());
+              }
+
+              Logger.recordOutput("Drive/AnglePID/Setpoint", targetAngle);
+              Logger.recordOutput("Drive/AnglePID/Measurement", currentAngle);
+              Logger.recordOutput("Drive/AnglePID/Error", targetAngle.minus(currentAngle));
+              Logger.recordOutput("Drive/AnglePID/Omega", RadiansPerSecond.of(omega));
+
+              // ── Combine driver input + radial correction ──
+              double maxSpeed = drive.getMaxLinearSpeedMetersPerSec();
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      driverLinearVelocity.getX() * maxSpeed + radialVx * maxSpeed,
+                      driverLinearVelocity.getY() * maxSpeed + radialVy * maxSpeed,
+                      omega);
+
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            },
+            drive)
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
+        .withName("JoystickDriveAtAngleAndDistance");
   }
 
   /**

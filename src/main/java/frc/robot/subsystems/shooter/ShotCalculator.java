@@ -8,8 +8,13 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.AllianceFlipUtil;
+import frc.lib.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+import frc.robot.util.PointInPolygon;
+import java.util.List;
+import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -224,5 +229,155 @@ public class ShotCalculator {
 
     Logger.recordOutput("Shooter/ShotCalculator/InShootingRange", inRange);
     return inRange;
+  }
+
+  // ==================== TUNED DISTANCE SHOOTING ====================
+
+  /**
+   * Finds the closest tuned hub shot distance from the robot's current position.
+   *
+   * <p>Iterates through all distances in {@link
+   * ShooterConstants.DistanceMap#TUNED_HUB_SHOT_DISTANCES_METERS} and returns the one closest to
+   * the robot's current distance from the hub. Before returning, it verifies that driving to that
+   * distance (on the line between the robot and hub) would not put the robot inside the alliance
+   * tower's collision footprint.
+   *
+   * <p>If the closest distance would collide with the tower, the next-closest distance is tried,
+   * and so on. If NO safe distance is found, an empty optional is returned — callers should treat
+   * this as "shooting is blocked" and not attempt to feed.
+   *
+   * @return The closest safe tuned distance from the hub (in meters), or empty if all distances
+   *     collide with the tower
+   */
+  public OptionalDouble getClosestTunedHubDistanceMeters() {
+    double[] tunedDistances = ShooterConstants.DistanceMap.TUNED_HUB_SHOT_DISTANCES_METERS;
+    if (tunedDistances.length == 0) {
+      // No tuned distances configured — return empty (cannot auto-distance)
+      Logger.recordOutput("Shooter/ShotCalculator/AutoDistanceBlocked", true);
+      return OptionalDouble.empty();
+    }
+
+    Translation2d robotPos = RobotState.getInstance().getEstimatedPose().getTranslation();
+    Translation2d hubPos = RobotState.getInstance().getAllianceHubTarget().toTranslation2d();
+    double currentDistance = robotPos.getDistance(hubPos);
+
+    // Sort indices by how close each tuned distance is to the current distance
+    // (closest first). We'll try them in order and pick the first one that's safe.
+    int[] sortedIndices = new int[tunedDistances.length];
+    for (int i = 0; i < sortedIndices.length; i++) {
+      sortedIndices[i] = i;
+    }
+    // Simple selection sort (array is small, no need for fancy sorting)
+    for (int i = 0; i < sortedIndices.length - 1; i++) {
+      for (int j = i + 1; j < sortedIndices.length; j++) {
+        double diffI = Math.abs(tunedDistances[sortedIndices[i]] - currentDistance);
+        double diffJ = Math.abs(tunedDistances[sortedIndices[j]] - currentDistance);
+        if (diffJ < diffI) {
+          int temp = sortedIndices[i];
+          sortedIndices[i] = sortedIndices[j];
+          sortedIndices[j] = temp;
+        }
+      }
+    }
+
+    // Try each tuned distance from closest to farthest
+    for (int idx : sortedIndices) {
+      double tunedDistance = tunedDistances[idx];
+      Translation2d candidatePosition =
+          getPositionAtDistanceFromHub(robotPos, hubPos, tunedDistance);
+
+      if (!isInsideTowerFootprint(candidatePosition)) {
+        Logger.recordOutput("Shooter/ShotCalculator/ClosestTunedDistance_m", tunedDistance);
+        Logger.recordOutput("Shooter/ShotCalculator/AutoDriveTarget", candidatePosition);
+        Logger.recordOutput("Shooter/ShotCalculator/AutoDistanceBlocked", false);
+        return OptionalDouble.of(tunedDistance);
+      }
+    }
+
+    // All tuned distances collide with tower — shooting is blocked
+    Logger.recordOutput("Shooter/ShotCalculator/AutoDistanceBlocked", true);
+    return OptionalDouble.empty();
+  }
+
+  /**
+   * Calculates the field position that is a specific distance from the hub, along the line from the
+   * hub center through the robot's current position.
+   *
+   * <p>This is used to determine where the robot would end up if it drove straight toward or away
+   * from the hub to reach a specific shooting distance.
+   *
+   * @param robotPos The robot's current 2D position
+   * @param hubPos The hub's 2D position (center)
+   * @param targetDistance The desired distance from the hub center (meters)
+   * @return The 2D position on the field at the desired distance from the hub
+   */
+  public Translation2d getPositionAtDistanceFromHub(
+      Translation2d robotPos, Translation2d hubPos, double targetDistance) {
+    // Vector from hub to robot
+    Translation2d hubToRobot = robotPos.minus(hubPos);
+    double currentDistance = hubToRobot.getNorm();
+
+    if (currentDistance < 0.001) {
+      // Robot is essentially on top of the hub — pick an arbitrary direction
+      // (toward the alliance wall, negative X from hub)
+      return new Translation2d(hubPos.getX() - targetDistance, hubPos.getY());
+    }
+
+    // Normalize the direction vector and scale to the desired distance
+    double scale = targetDistance / currentDistance;
+    Translation2d offset = new Translation2d(hubToRobot.getX() * scale, hubToRobot.getY() * scale);
+    return hubPos.plus(offset);
+  }
+
+  /**
+   * Checks if a candidate position falls inside the alliance tower's collision footprint.
+   *
+   * <p>The tower footprint includes a safety margin defined in {@link
+   * FieldConstants.Tower#COLLISION_MARGIN}. The check is done in blue-alliance coordinates so a
+   * single polygon definition works for both alliances.
+   *
+   * @param fieldPosition The candidate position in field coordinates
+   * @return true if the position is inside the tower footprint (unsafe)
+   */
+  private boolean isInsideTowerFootprint(Translation2d fieldPosition) {
+    // Convert to blue-alliance coordinates for consistent polygon check
+    Translation2d bluePos = AllianceFlipUtil.apply(fieldPosition);
+    List<Translation2d> towerFootprint = FieldConstants.Tower.getAllianceTowerFootprint();
+    return PointInPolygon.pointInPolygon(bluePos, towerFootprint);
+  }
+
+  /**
+   * Returns the 2D field position the robot should drive to for the closest tuned hub shot.
+   *
+   * <p>This is a convenience method that combines {@link #getClosestTunedHubDistanceMeters()} with
+   * {@link #getPositionAtDistanceFromHub} to give a concrete drive target.
+   *
+   * <p>If no safe tuned distance exists (all positions collide with the tower), returns an empty
+   * optional. Callers should not apply radial correction when empty.
+   *
+   * @return The target position on the field, or empty if all tuned distances are blocked
+   */
+  public java.util.Optional<Translation2d> getAutoDistanceDriveTarget() {
+    OptionalDouble tunedDistance = getClosestTunedHubDistanceMeters();
+    if (tunedDistance.isEmpty()) {
+      return java.util.Optional.empty();
+    }
+    Translation2d robotPos = RobotState.getInstance().getEstimatedPose().getTranslation();
+    Translation2d hubPos = RobotState.getInstance().getAllianceHubTarget().toTranslation2d();
+    return java.util.Optional.of(
+        getPositionAtDistanceFromHub(robotPos, hubPos, tunedDistance.getAsDouble()));
+  }
+
+  /**
+   * Returns whether the auto-distance system is blocked because every tuned shot position would put
+   * the robot inside the alliance tower's collision footprint.
+   *
+   * <p>This is intended for use by the Shooter subsystem and commands to determine if shooting
+   * should be prevented when using the auto-distance feature.
+   *
+   * @return true if no safe tuned distance exists (all collide with tower)
+   */
+  public boolean isAutoDistanceBlocked() {
+    return getClosestTunedHubDistanceMeters().isEmpty();
   }
 }
