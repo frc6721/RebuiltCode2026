@@ -47,6 +47,7 @@ public class Shooter extends SubsystemBase {
   private final ShooterIOInputsAutoLogged _shooterInputs = new ShooterIOInputsAutoLogged();
   private AngularVelocity _targetFlywheelSpeed;
   private final SysIdRoutine _sysId;
+  private double _flyWheelRPMOffset; // Fixed offset for inc/dec shooter strenght mid-match
 
   /**
    * When true, the shooter will refuse to feed if the robot is closer to the hub than {@link
@@ -72,6 +73,8 @@ public class Shooter extends SubsystemBase {
   public Shooter(ShooterIO shooterIO, FuelSim fuelSim) {
     this._shooterIO = shooterIO;
     this.stopFlywheels();
+
+    _flyWheelRPMOffset = 0.0;
 
     // Initialize FuelSim visualizer for trajectory and launch simulation
     // _fuelSimVisualizer = new FuelVisualizer(fuelSim);
@@ -201,7 +204,7 @@ public class Shooter extends SubsystemBase {
    * @param speed The desired flywheel angular velocity (use RPM.of(), RadiansPerSecond.of(), etc.)
    */
   public void setFlywheelSpeed(AngularVelocity speed) {
-    _targetFlywheelSpeed = speed;
+    _targetFlywheelSpeed = speed.plus(RPM.of(_flyWheelRPMOffset));
     _shooterIO.setFlywheelSpeed(speed);
   }
 
@@ -363,6 +366,22 @@ public class Shooter extends SubsystemBase {
    */
   public boolean isInShootingRange() {
     return ShotCalculator.getInstance().isInShootingRange();
+  }
+
+  /**
+   * Returns the current offset added to the flywheel speed
+   * @return The current offset RPM
+   */
+  public double getFlyWheelRPMOffset() {
+    return _flyWheelRPMOffset;
+  }
+
+  /**
+   * Increase or decrease the current offset added to the flwheel target RPM
+   * @param RPM the value to add to the current flwheel RPM offset. + for increase, - for decrease
+   */
+  public void incFlywheelRPMOffset(double RPM) {
+    _flyWheelRPMOffset += RPM;
   }
 
   // ==================== MIN DISTANCE SHOOTING RESTRICTION ====================

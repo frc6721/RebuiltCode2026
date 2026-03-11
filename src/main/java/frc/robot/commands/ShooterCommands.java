@@ -55,6 +55,22 @@ public class ShooterCommands {
         shooter);
   }
 
+  public static Command increaseFlywheelRPMOffset(Shooter shooter) {
+    return Commands.runOnce(
+      () -> {
+        shooter.incFlywheelRPMOffset(100.0);
+      },
+      shooter);
+  }
+
+  public static Command decreaseFlywheelRPMOffset(Shooter shooter) {
+    return Commands.runOnce(
+      () -> {
+        shooter.incFlywheelRPMOffset(-100.0);
+      },
+      shooter);
+  }
+
   public static Command runShooterAndFeederAtVoltage(
       Shooter shooter, Feeder feeder, double shooterVoltage, double feederVoltage) {
     // Run shooter continuously in parallel with a delayed feeder start.

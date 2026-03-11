@@ -469,6 +469,18 @@ public class RobotContainer {
                         shooter, feeder, hopper, 3500))) // prev RPM = 3450
         .onFalse(ShooterCommands.stopFlywheels(shooter));
 
+    // ── START BUTTON: Increase shooter rpm by fixed amount ───────────────────────────
+    // When pressed: adds an offset to the shooter's target RPM, increasing the
+    // power by a fixed amount after the target RPM is calculated based on distance.
+    // To be used if the shooter has been routinely under-shooting during a match.
+    controller.start().onTrue(ShooterCommands.increaseFlywheelRPMOffset(shooter));
+
+    // ── BACK BUTTON: Decrease shooter rpm by fixed amount ───────────────────────────
+    // When pressed: subtracts an offset to the shooter's target RPM, decreasing the
+    // power by a fixed amount after the target RPM is calculated based on distance.
+    // To be used if the shooter has been routinely over-shooting during a match.
+    controller.back().onTrue(ShooterCommands.decreaseFlywheelRPMOffset(shooter));
+
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────
     // While held: snaps the robot to the nearest 0° or 180° heading for driving
     // straight through the trench. Driver keeps full translation control.
