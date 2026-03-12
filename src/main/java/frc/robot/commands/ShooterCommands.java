@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -18,6 +19,8 @@ import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederConstants;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperConstants;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import java.text.DecimalFormat;
@@ -282,7 +285,7 @@ public class ShooterCommands {
    * @return A complete shooting sequence command
    */
   public static Command shootToHubSequence(
-      Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper) {
+      Shooter shooter, frc.robot.subsystems.feeder.Feeder feeder, Hopper hopper, Intake intake) {
     return shootToHub(shooter)
         .alongWith(
             // Wait until BOTH the flywheel is at speed AND the robot's back is facing the hub,
@@ -299,10 +302,13 @@ public class ShooterCommands {
                         () -> {
                           feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
                           hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                          intake.setRollerVoltage(
+                              Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
                         },
                         () -> {
                           feeder.stop();
                           hopper.stop();
+                          intake.stopRollers();
                         },
                         feeder,
                         hopper)))
@@ -396,7 +402,8 @@ public class ShooterCommands {
    * @param hopper The hopper subsystem
    * @return A complete shooting sequence command targeting the active target
    */
-  public static Command shootToActiveTargetSequence(Shooter shooter, Feeder feeder, Hopper hopper) {
+  public static Command shootToActiveTargetSequence(
+      Shooter shooter, Feeder feeder, Hopper hopper, Intake intake) {
     return shootToActiveTarget(shooter)
         .alongWith(
             // Wait until BOTH the flywheel is at speed AND the robot is facing the target,
@@ -420,12 +427,16 @@ public class ShooterCommands {
                         },
                         feeder,
                         hopper)))
+        .alongWith(
+            IntakeCommands.jostleIntake(intake)
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
         // When the command ends (button released or interrupted), clean up all mechanisms.
         // This replaces the separate onFalse handler in RobotContainer.
         .finallyDo(
             () -> {
               feeder.stop();
               hopper.stop();
+              intake.stopRollers();
               shooter.setFlywheelSpeed(RPM.of(0));
             })
         .withName("ShootToActiveTargetSequence");
@@ -620,7 +631,7 @@ public class ShooterCommands {
    * @return A complete shooting sequence with auto-distance for hub shots
    */
   public static Command shootToActiveTargetWithAutoDistanceSequence(
-      Shooter shooter, Feeder feeder, Hopper hopper) {
+      Shooter shooter, Feeder feeder, Hopper hopper, Intake intake) {
     return shootToActiveTarget(shooter)
         .alongWith(
             // Wait until the flywheel is at speed, robot is facing the target, AND
@@ -639,10 +650,13 @@ public class ShooterCommands {
                             () -> {
                               feeder.setFeederVelocity(FeederConstants.Speeds.SHOOT_FEED_RPM);
                               hopper.setHopperSpeed(HopperConstants.Speeds.FEED_SPEED);
+                              intake.setRollerVoltage(
+                                  Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
                             },
                             () -> {
                               feeder.stop();
                               hopper.stop();
+                              intake.stopRollers();
                             },
                             feeder,
                             hopper),

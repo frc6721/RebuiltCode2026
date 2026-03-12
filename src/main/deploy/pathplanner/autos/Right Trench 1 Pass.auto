@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Trench"
+            "pathName": "right bump"
           }
         },
         {
@@ -24,37 +24,6 @@
                 "type": "wait",
                 "data": {
                   "waitTime": 8.0
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stop-shooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left Trench Pass 2"
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "shoot-fuel"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 4.0
                 }
               }
             ]

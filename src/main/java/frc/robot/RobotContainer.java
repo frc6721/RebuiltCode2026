@@ -234,8 +234,8 @@ public class RobotContainer {
                 () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true)
-            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
-            .withTimeout(5.0)
+            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper, intake))
+            .withTimeout(6.0)
             .finallyDo(
                 () -> {
                   feeder.stop();
@@ -361,7 +361,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
+    // controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
     // ── Default Drive Command ─────────────────────────────────────────────────
     // Field-relative swerve drive with cubic input curves for fine control.
     // Right stick X controls rotation, scaled to 75% for smoother turning.
@@ -429,7 +429,8 @@ public class RobotContainer {
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
                 .alongWith(
-                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    ShooterCommands.shootToActiveTargetWithAutoDistanceSequence(
+                        shooter, feeder, hopper, intake),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
@@ -452,7 +453,7 @@ public class RobotContainer {
                     () -> RobotState.getInstance().getAngleToActiveTarget())
                 .alongWith(
                     ShooterCommands.shootToActiveTargetWithAutoDistanceSequence(
-                        shooter, feeder, hopper),
+                        shooter, feeder, hopper, intake),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     controller
@@ -466,7 +467,7 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(
-                        shooter, feeder, hopper, 3500))) // prev RPM = 3450
+                        shooter, feeder, hopper, 4500))) // prev RPM = 3450
         .onFalse(ShooterCommands.stopFlywheels(shooter));
 
     // ── LEFT BUMPER: Auto-align to trench heading ─────────────────────────────

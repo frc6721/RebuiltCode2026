@@ -191,7 +191,7 @@ public class ShooterConstants {
      * <p>Set to 0 to effectively disable the restriction via constant, or use the runtime
      * enable/disable commands on the Shooter subsystem.
      */
-    public static final Distance HUB_MIN_SHOOTING_DISTANCE = Inches.of(138.0);
+    public static final Distance HUB_MIN_SHOOTING_DISTANCE = Inches.of(0.0);
   }
 
   /** 3D visualization constants for AdvantageScope. */
@@ -220,10 +220,10 @@ public class ShooterConstants {
 
     static {
       // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(3600.0).in(RPM)); // prev = 3450
-      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(3700.0).in(RPM)); // prev = 3550
-      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4025.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3175.0).in(RPM)); // ****BUMPED ALL 25****
+      SPEED_MAP.put(Inches.of(144).in(Meters), RPM.of(3625.0).in(RPM)); // ****BUMPED ALL 25****
+      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(3675.0).in(RPM)); // ****BUMPED ALL 25****
+      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4050.0).in(RPM)); // ****BUMPED ALL 25****
 
       // SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2500.0).in(RPM)); // prev = 2200
       // SPEED_MAP.put(
@@ -271,7 +271,7 @@ public class ShooterConstants {
      * flywheel can calculate the correct RPM for each distance.
      */
     public static final double[] TUNED_HUB_SHOT_DISTANCES_METERS = {
-      Inches.of(145).in(Meters),
+      Inches.of(147).in(Meters),
       Inches.of(167).in(Meters), // Mid-far shot
       Inches.of(210).in(Meters), // Far shot
     };
