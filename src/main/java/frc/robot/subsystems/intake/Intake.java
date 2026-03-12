@@ -135,7 +135,7 @@ public class Intake extends SubsystemBase {
       // Internally it generates a smooth trapezoidal motion profile between the current
       // position and the goal, respecting the max velocity and acceleration constraints.
       _linearPIDController.setGoal(_intakePosition.getPosition());
-      double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
+      double linearVoltage = (-1.0) * _linearPIDController.calculate(_intakeInputs._linearMotorPosition); // inverted after linear slide mechanical change 03/12
       _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
 
       // Log the intermediate profiled setpoint so we can see the planned trajectory in

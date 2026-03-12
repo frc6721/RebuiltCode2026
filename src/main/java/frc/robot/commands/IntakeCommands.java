@@ -186,7 +186,7 @@ public class IntakeCommands {
   }
 
   /**
-   * Jostles the hopper fueld by running the intake rollers at a slow speed. Use to help settle game
+   * Jostles the hopper fuel by running the intake rollers at a slow speed. Use to help settle game
    * pieces before shooting.
    *
    * @param intake The intake subsystem
@@ -198,7 +198,15 @@ public class IntakeCommands {
               intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
             },
             intake)
-        .withName("runIntakeRollersForShooting");
+        .andThen(
+            Commands.sequence(
+                    setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
+                    Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
+                    setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
+                    Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
+                .repeatedly())
+        .withName("JostleIntake");
+
     // return Commands.sequence(
     //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
     //         Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),

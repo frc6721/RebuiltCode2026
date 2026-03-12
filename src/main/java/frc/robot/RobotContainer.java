@@ -334,7 +334,7 @@ public class RobotContainer {
    * Configures controller button → command mappings for competition.
    *
    * <pre>
-   * ┌─────────────────────────────────────────────────────────────────┐
+   * ┌────────────────────────────────────────────────────────────────┐
    * │  LEFT STICK:  Translation (field-relative driving)             │
    * │  RIGHT STICK: Rotation (field-relative driving)                │
    * │                                                                │
@@ -353,10 +353,11 @@ public class RobotContainer {
    * │  D-PAD UP:    Spit fuel (same as left trigger)                 │
    * │  D-PAD DOWN:  Set odometry pose to alliance hub                │
    * │  D-PAD LEFT:  Zero robot heading                               │
-   * │  D-PAD RIGHT: Tower shot (fixed RPM) — hold                   │
+   * │  D-PAD RIGHT: Tower shot (fixed RPM) — hold                    │
    * │                                                                │
-   * │  BACK BUTTON: Toggle min shooting distance restriction         │
-   * └─────────────────────────────────────────────────────────────────┘
+   * │  START BUTTON: Increase shooter flywheel offset by 25 rpm      │
+   * │  BACK BUTTON: Decrease shooter flywheel offset by 25 rpm       │
+   * └────────────────────────────────────────────────────────────────┘
    * </pre>
    */
   private void configureButtonBindings() {
@@ -431,6 +432,7 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    IntakeCommands.jostleIntake(intake),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
