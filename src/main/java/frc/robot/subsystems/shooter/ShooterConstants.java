@@ -221,9 +221,9 @@ public class ShooterConstants {
     static {
       // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM)); // prev = 1750
       SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(3600.0).in(RPM)); // prev = 3450
-      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(3700.0).in(RPM)); // prev = 3550
-      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4025.0).in(RPM)); // prev = 1750
+      SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(4100.0).in(RPM)); // prev = 3450
+      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(4600.0).in(RPM)); // prev = 3550
+      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4825.0).in(RPM)); // prev = 1750
 
       // SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2500.0).in(RPM)); // prev = 2200
       // SPEED_MAP.put(
