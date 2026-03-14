@@ -193,7 +193,7 @@ public class IntakeCommands {
    * @return A repeating jostle command that runs until interrupted
    */
   public static Command jostleIntake(Intake intake) {
-    return Commands.run(
+    return Commands.runOnce(
             () -> {
               intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
             },
@@ -205,7 +205,13 @@ public class IntakeCommands {
                     setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
                     Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
                 .repeatedly())
-        .withName("JostleIntake");
+        .withName("JostleIntake")
+        .finallyDo(
+            () -> {
+              intake.stopRollers();
+              intake.setIntakePosition(IntakePosition.EXTENDED);
+            }
+        );
 
     // return Commands.sequence(
     //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
