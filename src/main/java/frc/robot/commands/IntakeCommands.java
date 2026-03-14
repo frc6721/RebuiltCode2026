@@ -210,8 +210,7 @@ public class IntakeCommands {
             () -> {
               intake.stopRollers();
               intake.setIntakePosition(IntakePosition.EXTENDED);
-            }
-        );
+            });
 
     // return Commands.sequence(
     //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
