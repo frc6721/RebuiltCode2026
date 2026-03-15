@@ -79,6 +79,13 @@ public final class Constants {
     public static int CLIMBER_MOTOR_ID = 42;
   }
 
+  // /** Digital input IDs for switches and sensors */
+  // // TODO: Update IDs with actual input slots once wired
+  // public static class DioIds {
+  //   public static int HALL_SENSOR_RETRACTED = 0;
+  //   public static int HALL_SENSOR_EXTENDED = 1;
+  // }
+
   // ── Robot Dimensions ────────────────────────────────────────────────────────
 
   /**

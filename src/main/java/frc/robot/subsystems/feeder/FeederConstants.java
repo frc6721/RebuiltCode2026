@@ -180,8 +180,8 @@ public class FeederConstants {
      */
     public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART_CURRENT_LIMIT = 60;
-    public static final double SECONDARY_CURRENT_LIMIT = 80;
+    public static final int SMART_CURRENT_LIMIT = 30; // prev = 60
+    public static final double SECONDARY_CURRENT_LIMIT = 40; // prev = 80
   }
 
   /** Software tuning settings for the feeder. */

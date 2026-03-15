@@ -127,6 +127,7 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
     Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
+    // Logger.recordOutput("Intake/LinearPosition/RetractedSensor", _intakeIO.);
 
     // Run PID control for linear slide position only when PID mode is active.
     // Duty-cycle or voltage overrides disable the PID until a position is commanded again.
@@ -135,11 +136,7 @@ public class Intake extends SubsystemBase {
       // Internally it generates a smooth trapezoidal motion profile between the current
       // position and the goal, respecting the max velocity and acceleration constraints.
       _linearPIDController.setGoal(_intakePosition.getPosition());
-      double linearVoltage =
-          (-1.0)
-              * _linearPIDController.calculate(
-                  _intakeInputs
-                      ._linearMotorPosition); // inverted after linear slide mechanical change 03/12
+      double linearVoltage = _linearPIDController.calculate(_intakeInputs._linearMotorPosition);
       _intakeIO.setLinearMotorVoltage(Volts.of(linearVoltage));
 
       // Log the intermediate profiled setpoint so we can see the planned trajectory in

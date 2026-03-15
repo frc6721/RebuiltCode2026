@@ -54,7 +54,7 @@ public class ShooterConstants {
 
     public static final AngularVelocity MAX_SPEED = RPM.of(5900);
 
-    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(5200); // 3000 RPM/s
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(3000); // prev 5200 RPM/s
   }
 
   /** PID and feedforward tuning constants. */
@@ -63,12 +63,14 @@ public class ShooterConstants {
     public static class Real {
       public static final LoggedNetworkNumber KP =
           new LoggedNetworkNumber(
-              "Shooter/FLYWHEEL_PID/Real/kP", 0.00007); // crept back up now that kV is corrected
+              "Shooter/FLYWHEEL_PID/Real/kP",
+              0.00050); // prev = .00007 03/14, crept back up now that kV is corrected
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00025); // 0.00010
+          new LoggedNetworkNumber(
+              "Shooter/FLYWHEEL_PID/Real/kD", 0.00060); // prev = .00025 03/14 // 0.00010
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
@@ -157,8 +159,8 @@ public class ShooterConstants {
      */
     public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART = 100;
-    public static final double SECONDARY = 100;
+    public static final int SMART = 60;
+    public static final double SECONDARY = 80;
   }
 
   /** Software tuning settings. */

@@ -193,24 +193,32 @@ public class IntakeCommands {
    * @return A repeating jostle command that runs until interrupted
    */
   public static Command jostleIntake(Intake intake) {
-    return Commands.runOnce(
+    return Commands.run(
             () -> {
               intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
             },
             intake)
-        .andThen(
-            Commands.sequence(
-                    setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
-                    Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
-                    setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
-                    Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
-                .repeatedly())
-        .withName("JostleIntake")
-        .finallyDo(
-            () -> {
-              intake.stopRollers();
-              intake.setIntakePosition(IntakePosition.EXTENDED);
-            });
+        .withName("runIntakeRollersForShooting");
+    // return Commands.runOnce(
+    //         () -> {
+    //           intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
+    //         },
+    //         intake)
+    //     .andThen(
+    //         Commands.sequence(
+    //                 setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),
+    //
+    // Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()),
+    //                 setIntakeGoalPosition(intake, IntakePosition.JOSTLE_RETRACTED),
+    //
+    // Commands.waitSeconds(IntakeConstants.JOSTLE_HALF_CYCLE_DURATION_SECONDS.get()))
+    //             .repeatedly())
+    //     .withName("JostleIntake")
+    //     .finallyDo(
+    //         () -> {
+    //           intake.stopRollers();
+    //           intake.setIntakePosition(IntakePosition.EXTENDED);
+    //         });
 
     // return Commands.sequence(
     //         setIntakeGoalPosition(intake, IntakePosition.JOSTLE_EXTENDED),

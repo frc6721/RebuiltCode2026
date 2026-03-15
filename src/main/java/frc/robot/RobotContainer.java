@@ -15,6 +15,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RPM;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -362,7 +363,8 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    // controller.start().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
+    // controller.rightBumper().whileTrue(ShooterCommands.feedforwardCharacterization(shooter));
+    // controller.x().whileTrue(FeederCommands.feedforwardCharacterization(feeder));
 
     // ── Default Drive Command ─────────────────────────────────────────────────
     // Field-relative swerve drive with cubic input curves for fine control.
@@ -423,17 +425,16 @@ public class RobotContainer {
     // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
     controller
         .rightBumper()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToActiveTarget(),
-                    true)
-                .alongWith(
-                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    IntakeCommands.jostleIntake(intake),
-                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)));
+    // DriveCommands.joystickDriveAtAngle(
+    //         drive,
+    //         () -> -controller.getLeftY(),
+    //         () -> -controller.getLeftX(),
+    //         () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //         true)
+    //     .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
+    // IntakeCommands.jostleIntake(intake),
+    // ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
     // While held:

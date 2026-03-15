@@ -22,7 +22,7 @@ public class IntakeConstants {
   /** Hardware configuration for motor inversions. */
   public static class Hardware {
     /** Linear slide motor inversion */
-    public static final boolean LINEAR_MOTOR_INVERTED = true;
+    public static final boolean LINEAR_MOTOR_INVERTED = false;
 
     /** Roller motor inversion */
     public static final boolean ROLLER_INVERTED = false;
@@ -163,12 +163,8 @@ public class IntakeConstants {
         new LoggedNetworkNumber("Intake/Position/Retracted", 0.0);
 
     /** Fully extended (deployed) position in meters. */
-    // public static final LoggedNetworkNumber EXTENDED =
-    //     new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
-
-    /** DELETE BELOW LINE AND REVERT EXTENDED VALUE TO ABOVE. JUST FOR PID TUNING TESTING */
     public static final LoggedNetworkNumber EXTENDED =
-        new LoggedNetworkNumber("Intake/Position/Extended", Inches.of(11.0).in(Meters));
+        new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
 
     /**
      * Jostle-extend position in meters. The intake moves here during the outward half of a jostle
@@ -275,10 +271,10 @@ public class IntakeConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
-    public static final int LINEAR_SMART = 40;
-    public static final double LINEAR_SECONDARY = 60;
-    public static final int ROLLER_SMART = 50;
-    public static final double ROLLER_SECONDARY = 60;
+    public static final int LINEAR_SMART = 30; // prev = 40
+    public static final double LINEAR_SECONDARY = 40; // prev = 60
+    public static final int ROLLER_SMART = 30; // prev = 50
+    public static final double ROLLER_SECONDARY = 40; // prev = 60
   }
 
   /** Roller motor settings. */
