@@ -15,7 +15,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RPM;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -423,18 +422,38 @@ public class RobotContainer {
     //   4. Feed: runs feeder and hopper to launch game pieces
     //   5. Rumble: vibrates the controller if shooting is blocked by min distance
     // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
+
+    // Auto aim + shoot + jostle + rumble when blocked
     controller
         .rightBumper()
-        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(4500)));
-    // DriveCommands.joystickDriveAtAngle(
-    //         drive,
-    //         () -> -controller.getLeftY(),
-    //         () -> -controller.getLeftX(),
-    //         () -> RobotState.getInstance().getAngleToActiveTarget(),
-    //         true)
-    //     .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
-    // IntakeCommands.jostleIntake(intake),
-    // ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true)
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    IntakeCommands.jostleIntake(intake),
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+
+    // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
+    // controller
+    //         .rightBumper()
+    //         .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(4500)));
+
+    // Auto aim + shoot at active target RPM, without jostle or rumble
+    controller
+        .rightBumper()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true)
+                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
 
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
     // While held:
