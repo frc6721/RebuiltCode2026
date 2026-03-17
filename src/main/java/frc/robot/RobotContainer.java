@@ -425,7 +425,7 @@ public class RobotContainer {
     // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
     controller
         .rightBumper()
-        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)));
+        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(4500)));
     // DriveCommands.joystickDriveAtAngle(
     //         drive,
     //         () -> -controller.getLeftY(),
