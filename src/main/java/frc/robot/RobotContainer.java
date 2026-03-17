@@ -435,7 +435,7 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    IntakeCommands.jostleIntake(intake),
+                    // IntakeCommands.jostleIntake(intake),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
@@ -444,16 +444,16 @@ public class RobotContainer {
     //         .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(4500)));
 
     // Auto aim + shoot at active target RPM, without jostle or rumble
-    controller
-        .rightBumper()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToActiveTarget(),
-                    true)
-                .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
+    // controller
+    //    .rightBumper()
+    //    .whileTrue(
+    //        DriveCommands.joystickDriveAtAngle(
+    //                drive,
+    //                () -> -controller.getLeftY(),
+    //                () -> -controller.getLeftX(),
+    //                () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                true)
+    //            .alongWith(ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper)));
 
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
     // While held:
