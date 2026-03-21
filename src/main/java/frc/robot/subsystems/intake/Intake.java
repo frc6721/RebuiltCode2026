@@ -153,7 +153,7 @@ public class Intake extends SubsystemBase {
     // Check hall sensors to reset the encoder when active
     if (_intakeInputs._linearHallSensorExtended.get() == IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
       setEncoderExtended();
-    } else if (_intakeInputs._linearHallSensorRetracted.get() == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACRTED_INVERTED) {
+    } else if (_intakeInputs._linearHallSensorRetracted.get() == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACTED_INVERTED) {
       resetEncoder();
     }
 

@@ -26,7 +26,7 @@ public class IntakeConstants {
     
     /** Linear slide hall sensor inversion */
     public static final boolean LINEAR_SENSOR_EXTENDED_INVERTED = false;
-    public static final boolean LINEAR_SENSOR_RETRACRTED_INVERTED = false;
+    public static final boolean LINEAR_SENSOR_RETRACTED_INVERTED = false;
     
 
     /** Roller motor inversion */
