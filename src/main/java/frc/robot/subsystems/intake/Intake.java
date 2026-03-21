@@ -127,7 +127,8 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
     Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
-    // Logger.recordOutput("Intake/LinearPosition/RetractedSensor", _intakeIO.);
+    // Logger.recordOutput("Intake/LinearPosition/RetractedSensor", _intakeInputs._linearHallSensorRetracted.get());
+    Logger.recordOutput("Intake/LinearPosition/ExtendedSensor", _intakeInputs._linearHallSensorExtended.get());
 
     // Run PID control for linear slide position only when PID mode is active.
     // Duty-cycle or voltage overrides disable the PID until a position is commanded again.
