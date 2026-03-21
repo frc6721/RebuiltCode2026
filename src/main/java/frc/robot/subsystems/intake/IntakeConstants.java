@@ -23,6 +23,11 @@ public class IntakeConstants {
   public static class Hardware {
     /** Linear slide motor inversion */
     public static final boolean LINEAR_MOTOR_INVERTED = false;
+    
+    /** Linear slide hall sensor inversion */
+    public static final boolean LINEAR_SENSOR_EXTENDED_INVERTED = false;
+    public static final boolean LINEAR_SENSOR_RETRACRTED_INVERTED = false;
+    
 
     /** Roller motor inversion */
     public static final boolean ROLLER_INVERTED = false;
@@ -297,6 +302,13 @@ public class IntakeConstants {
 
     public static final LoggedNetworkNumber CURRENT_CUTOFF =
         new LoggedNetworkNumber("Intake/Roller/Current Cutoff", 40);
+  }
+
+  /** Linear motor settings */
+  public static class Linear {
+    /** Voltage to extend the linear slide slowly for homing purposes */
+    public static final LoggedNetworkNumber HOMING_SPEED_EXTENDING = 
+        new LoggedNetworkNumber("Intake/Linear/Homing speed extending", 1);
   }
 
   /**

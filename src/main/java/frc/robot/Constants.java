@@ -81,10 +81,10 @@ public final class Constants {
 
   // /** Digital input IDs for switches and sensors */
   // // TODO: Update IDs with actual input slots once wired
-  // public static class DioIds {
-  //   public static int HALL_SENSOR_RETRACTED = 0;
-  //   public static int HALL_SENSOR_EXTENDED = 1;
-  // }
+  public static class DioIds {
+    public static int HALL_SENSOR_RETRACTED_ID = 1;
+    public static int HALL_SENSOR_EXTENDED_ID = 0;
+  }
 
   // ── Robot Dimensions ────────────────────────────────────────────────────────
 

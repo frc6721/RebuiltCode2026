@@ -15,7 +15,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Voltage;
-// import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 
@@ -39,8 +39,8 @@ public class RealIntakeIO implements IntakeIO {
 
   private final RelativeEncoder _linearEncoder;
 
-  // private final DigitalInput _linearHallSensorRetracted;
-  // private final DigitalInput _linearHallSensorExtended;
+  private final DigitalInput _linearHallSensorRetracted;
+  private final DigitalInput _linearHallSensorExtended;
 
   public RealIntakeIO() {
     _linearMotor = new SparkMax(Constants.CanIds.INTAKE_LINEAR_MOTOR_ID, MotorType.kBrushless);
@@ -55,8 +55,8 @@ public class RealIntakeIO implements IntakeIO {
     // Get the internal encoder from the linear motor
     _linearEncoder = _linearMotor.getEncoder();
 
-    // _linearHallSensorRetracted = new DigitalInput(Constants.DioIds.HALL_SENSOR_RETRACTED);
-    // _linearHallSensorExtended = new DigitalInput(Constants.DioIds.HALL_SENSOR_EXTENDED);
+    _linearHallSensorRetracted = new DigitalInput(Constants.DioIds.HALL_SENSOR_RETRACTED_ID);
+    _linearHallSensorExtended = new DigitalInput(Constants.DioIds.HALL_SENSOR_EXTENDED_ID);
   }
 
   /** Configures the linear slide motor with position/velocity conversion factors. */
@@ -204,10 +204,10 @@ public class RealIntakeIO implements IntakeIO {
     _linearEncoder.setPosition(0.0);
   }
 
-  // @Override
-  // public void setLinearEncoder(double position) {
-  //   _linearEncoder.setPosition(position);
-  // }
+  @Override
+  public void setLinearEncoder(double position) {
+    _linearEncoder.setPosition(position);
+  }
 
   // Roller motor methods
   @Override

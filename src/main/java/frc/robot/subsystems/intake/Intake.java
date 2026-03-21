@@ -149,6 +149,13 @@ public class Intake extends SubsystemBase {
           _linearPIDController.getSetpoint().velocity);
     }
 
+    // Check hall sensors to reset the encoder when active
+    if (_intakeInputs._linearHallSensorExtended.get() == IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
+      setEncoderExtended();
+    } else if (_intakeInputs._linearHallSensorRetracted.get() == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACRTED_INVERTED) {
+      resetEncoder();
+    }
+
     // Check if at target
     boolean atGoal =
         Math.abs(_intakeInputs._linearMotorPosition - _intakePosition.getPosition())
@@ -200,9 +207,9 @@ public class Intake extends SubsystemBase {
   }
 
   public void homeIntake() {
-    // while (_intakeIO._linearMotorCurrent < 10) {
-
-    // }
+    if (_intakeInputs._linearHallSensorExtended.get() != IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
+      setLinearMotorVoltage(Volts.of(IntakeConstants.Linear.HOMING_SPEED_EXTENDING.get()));
+    }
   }
 
   /**
@@ -221,6 +228,11 @@ public class Intake extends SubsystemBase {
   /** Resets the linear encoder to zero (use when intake is known to be fully retracted). */
   public void resetEncoder() {
     _intakeIO.resetLinearEncoder();
+  }
+
+  /** Sets the lienar encoder to the extended value (use when intake is known to be fully extended) */
+  public void setEncoderExtended() {
+    _intakeIO.setLinearEncoder(IntakeConstants.Positions.EXTENDED.get());
   }
 
   public void setRollerVoltage(Voltage voltage) {
