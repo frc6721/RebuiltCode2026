@@ -142,6 +142,9 @@ public class RealIntakeIO implements IntakeIO {
         _linearMotor::getOutputCurrent,
         (value) -> inputs._linearMotorCurrent = Amps.of(value));
 
+    // Linear slide hall sensor
+    inputs._linearHallSensorExtended = _linearHallSensorExtended.get();
+
     // Roller leader motor
     ifOk(
         _rollerMotorLeader,

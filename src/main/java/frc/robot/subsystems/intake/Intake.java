@@ -127,8 +127,10 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/LinearPosition/Current", _intakeInputs._linearMotorPosition);
     Logger.recordOutput("Intake/LinearPosition/Desired", _intakePosition.getPosition());
     Logger.recordOutput("Intake/Linear/PIDEnabled", _pidEnabled);
-    // Logger.recordOutput("Intake/LinearPosition/RetractedSensor", _intakeInputs._linearHallSensorRetracted.get());
-    Logger.recordOutput("Intake/LinearPosition/ExtendedSensor", _intakeInputs._linearHallSensorExtended.get());
+    // Logger.recordOutput("Intake/LinearPosition/RetractedSensor",
+    // _intakeInputs._linearHallSensorRetracted.get());
+    Logger.recordOutput(
+        "Intake/LinearPosition/ExtendedSensor", _intakeInputs._linearHallSensorExtended);
 
     // Run PID control for linear slide position only when PID mode is active.
     // Duty-cycle or voltage overrides disable the PID until a position is commanded again.
@@ -151,11 +153,14 @@ public class Intake extends SubsystemBase {
     }
 
     // Check hall sensors to reset the encoder when active
-    if (_intakeInputs._linearHallSensorExtended.get() == IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
+    if (_intakeInputs._linearHallSensorExtended
+        == IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
       setEncoderExtended();
-    } else if (_intakeInputs._linearHallSensorRetracted.get() == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACTED_INVERTED) {
-      resetEncoder();
     }
+    // } else if (_intakeInputs._linearHallSensorRetracted
+    //     == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACTED_INVERTED) {
+    //   resetEncoder();
+    // }
 
     // Check if at target
     boolean atGoal =
@@ -208,7 +213,8 @@ public class Intake extends SubsystemBase {
   }
 
   public void homeIntake() {
-    if (_intakeInputs._linearHallSensorExtended.get() != IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
+    if (_intakeInputs._linearHallSensorExtended
+        != IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
       setLinearMotorVoltage(Volts.of(IntakeConstants.Linear.HOMING_SPEED_EXTENDING.get()));
     }
   }
@@ -231,7 +237,9 @@ public class Intake extends SubsystemBase {
     _intakeIO.resetLinearEncoder();
   }
 
-  /** Sets the lienar encoder to the extended value (use when intake is known to be fully extended) */
+  /**
+   * Sets the linear encoder to the extended value (use when intake is known to be fully extended)
+   */
   public void setEncoderExtended() {
     _intakeIO.setLinearEncoder(IntakeConstants.Positions.EXTENDED.get());
   }

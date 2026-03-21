@@ -4,9 +4,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.DigitalInput;
-
-// import edu.wpi.first.wpilibj.DigitalInput;
 import org.littletonrobotics.junction.AutoLog;
 
 /**
@@ -31,8 +28,8 @@ public interface IntakeIO {
         0.0; // Meters of linear travel (0 = retracted, + = extending)
     public Voltage _linearMotorVoltage;
     public Current _linearMotorCurrent;
-    public DigitalInput _linearHallSensorRetracted;
-    public DigitalInput _linearHallSensorExtended;
+    public boolean _linearHallSensorRetracted;
+    public boolean _linearHallSensorExtended;
 
     // Roller leader motor
     public Temperature _rollerMotorLeaderTemperature;

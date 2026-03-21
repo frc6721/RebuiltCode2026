@@ -63,14 +63,12 @@ public class ShooterConstants {
     public static class Real {
       public static final LoggedNetworkNumber KP =
           new LoggedNetworkNumber(
-              "Shooter/FLYWHEEL_PID/Real/kP",
-              0.00007); //crept back up now that kV is corrected
+              "Shooter/FLYWHEEL_PID/Real/kP", 0.00060); // crept back up now that kV is corrected
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber(
-              "Shooter/FLYWHEEL_PID/Real/kD", 0.00025); // 0.00010
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00025); // 0.00010
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }

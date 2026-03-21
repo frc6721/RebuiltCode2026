@@ -23,11 +23,11 @@ public class IntakeConstants {
   public static class Hardware {
     /** Linear slide motor inversion */
     public static final boolean LINEAR_MOTOR_INVERTED = false;
-    
+
     /** Linear slide hall sensor inversion */
     public static final boolean LINEAR_SENSOR_EXTENDED_INVERTED = false;
+
     public static final boolean LINEAR_SENSOR_RETRACTED_INVERTED = false;
-    
 
     /** Roller motor inversion */
     public static final boolean ROLLER_INVERTED = false;
@@ -191,7 +191,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 33.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 35.0);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
@@ -307,7 +307,7 @@ public class IntakeConstants {
   /** Linear motor settings */
   public static class Linear {
     /** Voltage to extend the linear slide slowly for homing purposes */
-    public static final LoggedNetworkNumber HOMING_SPEED_EXTENDING = 
+    public static final LoggedNetworkNumber HOMING_SPEED_EXTENDING =
         new LoggedNetworkNumber("Intake/Linear/Homing speed extending", 1);
   }
 
