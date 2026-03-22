@@ -55,6 +55,14 @@ public class ShooterCommands {
         shooter);
   }
 
+  public static Command setFlywheelDutyCycle(Shooter shooter, double output) {
+    return Commands.runOnce(
+        () -> {
+          shooter.setFlyWheelDutyCycle(output);
+        },
+        shooter);
+  }
+
   public static Command increaseFlywheelRPMOffset(Shooter shooter) {
     return Commands.runOnce(
         () -> {

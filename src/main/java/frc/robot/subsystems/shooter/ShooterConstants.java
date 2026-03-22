@@ -52,9 +52,9 @@ public class ShooterConstants {
   public static class Limits {
     public static final AngularVelocity MIN_SPEED = RPM.of(2200);
 
-    public static final AngularVelocity MAX_SPEED = RPM.of(5900);
+    public static final AngularVelocity MAX_SPEED = RPM.of(6000);
 
-    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(5200);
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(6000);
   }
 
   /** PID and feedforward tuning constants. */
@@ -63,12 +63,12 @@ public class ShooterConstants {
     public static class Real {
       public static final LoggedNetworkNumber KP =
           new LoggedNetworkNumber(
-              "Shooter/FLYWHEEL_PID/Real/kP", 0.00010); // crept back up now that kV is corrected
+              "Shooter/FLYWHEEL_PID/Real/kP", 0.00015); // crept back up now that kV is corrected
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00000); // 0.00010
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.00010); // 0.00010
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
@@ -95,13 +95,14 @@ public class ShooterConstants {
       public static final LoggedNetworkNumber KS =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kS",
-              0.28513); // prev 03/21 - .29867 //prev (no metal flywheels) = .2675
+              0.24888); // 28513 prev 03/21 - .29867 //prev (no metal flywheels) = .2675
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kV",
-              0.00178); // prev 03/21 = .00178 // PREV = .00163 |||| PREVPREV = 0.00178 -> back to
+              0.00196); // 00178 prev 03/21 = .00178 // PREV = .00163 |||| PREVPREV = 0.00178 ->
+      // back to
       // original, kV was
       // over-driving setpoint
     }
@@ -157,10 +158,10 @@ public class ShooterConstants {
      * Set to {@code true} to enable current limiting on the flywheel motors, or {@code false} to
      * disable it (useful during testing/characterization).
      */
-    public static final boolean ENABLE_CURRENT_LIMITS = true;
+    public static final boolean ENABLE_CURRENT_LIMITS = false;
 
-    public static final int SMART = 60;
-    public static final double SECONDARY = 80;
+    public static final int SMART = 80;
+    public static final double SECONDARY = 100;
   }
 
   /** Software tuning settings. */

@@ -153,12 +153,19 @@ public class RealShooterIO implements ShooterIO {
 
     _leftFlywheelMotor
         .getClosedLoopController()
-        .setReference(
+        .setSetpoint(
             targetRPM,
             ControlType.kMAXMotionVelocityControl,
             com.revrobotics.spark.ClosedLoopSlot.kSlot0,
             ffVolts,
             com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
+
+    // .setReference(
+    //     targetRPM,
+    //     ControlType.kMAXMotionVelocityControl,
+    //     com.revrobotics.spark.ClosedLoopSlot.kSlot0,
+    //     ffVolts,
+    //     com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
   }
 
   @Override
