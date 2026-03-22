@@ -46,39 +46,39 @@ public class RealShooterIO implements ShooterIO {
 
     configFlywheelMotors();
 
-    // Register the left motor's velocity signal with the shared 100Hz odometry thread.
+    // Register the right motor's velocity signal with the shared 100Hz odometry thread.
     // This gives us ~2 velocity samples per 20ms robot loop instead of just 1.
     _timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
     _velocityQueue =
         SparkOdometryThread.getInstance()
-            .registerSignal(_leftFlywheelMotor, _leftFlywheelMotor.getEncoder()::getVelocity);
+            .registerSignal(_rightFlywheelMotor, _rightFlywheelMotor.getEncoder()::getVelocity);
   }
 
-  /** Configures both flywheel motors. Left is leader, right follows inverted. */
+  /** Configures both flywheel motors. Right is leader, left follows inverted. */
   public void configFlywheelMotors() {
-    // ── Left motor (leader) ──
-    SparkFlexConfig leftConfig = new SparkFlexConfig();
-    leftConfig
+    // ── Right motor (leader) ──
+    SparkFlexConfig rightConfig = new SparkFlexConfig();
+    rightConfig
         .inverted(ShooterConstants.Mechanical.INVERTED)
         .idleMode(IdleMode.kCoast)
         .voltageCompensation(9.0);
 
     // Only apply current limits if enabled - disable during testing/characterization
     if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
-      leftConfig
+      rightConfig
           .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
           .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
     }
-    leftConfig.closedLoop.pid(
+    rightConfig.closedLoop.pid(
         ShooterConstants.getFlywheelKP(),
         ShooterConstants.getFlywheelKI(),
         ShooterConstants.getFlywheelKD());
-    leftConfig.closedLoop.maxMotion.maxAcceleration(
+    rightConfig.closedLoop.maxMotion.maxAcceleration(
         ShooterConstants.Limits.MAX_ACCEL.in(RPM.per(Second)));
 
     // Configure the encoder velocity signal to publish at the odometry thread frequency.
     // This ensures the SparkOdometryThread can collect fresh samples every 10ms (100Hz).
-    leftConfig
+    rightConfig
         .signals
         .primaryEncoderVelocityAlwaysOn(true)
         .primaryEncoderVelocityPeriodMs((int) (1000.0 / DriveConstants.odometryFrequency))
@@ -87,44 +87,44 @@ public class RealShooterIO implements ShooterIO {
         .outputCurrentPeriodMs(20);
 
     tryUntilOk(
-        _leftFlywheelMotor,
-        5,
-        () ->
-            _leftFlywheelMotor.configure(
-                leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-
-    // ── Right motor (follower, inverted relative to leader) ──
-    SparkFlexConfig rightConfig = new SparkFlexConfig();
-    rightConfig.idleMode(IdleMode.kCoast).voltageCompensation(9.0);
-
-    // Only apply current limits if enabled - disable during testing/characterization
-    if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
-      rightConfig
-          .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
-          .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
-    }
-
-    // Follow the left motor, inverted so both wheels physically spin the same direction
-    rightConfig.follow(_leftFlywheelMotor, true);
-
-    tryUntilOk(
         _rightFlywheelMotor,
         5,
         () ->
             _rightFlywheelMotor.configure(
                 rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+
+    // ── Right motor (follower, inverted relative to leader) ──
+    SparkFlexConfig leftConfig = new SparkFlexConfig();
+    leftConfig.idleMode(IdleMode.kCoast).voltageCompensation(9.0);
+
+    // Only apply current limits if enabled - disable during testing/characterization
+    if (ShooterConstants.CurrentLimits.ENABLE_CURRENT_LIMITS) {
+      leftConfig
+          .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
+          .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
+    }
+
+    // Follow the left motor, inverted so both wheels physically spin the same direction
+    leftConfig.follow(_rightFlywheelMotor, true);
+
+    tryUntilOk(
+        _leftFlywheelMotor,
+        5,
+        () ->
+            _leftFlywheelMotor.configure(
+                leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    // Left flywheel motor (leader)
+    // Left flywheel motor (follower)
     inputs._leftFlywheelMotorTemperature = Celsius.of(_leftFlywheelMotor.getMotorTemperature());
     inputs._leftFlywheelMotorVelocity = RPM.of(_leftFlywheelMotor.getEncoder().getVelocity());
     inputs._leftFlywheelMotorVoltage =
         Volts.of(_leftFlywheelMotor.getAppliedOutput() * _leftFlywheelMotor.getBusVoltage());
     inputs._leftFlywheelMotorCurrent = Amps.of(_leftFlywheelMotor.getOutputCurrent());
 
-    // Right flywheel motor (follower)
+    // Right flywheel motor (leader)
     inputs._rightFlywheelMotorTemperature = Celsius.of(_rightFlywheelMotor.getMotorTemperature());
     inputs._rightFlywheelMotorVelocity = RPM.of(_rightFlywheelMotor.getEncoder().getVelocity());
     inputs._rightFlywheelMotorVoltage =
@@ -151,7 +151,7 @@ public class RealShooterIO implements ShooterIO {
     double kV = ShooterConstants.getFlywheelKV();
     double ffVolts = kS * Math.signum(targetRPM) + kV * targetRPM;
 
-    _leftFlywheelMotor
+    _rightFlywheelMotor
         .getClosedLoopController()
         .setSetpoint(
             targetRPM,
@@ -170,18 +170,18 @@ public class RealShooterIO implements ShooterIO {
 
   @Override
   public void setFlyWheelDutyCycle(double output) {
-    _leftFlywheelMotor.set(output);
+    _rightFlywheelMotor.set(output);
   }
 
   @Override
   public void stopFlywheel() {
     // Reset the integral accumulator to prevent integral windup
-    _leftFlywheelMotor.getClosedLoopController().setIAccum(0);
-    _leftFlywheelMotor.stopMotor();
+    _rightFlywheelMotor.getClosedLoopController().setIAccum(0);
+    _rightFlywheelMotor.stopMotor();
   }
 
   @Override
   public void setFlywheelVoltage(Voltage volts) {
-    _leftFlywheelMotor.setVoltage(volts.magnitude());
+    _rightFlywheelMotor.setVoltage(volts.magnitude());
   }
 }

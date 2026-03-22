@@ -45,7 +45,7 @@ public class ShooterConstants {
      * Base motor inversion flag. The left motor uses this value, the right motor is always inverted
      * relative to the left so that both flywheels physically spin the same direction.
      */
-    public static final boolean INVERTED = false;
+    public static final boolean INVERTED = true;
   }
 
   /** Velocity and acceleration limits for the flywheel. */
