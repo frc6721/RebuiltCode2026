@@ -196,7 +196,7 @@ public class IntakeConstants {
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 3.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kD", 5.0);
 
       /**
        * Maximum velocity of the linear slide in meters per second.

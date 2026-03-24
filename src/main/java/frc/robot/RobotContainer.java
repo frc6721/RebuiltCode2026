@@ -474,8 +474,8 @@ public class RobotContainer {
         .x()
         .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
         .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
-        // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
-        // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
+    // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
+    // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // controller
     //     .x()
