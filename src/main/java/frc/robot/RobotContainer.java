@@ -442,7 +442,7 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     () -> RobotState.getInstance().getAngleToActiveTarget(),
                     true)
-                .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+                .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(2000)))
                 .andThen(new WaitCommand(2.0))
                 .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
         .onFalse(
@@ -472,8 +472,10 @@ public class RobotContainer {
     // NOTE: If the target is a feed shot, only the angle is auto-controlled (no distance adjust).
     controller
         .x()
-        .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
-        .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
+        .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+        .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+        // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
+        // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // controller
     //     .x()

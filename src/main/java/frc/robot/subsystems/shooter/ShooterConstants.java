@@ -54,7 +54,7 @@ public class ShooterConstants {
 
     public static final AngularVelocity MAX_SPEED = RPM.of(6000);
 
-    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(6000);
+    public static final AngularAcceleration MAX_ACCEL = RPM.per(Second).of(4000);
   }
 
   /** PID and feedforward tuning constants. */
