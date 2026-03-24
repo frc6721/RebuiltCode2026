@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -395,9 +396,6 @@ public class RobotContainer {
     // ── B BUTTON: Extend intake ───────────────────────────────────────────────
     controller.b().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
 
-
-
-
     // ── RIGHT BUMPER: Full auto-aim shooting sequence ─────────────────────────
     // While held:
     //   1. Auto-aim: rotates the BACK of the robot (shooter) toward the active target
@@ -407,64 +405,61 @@ public class RobotContainer {
     //   5. Rumble: vibrates the controller if shooting is blocked by min distance
     // On release: the command's finallyDo stops feeder, hopper, and sets flywheels to idle.
 
-        // Auto aim + shoot + jostle + rumble when blocked
-        // controller
-        //     .rightBumper()
-        //     .whileTrue(
-        //         DriveCommands.joystickDriveAtAngle(
-        //                 drive,
-        //                 () -> -controller.getLeftY(),
-        //                 () -> -controller.getLeftX(),
-        //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-        //                 true)
-        //             .alongWith(
-        //                 ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-        //                 // IntakeCommands.jostleIntake(intake),
-        //                 ShooterCommands.rumbleWhenBlocked(shooter, controller)));
-
-    // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
+    // Auto aim + shoot + jostle + rumble when blocked
     controller
         .rightBumper()
-        // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 6.0, 2.0))
-        // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
-        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-        .onFalse(ShooterCommands.stopFlywheels(shooter));
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true)
+                .alongWith(
+                    ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
+                    // IntakeCommands.jostleIntake(intake),
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
+    // // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+    //     .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+    // .onFalse(ShooterCommands.stopFlywheels(shooter));
 
     // ── Y BUTTON: Run shooter and feeder at fixed RPM for tuning different distance shots
     // ───────────────────────────────────────────────
     controller
         .y()
-        .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000)))
-        .onFalse(ShooterCommands.stopFlywheels(shooter));
+        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+        // .onFalse(ShooterCommands.stopFlywheels(shooter));
 
-        //     .whileTrue(
-        //         DriveCommands.joystickDriveAtAngle(
-        //                 drive,
-        //                 () -> -controller.getLeftY(),
-        //                 () -> -controller.getLeftX(),
-        //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-        //                 true)
-        //             .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000)))
-        //             .andThen(new WaitCommand(2.0))
-        //             .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
-        //     .onFalse(
-        //         ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> RobotState.getInstance().getAngleToActiveTarget(),
+                    true)
+                .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+                .andThen(new WaitCommand(2.0))
+                .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
+        .onFalse(
+            ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
 
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true)
+    //             .alongWith(
+    //                 ShooterCommands.shootToActiveTargetSequence(
+    //                     shooter, feeder, hopper, 3500))) // prev RPM = 3450
+    //     .onFalse(ShooterCommands.stopFlywheels(shooter));
 
-        //     .whileTrue(
-        //         DriveCommands.joystickDriveAtAngle(
-        //                 drive,
-        //                 () -> -controller.getLeftY(),
-        //                 () -> -controller.getLeftX(),
-        //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
-        //                 true)
-        //             .alongWith(
-        //                 ShooterCommands.shootToActiveTargetSequence(
-        //                     shooter, feeder, hopper, 3500))) // prev RPM = 3450
-        //     .onFalse(ShooterCommands.stopFlywheels(shooter));
-
-        
     // ── X BUTTON: Auto-aim + auto-distance shooting ───────────────────────────
     // While held:
     //   1. Auto-aim: rotates the BACK of the robot toward the active target
@@ -477,18 +472,21 @@ public class RobotContainer {
     // NOTE: If the target is a feed shot, only the angle is auto-controlled (no distance adjust).
     controller
         .x()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngleAndDistance(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToActiveTarget())
-                .alongWith(
-                    ShooterCommands.shootToActiveTargetWithAutoDistanceSequence(
-                        shooter, feeder, hopper),
-                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+        .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
+        .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
-  
+    // controller
+    //     .x()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngleAndDistance(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget())
+    //             .alongWith(
+    //                 ShooterCommands.shootToActiveTargetWithAutoDistanceSequence(
+    //                     shooter, feeder, hopper),
+    //                 ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // ── START BUTTON: Increase shooter rpm by fixed amount ───────────────────────────
     // When pressed: adds an offset to the shooter's target RPM, increasing the

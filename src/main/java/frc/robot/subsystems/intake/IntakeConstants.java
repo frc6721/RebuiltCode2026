@@ -276,10 +276,10 @@ public class IntakeConstants {
 
   /** Current limits for motor protection. */
   public static class CurrentLimits {
-    public static final int LINEAR_SMART = 30; // prev = 40
-    public static final double LINEAR_SECONDARY = 40; // prev = 60
-    public static final int ROLLER_SMART = 30; // prev = 50
-    public static final double ROLLER_SECONDARY = 40; // prev = 60
+    public static final int LINEAR_SMART = 40; // prev = 40
+    public static final double LINEAR_SECONDARY = 55; // prev = 60
+    public static final int ROLLER_SMART = 50; // prev = 50
+    public static final double ROLLER_SECONDARY = 60; // prev = 60
   }
 
   /** Roller motor settings. */
