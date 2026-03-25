@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakePosition;
 import frc.robot.subsystems.intake.IntakeConstants;
@@ -167,7 +168,7 @@ public class IntakeCommands {
    */
   public static Command stowIntake(Intake intake) {
     return setIntakeGoalPosition(intake, IntakePosition.RETRACTED)
-        .andThen(stopIntakeRollers(intake))
+        .andThen(runIntakeRollers(intake), new WaitCommand(1.0), stopIntakeRollers(intake))
         .withName("StowIntake");
   }
 
@@ -196,8 +197,17 @@ public class IntakeCommands {
     return Commands.run(
             () -> {
               intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
+              new WaitCommand(1.0);
+              intake.setLinearMotorVoltage(
+                  Volts.of(IntakeConstants.Linear.TRASH_COMPACTOR_SPEED.get()));
             },
             intake)
+        .finallyDo(
+            () -> {
+              intake.setRollerVoltage(Volts.of(0));
+              intake.setLinearMotorVoltage(Volts.of(0));
+              setIntakeGoalPosition(intake, IntakePosition.RETRACTED);
+            })
         .withName("runIntakeRollersForShooting");
     // return Commands.runOnce(
     //         () -> {

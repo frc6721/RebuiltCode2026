@@ -15,7 +15,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RPM;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -30,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -392,9 +390,21 @@ public class RobotContainer {
 
     // ── A BUTTON: Retract intake ──────────────────────────────────────────────
     controller.a().onTrue(IntakeCommands.stowIntake(intake));
+    // controller
+    //     .a()
+    //     .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+    //     .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    // // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.7))
+    // // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // ── B BUTTON: Extend intake ───────────────────────────────────────────────
     controller.b().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+    // controller
+    //     .b()
+    //     // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+    //     // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    //     .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.7))
+    //     .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // ── RIGHT BUMPER: Full auto-aim shooting sequence ─────────────────────────
     // While held:
@@ -417,36 +427,51 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    // IntakeCommands.jostleIntake(intake),
+                    IntakeCommands.jostleIntake(intake),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller)));
 
     // // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
     // controller
     //     .rightBumper()
-    //     .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
-    //     .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
-    // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-    // .onFalse(ShooterCommands.stopFlywheels(shooter));
+    //     // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+    //     // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    //     // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+    //     // .onFalse(ShooterCommands.stopFlywheels(shooter));
+
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //                 () -> -controller.getLeftY(),
+    //                 () -> -controller.getLeftX(),
+    //                 () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //                 true)
+    //             .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(500)))
+    //             .andThen(new WaitCommand(2.0))
+    //             .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
+    //     .onFalse(
+    //         ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
 
     // ── Y BUTTON: Run shooter and feeder at fixed RPM for tuning different distance shots
     // ───────────────────────────────────────────────
     controller
         .y()
-        // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
-        // .onFalse(ShooterCommands.stopFlywheels(shooter));
+        .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 6.0, 2.0))
+        .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    // .whileTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3500)))
+    // .onFalse(ShooterCommands.stopFlywheels(shooter));
 
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> RobotState.getInstance().getAngleToActiveTarget(),
-                    true)
-                .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(2000)))
-                .andThen(new WaitCommand(2.0))
-                .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
-        .onFalse(
-            ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
+    // .whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //             true)
+    //         .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(2000)))
+    //         .andThen(new WaitCommand(2.0))
+    //         .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
+    // .onFalse(
+    //     ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
 
     //     .whileTrue(
     //         DriveCommands.joystickDriveAtAngle(
@@ -472,10 +497,23 @@ public class RobotContainer {
     // NOTE: If the target is a feed shot, only the angle is auto-controlled (no distance adjust).
     controller
         .x()
-        .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
-        .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
-    // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.5))
-    // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
+        // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+        // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+        .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.7))
+        .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
+
+    // .whileTrue(
+    //     DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> RobotState.getInstance().getAngleToActiveTarget(),
+    //             true)
+    //         .alongWith(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(500)))
+    //         .andThen(new WaitCommand(2.0))
+    //         .andThen(FeederCommands.runFeederAtVelocity(feeder, RPM.of(3500))))
+    // .onFalse(
+    //     ShooterCommands.stopFlywheels(shooter).alongWith(FeederCommands.stopFeeder(feeder)));
 
     // controller
     //     .x()

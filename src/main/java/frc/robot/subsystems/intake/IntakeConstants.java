@@ -290,7 +290,7 @@ public class IntakeConstants {
 
     /** Voltage to run rollers slowly when acquiring game pieces. */
     public static final LoggedNetworkNumber SLOW_ACQUIRE_SPEED =
-        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -4);
+        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -2);
 
     /** Voltage to run rollers when spitting game pieces out (positive = outward). */
     public static final LoggedNetworkNumber SPIT_SPEED =
@@ -309,6 +309,9 @@ public class IntakeConstants {
     /** Voltage to extend the linear slide slowly for homing purposes */
     public static final LoggedNetworkNumber HOMING_SPEED_EXTENDING =
         new LoggedNetworkNumber("Intake/Linear/Homing speed extending", 1);
+
+    public static final LoggedNetworkNumber TRASH_COMPACTOR_SPEED =
+        new LoggedNetworkNumber("Intake/Linear/Trash compactor speed", -1);
   }
 
   /**
