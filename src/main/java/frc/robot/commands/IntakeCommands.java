@@ -197,7 +197,7 @@ public class IntakeCommands {
     return Commands.run(
             () -> {
               intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
-              new WaitCommand(1.0);
+              Commands.waitSeconds(1.0);
               intake.setLinearMotorVoltage(
                   Volts.of(IntakeConstants.Linear.TRASH_COMPACTOR_SPEED.get()));
             },

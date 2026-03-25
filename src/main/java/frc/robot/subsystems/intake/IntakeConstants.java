@@ -292,6 +292,10 @@ public class IntakeConstants {
     public static final LoggedNetworkNumber SLOW_ACQUIRE_SPEED =
         new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -2);
 
+    /** Voltage to run rollers slowly when trash compacting */
+    public static final LoggedNetworkNumber TRASH_COMPACTOR_SPEED =
+        new LoggedNetworkNumber("Intake/Roller/Slow Acquire Speed", -1);
+
     /** Voltage to run rollers when spitting game pieces out (positive = outward). */
     public static final LoggedNetworkNumber SPIT_SPEED =
         new LoggedNetworkNumber("Intake/Roller/Spit Speed", 6);

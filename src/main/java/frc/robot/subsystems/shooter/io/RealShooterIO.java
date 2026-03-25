@@ -111,6 +111,7 @@ public class RealShooterIO implements ShooterIO {
 
     // Follow the left motor, inverted so both wheels physically spin the same direction
     leftConfig.apply(rightConfig); // .follow(_rightFlywheelMotor, true);
+    leftConfig.inverted(!ShooterConstants.Mechanical.INVERTED);
 
     tryUntilOk(
         _leftFlywheelMotor,
@@ -165,6 +166,15 @@ public class RealShooterIO implements ShooterIO {
             ffVolts,
             com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
 
+    _leftFlywheelMotor
+        .getClosedLoopController()
+        .setSetpoint(
+            targetRPM,
+            ControlType.kMAXMotionVelocityControl,
+            com.revrobotics.spark.ClosedLoopSlot.kSlot0,
+            ffVolts,
+            com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
+
     // .setReference(
     //     targetRPM,
     //     ControlType.kMAXMotionVelocityControl,
@@ -176,7 +186,7 @@ public class RealShooterIO implements ShooterIO {
   @Override
   public void setFlyWheelDutyCycle(double output) {
     _rightFlywheelMotor.set(output);
-    _leftFlywheelMotor.set((-1.0) * output);
+    _leftFlywheelMotor.set(output);
   }
 
   @Override
@@ -184,10 +194,14 @@ public class RealShooterIO implements ShooterIO {
     // Reset the integral accumulator to prevent integral windup
     _rightFlywheelMotor.getClosedLoopController().setIAccum(0);
     _rightFlywheelMotor.stopMotor();
+
+    _leftFlywheelMotor.getClosedLoopController().setIAccum(0);
+    _leftFlywheelMotor.stopMotor();
   }
 
   @Override
   public void setFlywheelVoltage(Voltage volts) {
     _rightFlywheelMotor.setVoltage(volts.magnitude());
+    _leftFlywheelMotor.setVoltage(volts.magnitude());
   }
 }
