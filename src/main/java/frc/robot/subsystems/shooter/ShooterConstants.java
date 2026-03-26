@@ -64,12 +64,12 @@ public class ShooterConstants {
       public static final LoggedNetworkNumber KP =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_PID/Real/kP",
-              0.00000); // .00015 crept back up now that kV is corrected
+              0.00007); // .00015 crept back up now that kV is corrected
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kI", 0.0000);
       public static final LoggedNetworkNumber KD =
-          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.0000); // 0.00010
+          new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kD", 0.0010); // 0.00010
       public static final LoggedNetworkNumber FF =
           new LoggedNetworkNumber("Shooter/FLYWHEEL_PID/Real/kFF", 0.000000);
     }
@@ -96,7 +96,7 @@ public class ShooterConstants {
       public static final LoggedNetworkNumber KS =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kS",
-              0.30000); // 28348 .24888 // 28513 prev 03/21 - .29867 //prev (no metal flywheels) =
+              0.28000); // 28348 .24888 // 28513 prev 03/21 - .29867 //prev (no metal flywheels) =
       // .2675
 
       /** Velocity feedforward constant (Volts per RPM) */
@@ -225,11 +225,16 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
-      // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM)); // prev = 1750
-      SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(4100.0).in(RPM)); // prev = 3450
-      SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(4600.0).in(RPM)); // prev = 3550
-      SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4825.0).in(RPM)); // prev = 1750
+      // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM));
+      SPEED_MAP.put(Inches.of(95).in(Meters), RPM.of(3150.0).in(RPM));
+      SPEED_MAP.put(Inches.of(112).in(Meters), RPM.of(3350.0).in(RPM));
+      // SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM));
+      SPEED_MAP.put(Inches.of(140).in(Meters), RPM.of(3800.0).in(RPM));
+      SPEED_MAP.put(Inches.of(171).in(Meters), RPM.of(4200.0).in(RPM));
+
+      // SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(4100.0).in(RPM));
+      // SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(4600.0).in(RPM));
+      // SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4825.0).in(RPM));
 
       // SPEED_MAP.put(Inches.of(110).in(Meters), RPM.of(2500.0).in(RPM)); // prev = 2200
       // SPEED_MAP.put(
