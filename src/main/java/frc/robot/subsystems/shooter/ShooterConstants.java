@@ -96,13 +96,14 @@ public class ShooterConstants {
       public static final LoggedNetworkNumber KS =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kS",
-              0.28348); // .24888 // 28513 prev 03/21 - .29867 //prev (no metal flywheels) = .2675
+              0.30000); // 28348 .24888 // 28513 prev 03/21 - .29867 //prev (no metal flywheels) =
+      // .2675
 
       /** Velocity feedforward constant (Volts per RPM) */
       public static final LoggedNetworkNumber KV =
           new LoggedNetworkNumber(
               "Shooter/FLYWHEEL_FF/Real/kV",
-              0.00208); // .00196 //  00178 prev 03/21 = .00178 // PREV = .00163 |||| PREVPREV =
+              0.00190); // 208 .00196 //  00178 prev 03/21 = .00178 // PREV = .00163 |||| PREVPREV =
       // 0.00178 ->
       // back to
       // original, kV was
@@ -160,10 +161,10 @@ public class ShooterConstants {
      * Set to {@code true} to enable current limiting on the flywheel motors, or {@code false} to
      * disable it (useful during testing/characterization).
      */
-    public static final boolean ENABLE_CURRENT_LIMITS = false;
+    public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART = 80;
-    public static final double SECONDARY = 100;
+    public static final int SMART = 60;
+    public static final double SECONDARY = 80;
   }
 
   /** Software tuning settings. */

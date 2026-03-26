@@ -17,7 +17,6 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
-import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.SparkOdometryThread;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import java.util.Queue;
@@ -69,6 +68,9 @@ public class RealShooterIO implements ShooterIO {
           .smartCurrentLimit(ShooterConstants.CurrentLimits.SMART)
           .secondaryCurrentLimit(ShooterConstants.CurrentLimits.SECONDARY);
     }
+
+    rightConfig.closedLoop.feedForward.sv(
+        ShooterConstants.getFlywheelKS(), ShooterConstants.getFlywheelKV());
     rightConfig.closedLoop.pid(
         ShooterConstants.getFlywheelKP(),
         ShooterConstants.getFlywheelKI(),
@@ -78,13 +80,13 @@ public class RealShooterIO implements ShooterIO {
 
     // Configure the encoder velocity signal to publish at the odometry thread frequency.
     // This ensures the SparkOdometryThread can collect fresh samples every 10ms (100Hz).
-    rightConfig
-        .signals
-        .primaryEncoderVelocityAlwaysOn(true)
-        .primaryEncoderVelocityPeriodMs((int) (1000.0 / DriveConstants.odometryFrequency))
-        .appliedOutputPeriodMs(20)
-        .busVoltagePeriodMs(20)
-        .outputCurrentPeriodMs(20);
+    // rightConfig
+    //     .signals
+    //     .primaryEncoderVelocityAlwaysOn(true)
+    //     .primaryEncoderVelocityPeriodMs((int) (1000.0 / DriveConstants.odometryFrequency))
+    //     .appliedOutputPeriodMs(20)
+    //     .busVoltagePeriodMs(20)
+    //     .outputCurrentPeriodMs(20);
 
     tryUntilOk(
         _rightFlywheelMotor,
@@ -162,18 +164,18 @@ public class RealShooterIO implements ShooterIO {
         .setSetpoint(
             targetRPM,
             ControlType.kMAXMotionVelocityControl,
-            com.revrobotics.spark.ClosedLoopSlot.kSlot0,
-            ffVolts,
-            com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
+            com.revrobotics.spark.ClosedLoopSlot.kSlot0);
+    // ffVolts,
+    // com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
 
     _leftFlywheelMotor
         .getClosedLoopController()
         .setSetpoint(
             targetRPM,
             ControlType.kMAXMotionVelocityControl,
-            com.revrobotics.spark.ClosedLoopSlot.kSlot0,
-            ffVolts,
-            com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
+            com.revrobotics.spark.ClosedLoopSlot.kSlot0);
+    // ffVolts,
+    // com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits.kVoltage);
 
     // .setReference(
     //     targetRPM,
