@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "right trench"
+            "pathName": "Right Trench"
           }
         },
         {
@@ -23,7 +23,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 4.0
+                  "waitTime": 10.0
                 }
               }
             ]
