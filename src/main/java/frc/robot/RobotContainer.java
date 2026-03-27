@@ -235,9 +235,8 @@ public class RobotContainer {
                 () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true)
-            .alongWith(
-                ShooterCommands.shootToHubSequence(shooter, feeder, hopper),
-                IntakeCommands.jostleIntake(intake).asProxy())
+            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
+            // IntakeCommands.jostleIntake(intake).asProxy())
             .withTimeout(5.0)
             .finallyDo(
                 () -> {
@@ -430,9 +429,10 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    ShooterCommands.rumbleWhenBlocked(shooter, controller))
-                .andThen(new WaitCommand(2.0))
-                .andThen(IntakeCommands.jostleIntake(intake)));
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller),
+                    Commands.sequence(new WaitCommand(1.5), IntakeCommands.jostleIntake(intake))));
+
+    // .andThen(new WaitCommand(1.5))
 
     // // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
     // controller

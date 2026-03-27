@@ -202,13 +202,13 @@ public class IntakeCommands {
               // Commands.waitSeconds(1.0);
               intake.setLinearMotorVoltage(
                   Volts.of(IntakeConstants.Linear.TRASH_COMPACTOR_SPEED.get()));
+              // intake.setIntakePosition(IntakePosition.RETRACTED);
             },
             intake)
         .finallyDo(
             () -> {
               intake.setRollerVoltage(Volts.of(0));
               intake.setLinearMotorVoltage(Volts.of(0));
-              intake.setIntakePosition(IntakePosition.RETRACTED);
             })
         .withName("runIntakeRollersForShooting");
     // return Commands.runOnce(
