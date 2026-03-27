@@ -234,7 +234,9 @@ public class RobotContainer {
                 () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true)
-            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
+            .alongWith(
+                ShooterCommands.shootToHubSequence(shooter, feeder, hopper),
+                IntakeCommands.jostleIntake(intake))
             .withTimeout(5.0)
             .finallyDo(
                 () -> {
