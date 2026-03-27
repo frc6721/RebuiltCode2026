@@ -206,7 +206,7 @@ public class Shooter extends SubsystemBase {
    */
   public void setFlywheelSpeed(AngularVelocity speed) {
     _targetFlywheelSpeed = speed.plus(RPM.of(_flyWheelRPMOffset));
-    _shooterIO.setFlywheelSpeed(speed);
+    _shooterIO.setFlywheelSpeed(_targetFlywheelSpeed);
   }
 
   /**

@@ -450,8 +450,7 @@ public class ShooterCommands {
             () -> {
               feeder.stop();
               hopper.stop();
-              shooter.setFlywheelSpeed(
-                  RPM.of(0).minus(RPM.of(shooter.getFlyWheelRPMOffset()))); // undo flywheel offset
+              shooter.setFlywheelSpeed(RPM.of(0));
             })
         .withName("ShootToActiveTargetSequence");
   }
