@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.AllianceFlipUtil;
 import frc.lib.VirtualHopper;
@@ -234,8 +235,9 @@ public class RobotContainer {
                 () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true)
-            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
-            // IntakeCommands.jostleIntake(intake))
+            .alongWith(
+                ShooterCommands.shootToHubSequence(shooter, feeder, hopper),
+                IntakeCommands.jostleIntake(intake).asProxy())
             .withTimeout(5.0)
             .finallyDo(
                 () -> {
@@ -428,8 +430,9 @@ public class RobotContainer {
                     true)
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
-                    IntakeCommands.jostleIntake(intake),
-                    ShooterCommands.rumbleWhenBlocked(shooter, controller)));
+                    ShooterCommands.rumbleWhenBlocked(shooter, controller))
+                .andThen(new WaitCommand(2.0))
+                .andThen(IntakeCommands.jostleIntake(intake)));
 
     // // Fixed RPM for testing auto-aim without auto-distance or feed or intake jostle
     // controller

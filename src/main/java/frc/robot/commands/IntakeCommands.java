@@ -190,6 +190,8 @@ public class IntakeCommands {
    * Jostles the hopper fuel by running the intake rollers at a slow speed. Use to help settle game
    * pieces before shooting.
    *
+   * <p>AKA TRASH COMPACTOR
+   *
    * @param intake The intake subsystem
    * @return A repeating jostle command that runs until interrupted
    */
