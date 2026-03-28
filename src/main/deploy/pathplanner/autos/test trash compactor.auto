@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Right Trench"
+            "pathName": "test trash compactor"
           }
         },
         {
@@ -30,34 +30,15 @@
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "stop-shooter"
+            "waitTime": 5.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "$Close Right Trench Pass 2"
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "shoot-fuel"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 6.0
-                }
-              }
-            ]
+            "pathName": "test trash compactor 2"
           }
         },
         {
@@ -70,6 +51,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "cash money fast money",
+  "folder": null,
   "choreoAuto": false
 }

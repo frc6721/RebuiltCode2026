@@ -3,9 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Test Paths"
+    "New Folder",
+    "fast money cash money"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "cash money fast money"
+  ],
   "defaultMaxVel": 4.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,

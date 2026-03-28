@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Right Trench"
+            "pathName": "Left trench to bump"
           }
         },
         {
@@ -30,15 +30,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "stop-shooter"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "$Close Right Trench Pass 2"
+            "pathName": "Left trench to bump 2"
           }
         },
         {
@@ -70,6 +64,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "cash money fast money",
+  "folder": null,
   "choreoAuto": false
 }

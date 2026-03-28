@@ -145,8 +145,8 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())),
-                new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())));
+                new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())));
+        // new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())));
         break;
 
       case SIM:
@@ -235,8 +235,9 @@ public class RobotContainer {
                 () -> 0.0,
                 () -> RobotState.getInstance().getAngleToAllianceHub(),
                 true)
-            .alongWith(ShooterCommands.shootToHubSequence(shooter, feeder, hopper))
-            // IntakeCommands.jostleIntake(intake).asProxy())
+            .alongWith(
+                ShooterCommands.shootToHubSequence(shooter, feeder, hopper),
+                IntakeCommands.jostleIntake(intake).asProxy())
             .withTimeout(5.0)
             .finallyDo(
                 () -> {

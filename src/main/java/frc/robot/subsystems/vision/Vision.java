@@ -92,6 +92,10 @@ public class Vision extends SubsystemBase {
 
       // Loop over pose observations
       for (var observation : inputs[cameraIndex].poseObservations) {
+
+        double pitch = Math.abs(observation.pose().getRotation().getY());
+        double roll = Math.abs(observation.pose().getRotation().getX());
+
         // Check whether to reject pose
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
@@ -99,6 +103,10 @@ public class Vision extends SubsystemBase {
                     && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
                     > maxZError // Must have realistic Z coordinate
+                || observation.averageTagDistance()
+                    > maxDistanceMeters // Error is too high at far dist
+                || pitch > maxPitchRollRadians
+                || roll > maxPitchRollRadians
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < 0.0

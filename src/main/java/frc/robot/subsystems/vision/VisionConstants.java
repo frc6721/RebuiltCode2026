@@ -13,7 +13,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "limelight-right";
@@ -25,8 +25,11 @@ public class VisionConstants {
   //       new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
 
   // Basic filtering thresholds
-  public static double maxAmbiguity = 0.3;
-  public static double maxZError = 0.75;
+  public static double maxAmbiguity = 0.2;
+  public static double maxZError = 0.3;
+  public static double maxDistanceMeters = 4.0;
+
+  public static double maxPitchRollRadians = Math.toRadians(10.0);
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
@@ -37,8 +40,8 @@ public class VisionConstants {
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        1.0, // Camera 0
-        1.0 // Camera 1
+        1.5, // Camera 0
+        1.5 // Camera 1
       };
 
   // Multipliers to apply for MegaTag 2 observations
