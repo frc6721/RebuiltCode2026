@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Depot-Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot-fuel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot-fuel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot-fuel"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stop-shooter"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
