@@ -198,8 +198,7 @@ public class IntakeCommands {
   public static Command jostleIntake(Intake intake) {
     return Commands.run(
             () -> {
-              intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.SLOW_ACQUIRE_SPEED.get()));
-              // Commands.waitSeconds(1.0);
+              intake.setRollerVoltage(Volts.of(IntakeConstants.Roller.TRASH_COMPACTOR_SPEED.get()));
               intake.setLinearMotorVoltage(
                   Volts.of(IntakeConstants.Linear.TRASH_COMPACTOR_SPEED.get()));
               // intake.setIntakePosition(IntakePosition.RETRACTED);

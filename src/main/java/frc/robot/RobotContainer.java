@@ -431,7 +431,7 @@ public class RobotContainer {
                 .alongWith(
                     ShooterCommands.shootToActiveTargetSequence(shooter, feeder, hopper),
                     ShooterCommands.rumbleWhenBlocked(shooter, controller),
-                    Commands.sequence(new WaitCommand(1.5), IntakeCommands.jostleIntake(intake))));
+                    Commands.sequence(new WaitCommand(2.0), IntakeCommands.jostleIntake(intake))));
 
     // .andThen(new WaitCommand(1.5))
 
