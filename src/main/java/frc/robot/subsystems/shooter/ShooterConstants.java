@@ -226,7 +226,8 @@ public class ShooterConstants {
 
     static {
       // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM));
-      SPEED_MAP.put(Inches.of(95).in(Meters), RPM.of(3150.0).in(RPM));
+      SPEED_MAP.put(Inches.of(90).in(Meters), RPM.of(3150.0).in(RPM));
+      SPEED_MAP.put(Inches.of(95).in(Meters), RPM.of(3200.0).in(RPM));
       SPEED_MAP.put(Inches.of(112).in(Meters), RPM.of(3350.0).in(RPM));
       // SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM));
       SPEED_MAP.put(Inches.of(140).in(Meters), RPM.of(3800.0).in(RPM));
