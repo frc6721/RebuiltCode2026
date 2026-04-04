@@ -315,7 +315,7 @@ public class IntakeConstants {
         new LoggedNetworkNumber("Intake/Linear/Homing speed extending", 1);
 
     public static final LoggedNetworkNumber TRASH_COMPACTOR_SPEED =
-        new LoggedNetworkNumber("Intake/Linear/Trash compactor speed", -1);
+        new LoggedNetworkNumber("Intake/Linear/Trash compactor speed", -0.75);
   }
 
   /**
