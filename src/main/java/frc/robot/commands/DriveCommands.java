@@ -303,6 +303,44 @@ public class DriveCommands {
         });
   }
 
+
+  /**
+   * Command to set the wheel alignment to X-stance, primarily to resist being pushed while shooting
+   * 
+   * @param drive The drive subsystem
+   * @return A command that stabilizes the wheel position
+   */
+  public static Command stabilizeWheelPosition(Drive drive) {
+    return Commands.run(
+        () -> {
+          drive.stopWithX();
+        },
+        drive);
+  }
+
+
+  /**
+   * Command that auto-aims the robot to the current target, then holds the wheels in X-stance formation to resist being pushed off target.
+   * 
+   * @param drive The drive subsystem
+   * @param xSupplier Joystick X axis (forward/back translation)
+   * @param ySupplier Joystick Y axis (left/right translation)
+   * @param rotationSupplier Supplier for the target heading (e.g. angle to active target)
+   * @param useBackOfRobot Whether to use the back of the robot for aiming
+   * @return A command that auto-aims and then stabilizes the wheel position
+   */
+  public static Command aimThenStabilize(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Rotation2d> rotationSupplier,
+      boolean useBackOfRobot) {
+
+    return joystickDriveAtAngle(drive, xSupplier, ySupplier, rotationSupplier, useBackOfRobot)
+        .until(RobotState.getInstance().facingTarget) // Aim until facing target
+        .andThen(stabilizeWheelPosition(drive)); // Then stabilize wheel position
+  }
+
   // ==================== AUTO-DISTANCE DRIVE COMMAND ====================
 
   /**

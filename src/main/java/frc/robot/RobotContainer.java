@@ -422,7 +422,7 @@ public class RobotContainer {
     controller
         .rightBumper()
         .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
+            DriveCommands.aimThenStabilize(
                     drive,
                     () -> -controller.getLeftY(),
                     () -> -controller.getLeftX(),
