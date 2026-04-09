@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "right trench"
+            "pathName": "example 01"
           }
         },
         {
@@ -23,16 +23,35 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 10.0
+                  "waitTime": 4.0
                 }
               }
             ]
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "stop-shooter"
+            "pathName": "example 02 mls"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shoot-fuel"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              }
+            ]
           }
         }
       ]
