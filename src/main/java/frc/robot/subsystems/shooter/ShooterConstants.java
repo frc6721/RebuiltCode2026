@@ -234,6 +234,10 @@ public class ShooterConstants {
       SPEED_MAP.put(Inches.of(155).in(Meters), RPM.of(3980.0).in(RPM));
       SPEED_MAP.put(Inches.of(171).in(Meters), RPM.of(4200.0).in(RPM));
 
+      // mapping far distances for passing
+      SPEED_MAP.put(Inches.of(220).in(Meters), RPM.of(5000.0).in(RPM));
+      SPEED_MAP.put(Inches.of(350).in(Meters), RPM.of(6000.0).in(RPM));
+
       // SPEED_MAP.put(Inches.of(133).in(Meters), RPM.of(4100.0).in(RPM));
       // SPEED_MAP.put(Inches.of(167).in(Meters), RPM.of(4600.0).in(RPM));
       // SPEED_MAP.put(Inches.of(210).in(Meters), RPM.of(4825.0).in(RPM));
