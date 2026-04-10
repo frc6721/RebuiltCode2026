@@ -191,7 +191,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 35.0);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 37.5);
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
@@ -315,7 +315,7 @@ public class IntakeConstants {
         new LoggedNetworkNumber("Intake/Linear/Homing speed extending", 1);
 
     public static final LoggedNetworkNumber TRASH_COMPACTOR_SPEED =
-        new LoggedNetworkNumber("Intake/Linear/Trash compactor speed", -0.75);
+        new LoggedNetworkNumber("Intake/Linear/Trash compactor speed", -1.00);
   }
 
   /**

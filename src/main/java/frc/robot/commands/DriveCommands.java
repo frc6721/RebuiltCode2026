@@ -303,10 +303,9 @@ public class DriveCommands {
         });
   }
 
-
   /**
    * Command to set the wheel alignment to X-stance, primarily to resist being pushed while shooting
-   * 
+   *
    * @param drive The drive subsystem
    * @return A command that stabilizes the wheel position
    */
@@ -318,10 +317,10 @@ public class DriveCommands {
         drive);
   }
 
-
   /**
-   * Command that auto-aims the robot to the current target, then holds the wheels in X-stance formation to resist being pushed off target.
-   * 
+   * Command that auto-aims the robot to the current target, then holds the wheels in X-stance
+   * formation to resist being pushed off target.
+   *
    * @param drive The drive subsystem
    * @param xSupplier Joystick X axis (forward/back translation)
    * @param ySupplier Joystick Y axis (left/right translation)

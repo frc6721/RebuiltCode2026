@@ -34,7 +34,7 @@ public class HopperConstants {
    */
   public static class Speeds {
     /** Speed for feeding game pieces toward the shooter during a shooting sequence. */
-    public static final double FEED_SPEED = 0.3;
+    public static final double FEED_SPEED = 1.0;
 
     /** Speed for acquiring game pieces (moving them forward in the hopper). */
     public static final double ACQUIRE_SPEED = 0.5;
