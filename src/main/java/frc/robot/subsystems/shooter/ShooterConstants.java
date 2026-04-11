@@ -179,7 +179,7 @@ public class ShooterConstants {
      * Fixed flywheel RPM for shooting from the tower position. Used when the driver presses the
      * tower shot button instead of the distance-based auto-aim shot.
      */
-    public static final AngularVelocity TOWER_SHOT_RPM = RPM.of(2000);
+    public static final AngularVelocity TOWER_SHOT_RPM = RPM.of(3500);
 
     /**
      * Maximum time (seconds) to wait for the flywheel to reach speed AND the robot to face the
