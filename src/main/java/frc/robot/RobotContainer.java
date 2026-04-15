@@ -435,7 +435,6 @@ public class RobotContainer {
                     // ShooterCommands.rumbleWhenBlocked(shooter, controller),
                     Commands.sequence(new WaitCommand(1.5), IntakeCommands.jostleIntake(intake))));
 
-
     // ── Y BUTTON: Run shooter and feeder at high rpm for passing cross field
     // ───────────────────────────────────────────────
     controller
@@ -478,15 +477,14 @@ public class RobotContainer {
         .x()
         .whileTrue(
             ShooterCommands.shootFromTowerSequence(shooter, feeder, hopper)
-        .alongWith(
-            // ShooterCommands.rumbleWhenBlocked(shooter, controller),
-            Commands.sequence(new WaitCommand(1.5), IntakeCommands.jostleIntake(intake))));
+                .alongWith(
+                    // ShooterCommands.rumbleWhenBlocked(shooter, controller),
+                    Commands.sequence(new WaitCommand(1.5), IntakeCommands.jostleIntake(intake))));
 
-
-        // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
-        // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
-        // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.7))
-        // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
+    // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
+    // .onFalse(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 0.0, 0.0));
+    // .whileTrue(ShooterCommands.setFlywheelDutyCycle(shooter, 0.7))
+    // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // .whileTrue(
     //     DriveCommands.joystickDriveAtAngle(
