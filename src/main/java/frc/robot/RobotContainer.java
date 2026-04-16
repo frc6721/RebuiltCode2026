@@ -70,6 +70,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.util.HubShiftUtil;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -105,6 +106,7 @@ public class RobotContainer {
 
   // ==================== CONTROLLERS ====================
   private final CommandXboxController controller = new CommandXboxController(0);
+  private final CommandXboxController flightJoystick = new CommandXboxController(1);
 
   // ==================== DASHBOARD ====================
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -545,7 +547,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // ── D-PAD DOWN (180): Set odometry pose to alliance hub ───────────────────
+    // ── D-PAD DOWN (180): Set odo2metry pose to alliance hub ───────────────────
     // Teleports the robot's odometry to directly in front of the alliance hub.
     // Useful for testing shooting without driving across the field.
     controller
@@ -571,6 +573,8 @@ public class RobotContainer {
     // allowing the feed. Defaults to enabled. Useful for close-range override.
 
     // controller.back().onTrue(ShooterCommands.toggleMinDistance(shooter));
+
+    flightJoystick.rightBumper().onTrue(HubShiftUtil.flipWinner());
   }
 
   // ==================== PUBLIC GETTERS ====================
