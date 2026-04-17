@@ -242,4 +242,19 @@ public class HubShiftUtil {
   public static Command disableHubShiftUtil() {
     return new InstantCommand(() -> toggleDisable());
   }
+
+  public static double getBlinkenOutput(ShiftInfo shiftInfo) {
+    if (shiftInfo.active()) {
+
+      if (shiftInfo.remainingTime() < 5.0) {
+        return .79; // set blinking green
+      }
+      return .77; // set solid green
+    } else {
+      if (shiftInfo.remainingTime() < 5.0) {
+        return .57; // set blinking red
+      }
+      return .61; // set solid red
+    }
+  }
 }

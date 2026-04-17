@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -100,6 +101,9 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Vision vision;
 
+  // Blinken LED unit
+  private final Spark blinken;
+
   // ==================== SIMULATION ====================
   /** FuelSim instance — created once and passed to subsystems that need it. */
   private final FuelSim fuelSim = new FuelSim();
@@ -150,7 +154,9 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())),
-                new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())));
+                new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())),
+                new VisionIOLimelight(VisionConstants.camera2Name, (() -> drive.getRotation())));
+        blinken = new Spark(0); // PWM port 0
         break;
 
       case SIM:
@@ -166,6 +172,7 @@ public class RobotContainer {
         feeder = new Feeder(new SimFeederIO());
         hopper = new Hopper(new SimHopperIO());
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        blinken = new Spark(0); // PWM port 0
         break;
 
       default:
@@ -182,6 +189,9 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {});
         hopper = new Hopper(new HopperIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        blinken =
+            new Spark(0); // PWM port 0, won't actually do anything in replay but allows code to run
+        // without changes
         break;
     }
 
@@ -597,6 +607,11 @@ public class RobotContainer {
    */
   public FuelSim getFuelSim() {
     return fuelSim;
+  }
+
+  // ==================== PUBLIC SETTERS =====================
+  public void setBlinkenOutput(double pwmVal) {
+    blinken.set(pwmVal);
   }
 
   // ==================== AUTO PREVIEW & STARTING POSE CHECK ====================

@@ -189,7 +189,8 @@ public class Robot extends LoggedRobot {
 
     // Official shift info
     SmartDashboard.putString("Shift/Official/Current Shift", official.currentShift().toString());
-    SmartDashboard.putString("Shift/Official/Remaining Shifts", official.currentShift().ordinal() + "/5");
+    SmartDashboard.putString(
+        "Shift/Official/Remaining Shifts", official.currentShift().ordinal() + "/5");
     SmartDashboard.putNumber(
         "Shift/Official/Remaining Time", Math.round(official.remainingTime() * 10) / 10.0);
     SmartDashboard.putNumber(
@@ -197,6 +198,8 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putBoolean("Shift/Official/Active", official.active());
     SmartDashboard.putString(
         "Shift/Won Auto", HubShiftUtil.isActiveFirst() ? "LOST AUTO" : "WON AUTO");
+
+    robotContainer.setBlinkenOutput(HubShiftUtil.getBlinkenOutput(official));
   }
 
   /** This function is called once when test mode is enabled. */
