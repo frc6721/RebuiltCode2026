@@ -257,7 +257,8 @@ public class RobotContainer {
                 () -> {
                   feeder.stop();
                   hopper.stop();
-                  shooter.stopFlywheels();
+                  shooter.setFlywheelSpeed(RPM.of(ShooterConstants.Software.IDLE_RPM));
+                  // shooter.stopFlywheels();
                 }));
 
     // Emergency stop for all shooting mechanisms

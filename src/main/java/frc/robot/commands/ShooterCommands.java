@@ -2,9 +2,9 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -450,7 +450,7 @@ public class ShooterCommands {
             () -> {
               feeder.stop();
               hopper.stop();
-              shooter.setFlywheelSpeed(RPM.of(0));
+              shooter.setFlywheelSpeed(RPM.of(ShooterConstants.Software.IDLE_RPM));
             })
         .withName("ShootToActiveTargetSequence");
   }
@@ -486,7 +486,7 @@ public class ShooterCommands {
             () -> {
               feeder.stop();
               hopper.stop();
-              shooter.setFlywheelSpeed(RotationsPerSecond.of(0));
+              shooter.setFlywheelSpeed(Units.RPM.of(ShooterConstants.Software.IDLE_RPM));
             })
         .withName("ShootToActiveTargetSequence");
   }
@@ -548,7 +548,7 @@ public class ShooterCommands {
             () -> {
               feeder.stop();
               hopper.stop();
-              shooter.setFlywheelSpeed(RPM.of(0));
+              shooter.setFlywheelSpeed(RPM.of(ShooterConstants.Software.IDLE_RPM));
             })
         .withName("ShootFromTowerSequence");
   }

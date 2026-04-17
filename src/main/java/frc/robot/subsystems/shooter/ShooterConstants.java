@@ -163,8 +163,8 @@ public class ShooterConstants {
      */
     public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART = 60;
-    public static final double SECONDARY = 80;
+    public static final int SMART = 50;
+    public static final double SECONDARY = 70;
   }
 
   /** Software tuning settings. */
@@ -174,6 +174,9 @@ public class ShooterConstants {
 
     /** Idle duty cycle when shooter is not actively shooting */
     public static final double IDLE_DUTY_CYCLE = 0.0;
+
+    /** RPM speed when shooter is not actively shooting */
+    public static final double IDLE_RPM = 900;
 
     /**
      * Fixed flywheel RPM for shooting from the tower position. Used when the driver presses the
