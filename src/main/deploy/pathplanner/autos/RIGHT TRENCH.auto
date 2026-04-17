@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "right trench"
+            "pathName": "RIGHT TRENCH 1"
           }
         },
         {
@@ -23,7 +23,32 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 10.0
+                  "waitTime": 3.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RIGHT TRENCH 2 TRENCH"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shoot-fuel"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.5
                 }
               }
             ]
@@ -39,6 +64,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "RIGHT",
   "choreoAuto": false
 }

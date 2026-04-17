@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Trench"
+            "pathName": "Right trench to bump"
           }
         },
         {
@@ -23,22 +23,16 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 5.0
+                  "waitTime": 4.0
                 }
               }
             ]
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "stop-shooter"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Left Trench Pass 2"
+            "pathName": "Right trench to bump 2"
           }
         },
         {
@@ -70,6 +64,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "RIGHT",
   "choreoAuto": false
 }

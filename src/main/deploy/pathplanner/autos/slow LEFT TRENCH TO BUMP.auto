@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Right trench to bump"
+            "pathName": "Left trench to bump"
           }
         },
         {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Right trench to bump 2"
+            "pathName": "Left trench to bump 2"
           }
         },
         {
@@ -64,6 +64,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "cash money fast money",
+  "folder": "LEFT",
   "choreoAuto": false
 }

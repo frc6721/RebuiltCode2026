@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Left Trench"
+            "pathName": "Right Trench - Short"
           }
         },
         {
@@ -38,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "$Left Trench Pass 2"
+            "pathName": "Right Trench Pass 2 - Short"
           }
         },
         {
@@ -70,6 +70,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "cash money fast money",
+  "folder": "RIGHT",
   "choreoAuto": false
 }
