@@ -11,7 +11,7 @@
             "title": "Robot Pose Field Map",
             "x": 0.0,
             "y": 256.0,
-            "width": 736.0,
+            "width": 768.0,
             "height": 384.0,
             "type": "Field",
             "properties": {
@@ -315,8 +315,8 @@
             "title": "Auto Preview",
             "x": 0.0,
             "y": 256.0,
-            "width": 1664.0,
-            "height": 640.0,
+            "width": 832.0,
+            "height": 384.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Auto Preview",
