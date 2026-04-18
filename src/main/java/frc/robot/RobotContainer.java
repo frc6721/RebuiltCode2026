@@ -258,7 +258,8 @@ public class RobotContainer {
                 true)
             .alongWith(
                 ShooterCommands.shootToHubSequence(shooter, feeder, hopper),
-                IntakeCommands.jostleIntake(intake).asProxy())
+                Commands.sequence(
+                    new WaitCommand(1.5), IntakeCommands.jostleIntake(intake).asProxy()))
             .withTimeout(5.0)
             .finallyDo(
                 () -> {
