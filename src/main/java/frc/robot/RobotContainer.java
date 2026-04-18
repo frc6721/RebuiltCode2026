@@ -186,6 +186,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         intake = new Intake(new IntakeIO() {});
         shooter = new Shooter(new ShooterIO() {}, fuelSim);
+        // shooter.setFlywheelSpeed(RPM.of(ShooterConstants.Software.IDLE_RPM));
         feeder = new Feeder(new FeederIO() {});
         hopper = new Hopper(new HopperIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
@@ -231,7 +232,11 @@ public class RobotContainer {
    * string names used here must exactly match the event marker names in the PathPlanner GUI.
    */
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("deploy-intake", IntakeCommands.acquireGamePiece(intake));
+    NamedCommands.registerCommand(
+        "deploy-intake",
+        IntakeCommands.acquireGamePiece(intake)
+            .alongWith(
+                ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(ShooterConstants.Software.IDLE_RPM)).asProxy()));
 
     NamedCommands.registerCommand("retract-intake", IntakeCommands.stowIntake(intake));
 
@@ -529,7 +534,8 @@ public class RobotContainer {
     // When pressed: adds an offset to the shooter's target RPM, increasing the
     // power by a fixed amount after the target RPM is calculated based on distance.
     // To be used if the shooter has been routinely under-shooting during a match.
-    controller.start().onTrue(ShooterCommands.increaseFlywheelRPMOffset(shooter));
+    // controller.start().onTrue(ShooterCommands.increaseFlywheelRPMOffset(shooter));
+    controller.start().onTrue(HubShiftUtil.flipWinner());
 
     // ── BACK BUTTON: Decrease shooter rpm by fixed amount ───────────────────────────
     // When pressed: subtracts an offset to the shooter's target RPM, decreasing the
