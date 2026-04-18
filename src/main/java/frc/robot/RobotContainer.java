@@ -236,7 +236,9 @@ public class RobotContainer {
         "deploy-intake",
         IntakeCommands.acquireGamePiece(intake)
             .alongWith(
-                ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(ShooterConstants.Software.IDLE_RPM)).asProxy()));
+                ShooterCommands.setFlywheelTargetSpeed(
+                        shooter, RPM.of(ShooterConstants.Software.IDLE_RPM))
+                    .asProxy()));
 
     NamedCommands.registerCommand("retract-intake", IntakeCommands.stowIntake(intake));
 
