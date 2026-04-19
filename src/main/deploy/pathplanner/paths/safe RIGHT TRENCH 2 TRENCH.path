@@ -37,7 +37,7 @@
       },
       "prevControl": {
         "x": 5.979782494028706,
-        "y": 1.8930115792412336
+        "y": 1.8930115792412334
       },
       "nextControl": {
         "x": 5.746541212826357,
@@ -144,7 +144,7 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 1.1651785714285714,
-      "endWaypointRelativePos": 4.926739926739926,
+      "endWaypointRelativePos": 5.536607142857109,
       "command": null
     }
   ],

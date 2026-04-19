@@ -223,6 +223,10 @@ public class RobotContainer {
     new EventTrigger("deploy-intake").onTrue(IntakeCommands.acquireGamePiece(intake));
 
     new EventTrigger("retract-intake").onTrue(IntakeCommands.stowIntake(intake));
+
+    new EventTrigger("rev-up-shooter")
+        .onTrue(new WaitCommand(0.0));
+        // .onTrue(ShooterCommands.setFlywheelTargetSpeed(shooter, RPM.of(3000.0)).asProxy());
   }
 
   /**

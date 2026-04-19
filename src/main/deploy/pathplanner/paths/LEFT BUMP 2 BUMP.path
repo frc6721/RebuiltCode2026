@@ -139,8 +139,14 @@
   "eventMarkers": [
     {
       "name": "deploy-intake",
-      "waypointRelativePos": 0.95,
+      "waypointRelativePos": 0.9294642857142867,
       "endWaypointRelativePos": 6.511627906976679,
+      "command": null
+    },
+    {
+      "name": "rev-up-shooter",
+      "waypointRelativePos": 5.054464285714269,
+      "endWaypointRelativePos": null,
       "command": null
     }
   ],
