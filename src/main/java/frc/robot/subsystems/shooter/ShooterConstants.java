@@ -228,14 +228,15 @@ public class ShooterConstants {
     public static final InterpolatingDoubleTreeMap SPEED_MAP = new InterpolatingDoubleTreeMap();
 
     static {
+      /** 4-19 morning of comp day 2 -- increased RPM by 50 on all 90-171" shots  */
       // SPEED_MAP.put(Inches.of(60).in(Meters), RPM.of(2750.0).in(RPM));
-      SPEED_MAP.put(Inches.of(90).in(Meters), RPM.of(3150.0).in(RPM));
-      SPEED_MAP.put(Inches.of(95).in(Meters), RPM.of(3200.0).in(RPM));
-      SPEED_MAP.put(Inches.of(112).in(Meters), RPM.of(3350.0).in(RPM));
+      SPEED_MAP.put(Inches.of(90).in(Meters), RPM.of(3200.0).in(RPM));
+      SPEED_MAP.put(Inches.of(95).in(Meters), RPM.of(3250.0).in(RPM));
+      SPEED_MAP.put(Inches.of(112).in(Meters), RPM.of(3400.0).in(RPM));
       // SPEED_MAP.put(Inches.of(122).in(Meters), RPM.of(3150.0).in(RPM));
-      SPEED_MAP.put(Inches.of(140).in(Meters), RPM.of(3800.0).in(RPM));
-      SPEED_MAP.put(Inches.of(155).in(Meters), RPM.of(3980.0).in(RPM));
-      SPEED_MAP.put(Inches.of(171).in(Meters), RPM.of(4200.0).in(RPM));
+      SPEED_MAP.put(Inches.of(140).in(Meters), RPM.of(3850.0).in(RPM));
+      SPEED_MAP.put(Inches.of(155).in(Meters), RPM.of(4030.0).in(RPM));
+      SPEED_MAP.put(Inches.of(171).in(Meters), RPM.of(4250.0).in(RPM));
 
       // mapping far distances for passing
       SPEED_MAP.put(Inches.of(220).in(Meters), RPM.of(5000.0).in(RPM));
