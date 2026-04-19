@@ -188,7 +188,7 @@ public class ShooterConstants {
      * Maximum time (seconds) to wait for the flywheel to reach speed AND the robot to face the
      * target before feeding anyway. Acts as a safety timeout so the robot doesn't stall forever.
      */
-    public static final double SHOOT_SEQUENCE_TIMEOUT_SECONDS = 2.0;
+    public static final double SHOOT_SEQUENCE_TIMEOUT_SECONDS = 1.7;
 
     /**
      * Minimum distance (meters) from the hub center that the robot must be before it is allowed to

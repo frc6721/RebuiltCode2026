@@ -134,7 +134,7 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 0.5412262156448243,
-      "endWaypointRelativePos": 4.953124999999994,
+      "endWaypointRelativePos": null,
       "command": null
     },
     {

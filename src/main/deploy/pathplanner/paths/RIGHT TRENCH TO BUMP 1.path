@@ -130,7 +130,13 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 0.583509513742076,
-      "endWaypointRelativePos": 4.604910714285663,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "rev-up-shooter",
+      "waypointRelativePos": 4.310267857142841,
+      "endWaypointRelativePos": null,
       "command": null
     }
   ],

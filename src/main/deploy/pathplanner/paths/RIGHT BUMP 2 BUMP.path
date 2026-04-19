@@ -154,9 +154,15 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "rev-up-shooter",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "deploy-intake",
       "waypointRelativePos": 2.3583638583638584,
-      "endWaypointRelativePos": 6.634374999999998,
+      "endWaypointRelativePos": null,
       "command": null
     }
   ],

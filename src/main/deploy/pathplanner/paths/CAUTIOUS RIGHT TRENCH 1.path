@@ -65,31 +65,31 @@
     {
       "anchor": {
         "x": 5.851333333333333,
-        "y": 2.6
+        "y": 2.4585476190476196
       },
       "prevControl": {
         "x": 6.542380977029053,
-        "y": 2.513619244804075
+        "y": 2.3721668638516946
       },
       "nextControl": {
         "x": 5.012353544927708,
-        "y": 2.7048722304138346
+        "y": 2.563419849461454
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.957571428571429,
-        "y": 2.48
+        "x": 2.968369047619048,
+        "y": 2.221
       },
       "prevControl": {
-        "x": 3.5268117615540397,
-        "y": 2.812051039742467
+        "x": 3.5376093806016584,
+        "y": 2.553051039742467
       },
       "nextControl": {
-        "x": 2.439283407514714,
-        "y": 2.1776706211659014
+        "x": 2.4500810265623327,
+        "y": 1.9186706211659015
       },
       "isLocked": false,
       "linkedName": null
@@ -146,7 +146,13 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 0.8281250000000028,
-      "endWaypointRelativePos": 5.53660714285711,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "rev-up-shooter",
+      "waypointRelativePos": 4.947321428571419,
+      "endWaypointRelativePos": null,
       "command": null
     }
   ],
