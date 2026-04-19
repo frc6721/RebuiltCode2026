@@ -12,7 +12,7 @@
         "y": 6.000166666666667
       },
       "isLocked": false,
-      "linkedName": "end-left-bump"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -84,12 +84,12 @@
         "y": 5.62225
       },
       "prevControl": {
-        "x": 3.659416666666667,
+        "x": 3.6594166666666674,
         "y": 5.62225
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "end-left-bump"
+      "linkedName": null
     }
   ],
   "rotationTargets": [

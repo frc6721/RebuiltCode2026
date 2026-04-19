@@ -12,7 +12,7 @@
         "y": 1.2023316368800085
       },
       "isLocked": false,
-      "linkedName": "end-right-trench"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -169,7 +169,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "end-right-trench"
+      "linkedName": null
     }
   ],
   "rotationTargets": [

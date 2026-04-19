@@ -89,7 +89,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "end-left-bump"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
