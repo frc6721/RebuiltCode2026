@@ -5,9 +5,15 @@
     "data": {
       "commands": [
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "test trash compactor"
+            "pathName": "LEFT TRENCH TO BUMP 1"
           }
         },
         {
@@ -23,22 +29,35 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 5.0
+                  "waitTime": 3.5
                 }
               }
             ]
           }
         },
         {
-          "type": "wait",
+          "type": "path",
           "data": {
-            "waitTime": 5.0
+            "pathName": "LEFT BUMP 2 BUMP"
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "test trash compactor 2"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "shoot-fuel"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.5
+                }
+              }
+            ]
           }
         },
         {
@@ -51,6 +70,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "LEFT",
   "choreoAuto": false
 }
