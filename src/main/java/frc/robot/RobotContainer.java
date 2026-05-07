@@ -71,6 +71,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.util.HubShiftUtil;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -155,7 +156,8 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())),
                 new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())),
-                new VisionIOLimelight(VisionConstants.camera2Name, (() -> drive.getRotation())));
+                new VisionIOLimelight(VisionConstants.camera2Name, (() -> drive.getRotation())),
+                new VisionIOPhoton(VisionConstants.camera3Name, VisionConstants.robotToCamera3));
         blinken = new Spark(0); // PWM port 0
         break;
 

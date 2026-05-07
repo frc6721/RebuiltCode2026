@@ -7,8 +7,14 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class VisionConstants {
   // AprilTag layout
@@ -19,6 +25,14 @@ public class VisionConstants {
   public static String camera0Name = "limelight-right";
   public static String camera1Name = "limelight-left";
   public static String camera2Name = "limelight-top";
+  public static String camera3Name = "photon-main";
+
+  // Transformations from robot to camera mounting location, used for photon constructor
+  // TODO: mount camera and get exact measurements
+  public static Transform3d robotToCamera3 =
+      new Transform3d(
+          new Translation3d(Inches.of(0.0), Inches.of(0.0), Inches.of(0.0)),
+          new Rotation3d(Degrees.of(0.0), Degrees.of(0.0), Degrees.of(0.0)));
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
