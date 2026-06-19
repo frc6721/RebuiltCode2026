@@ -7,8 +7,9 @@
     "RIGHT"
   ],
   "autoFolders": [
-    "LEFT",
     "DEPOT",
+    "LEFT",
+    "iri",
     "RIGHT"
   ],
   "defaultMaxVel": 4.0,

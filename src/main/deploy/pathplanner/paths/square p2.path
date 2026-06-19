@@ -1,0 +1,66 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.0761055634807417,
+        "y": 2.0230385164051357
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 0.9855349500713263,
+        "y": -0.4999999999999982
+      },
+      "isLocked": false,
+      "linkedName": "iri auto 1 left"
+    },
+    {
+      "anchor": {
+        "x": 8.25706134094151,
+        "y": 0.5868473609129818
+      },
+      "prevControl": {
+        "x": 7.946533523537802,
+        "y": 0.7809272467903008
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.243070362473351,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "deploy-intake",
+      "waypointRelativePos": 0.5023632680621214,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 7.028396238949656
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -145.7131230227911
+  },
+  "useDefaultConstraints": true
+}

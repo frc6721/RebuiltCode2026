@@ -155,7 +155,8 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOLimelight(VisionConstants.camera0Name, (() -> drive.getRotation())),
                 new VisionIOLimelight(VisionConstants.camera1Name, (() -> drive.getRotation())),
-                new VisionIOLimelight(VisionConstants.camera2Name, (() -> drive.getRotation())));
+                new VisionIOLimelight(VisionConstants.camera2Name, (() -> drive.getRotation())),
+                new VisionIOPhoton(VisionConstants.camera3Name, (() )));
         blinken = new Spark(0); // PWM port 0
         break;
 
