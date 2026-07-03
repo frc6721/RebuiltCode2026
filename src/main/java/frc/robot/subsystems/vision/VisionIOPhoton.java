@@ -18,13 +18,10 @@ import org.photonvision.PhotonPoseEstimator;
 public class VisionIOPhoton implements VisionIO {
 
   private final PhotonCamera camera;
-  private final Transform3d robotToCamera;
   private final PhotonPoseEstimator poseEstimator;
 
   public VisionIOPhoton(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
-    this.robotToCamera = robotToCamera;
-
     this.poseEstimator = new PhotonPoseEstimator(aprilTagLayout, robotToCamera);
   }
 
@@ -64,14 +61,11 @@ public class VisionIOPhoton implements VisionIO {
       double totalTagDistance = 0.0;
       for (var target : estimate.targetsUsed) {
         tagIds.add((short) target.fiducialId);
+        totalTagDistance += target.getBestCameraToTarget().getTranslation().getNorm();
       }
 
       double avgTagDistance =
           estimate.targetsUsed.isEmpty() ? 0.0 : totalTagDistance / estimate.targetsUsed.size();
-
-      for (var target : estimate.targetsUsed) {
-        tagIds.add((short) target.fiducialId);
-      }
 
       double ambiguity =
           estimate.targetsUsed.size() > 1
