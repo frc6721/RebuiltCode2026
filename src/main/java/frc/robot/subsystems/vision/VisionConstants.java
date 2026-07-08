@@ -25,7 +25,7 @@ public class VisionConstants {
   public static String camera0Name = "limelight-right";
   public static String camera1Name = "limelight-left";
   public static String camera2Name = "limelight-top";
-  public static String camera3Name = "photon-main";
+  public static String camera3Name = "PC_Camera"; // "photon-main";
 
   // Transformations from robot to camera mounting location, used for photon constructor
   // TODO: mount camera and get exact measurements
