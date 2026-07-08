@@ -116,12 +116,6 @@
       "waypointRelativePos": 2.941935483870966,
       "endWaypointRelativePos": null,
       "command": null
-    },
-    {
-      "name": "shoot-fuel",
-      "waypointRelativePos": 3.847146401985106,
-      "endWaypointRelativePos": null,
-      "command": null
     }
   ],
   "globalConstraints": {
