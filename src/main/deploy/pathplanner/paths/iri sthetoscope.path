@@ -36,24 +36,24 @@
         "y": 7.030299572039943
       },
       "prevControl": {
-        "x": 0.647252983272536,
-        "y": 7.0038568171539275
+        "x": 0.6577939768772154,
+        "y": 6.952305168597562
       },
       "nextControl": {
-        "x": 1.8006704707560623,
-        "y": 7.120870185449359
+        "x": 1.1465676818981603,
+        "y": 7.104725156160397
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.876348074179743,
-        "y": 7.405520684736091
+        "x": 1.5713132530120486,
+        "y": 7.19310843373494
       },
       "prevControl": {
-        "x": 4.876348074179743,
-        "y": 7.405520684736091
+        "x": 1.3213132530120486,
+        "y": 7.19310843373494
       },
       "nextControl": null,
       "isLocked": false,
@@ -68,10 +68,6 @@
     {
       "waypointRelativePos": 2.2388059701492398,
       "rotationDegrees": 128.78712006214008
-    },
-    {
-      "waypointRelativePos": 2.475479744136454,
-      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -80,12 +76,6 @@
     {
       "name": "deploy-intake",
       "waypointRelativePos": 1.0047265361242352,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "shoot-fuel",
-      "waypointRelativePos": 2.16340310600944,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -100,7 +90,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 131.18592516570962
   },
   "reversed": false,
   "folder": null,
