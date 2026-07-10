@@ -7,14 +7,15 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 
 public class VisionConstants {
   // AprilTag layout
@@ -31,8 +32,14 @@ public class VisionConstants {
   // TODO: mount camera and get exact measurements
   public static Transform3d robotToCamera3 =
       new Transform3d(
-          new Translation3d(Inches.of(0.0), Inches.of(0.0), Inches.of(0.0)),
-          new Rotation3d(Degrees.of(0.0), Degrees.of(0.0), Degrees.of(0.0)));
+          new Translation3d(
+              Meters.of(Units.inchesToMeters(-10.312)),
+              Meters.of(Units.inchesToMeters(10.519)),
+              Meters.of(Units.inchesToMeters(8.475))),
+          new Rotation3d(
+              Radians.of(Units.degreesToRadians(0.0)),
+              Radians.of(Units.degreesToRadians(-15.0)),
+              Radians.of(Units.degreesToRadians(170.0))));
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
