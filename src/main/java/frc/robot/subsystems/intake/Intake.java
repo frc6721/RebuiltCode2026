@@ -56,6 +56,7 @@ public class Intake extends SubsystemBase {
   public enum IntakePosition {
     RETRACTED(IntakeConstants.Positions.RETRACTED),
     EXTENDED(IntakeConstants.Positions.EXTENDED),
+    OVEREXTENDED(IntakeConstants.Positions.OVEREXTENDED),
     /** Outward jostle position — moves intake out to shake fuel loose in the hopper. */
     JOSTLE_EXTENDED(IntakeConstants.Positions.JOSTLE_EXTENDED),
     /** Inward jostle position — moves intake back in during a jostle cycle. */
@@ -156,6 +157,9 @@ public class Intake extends SubsystemBase {
     if (_intakeInputs._linearHallSensorExtended
         == IntakeConstants.Hardware.LINEAR_SENSOR_EXTENDED_INVERTED) {
       setEncoderExtended();
+      if (getIntakePosition() == IntakeConstants.Positions.OVEREXTENDED.get()) {
+        setIntakePosition(IntakePosition.EXTENDED);
+      }
     }
     // } else if (_intakeInputs._linearHallSensorRetracted
     //     == IntakeConstants.Hardware.LINEAR_SENSOR_RETRACTED_INVERTED) {

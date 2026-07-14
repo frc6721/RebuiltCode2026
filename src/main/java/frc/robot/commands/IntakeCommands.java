@@ -134,7 +134,7 @@ public class IntakeCommands {
    * @return A command that extends and starts acquiring
    */
   public static Command acquireGamePiece(Intake intake) {
-    return setIntakeGoalPosition(intake, IntakePosition.EXTENDED)
+    return setIntakeGoalPosition(intake, IntakePosition.OVEREXTENDED)
         .andThen(runIntakeRollers(intake))
         .withName("AcquireGamePiece");
   }

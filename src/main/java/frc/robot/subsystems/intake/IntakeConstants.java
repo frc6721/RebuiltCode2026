@@ -171,6 +171,11 @@ public class IntakeConstants {
     public static final LoggedNetworkNumber EXTENDED =
         new LoggedNetworkNumber("Intake/Position/Extended", Mechanical.MAX_TRAVEL_METERS);
 
+    /** 2 inches past full mechanical extension -- bandaid fix to guarantee kicker bar drops */
+    public static final LoggedNetworkNumber OVEREXTENDED =
+        new LoggedNetworkNumber(
+            "Intake/Position/Overextended", Mechanical.MAX_TRAVEL_METERS + Inches.of(2).in(Meters));
+
     /**
      * Jostle-extend position in meters. The intake moves here during the outward half of a jostle
      * cycle to shake fuel loose in the hopper. Tunable from the dashboard.
@@ -191,7 +196,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 40.0); // bumped from 37.5
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 50.0); // bumped from 37.5
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);

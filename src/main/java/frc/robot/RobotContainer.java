@@ -431,7 +431,9 @@ public class RobotContainer {
     // // .onFalse(ShooterCommands.setFlywheelDutyCycle(shooter, 0.0));
 
     // ── B BUTTON: Extend intake ───────────────────────────────────────────────
-    controller.b().onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.EXTENDED));
+    controller
+        .b()
+        .onTrue(IntakeCommands.setIntakeGoalPosition(intake, IntakePosition.OVEREXTENDED));
     // controller
     //     .b()
     //     // .whileTrue(ShooterCommands.runShooterAndFeederAtVoltage(shooter, feeder, 8.0, 2.0))
