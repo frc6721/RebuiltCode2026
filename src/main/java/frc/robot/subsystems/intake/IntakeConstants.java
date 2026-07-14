@@ -191,7 +191,7 @@ public class IntakeConstants {
     /** Real robot PID values - tuned for actual hardware */
     public static class Real {
       public static final LoggedNetworkNumber KP =
-          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 37.5);
+          new LoggedNetworkNumber("Intake/Linear/PID/Real/kP", 40.0); // bumped from 37.5
 
       public static final LoggedNetworkNumber KI =
           new LoggedNetworkNumber("Intake/Linear/PID/Real/kI", 0.0);
