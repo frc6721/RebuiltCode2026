@@ -163,7 +163,7 @@ public class ShooterConstants {
      */
     public static final boolean ENABLE_CURRENT_LIMITS = true;
 
-    public static final int SMART = 50;
+    public static final int SMART = 60;
     public static final double SECONDARY = 70;
   }
 
