@@ -139,7 +139,7 @@ public class IntakeCommands {
         .withName("AcquireGamePiece");
   }
 
-      /**
+  /**
    * Extends the intake and runs rollers to acquire game pieces. Sets the position once (PID handles
    * movement) and turns on rollers — finishes immediately so other commands can run.
    *

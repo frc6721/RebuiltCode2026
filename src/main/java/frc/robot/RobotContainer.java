@@ -222,7 +222,7 @@ public class RobotContainer {
 
   /** Registers event marker triggers for PathPlanner path following. */
   private void registerEventMarkers() {
-    new EventTrigger("deploy-intake").onTrue(IntakeCommands.dropKickerThenAcquireGamePiece(intake));
+    new EventTrigger("deploy-intake").onTrue(IntakeCommands.acquireGamePiece(intake));
 
     new EventTrigger("retract-intake").onTrue(IntakeCommands.stowIntake(intake));
 
@@ -241,7 +241,7 @@ public class RobotContainer {
   private void registerNamedCommands() {
     NamedCommands.registerCommand(
         "deploy-intake",
-        IntakeCommands.dropKickerThenAcquireGamePiece(intake)
+        IntakeCommands.acquireGamePiece(intake)
             .alongWith(
                 ShooterCommands.setFlywheelTargetSpeed(
                         shooter, RPM.of(ShooterConstants.Software.IDLE_RPM))
