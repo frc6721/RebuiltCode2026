@@ -139,6 +139,22 @@ public class IntakeCommands {
         .withName("AcquireGamePiece");
   }
 
+      /**
+   * Extends the intake and runs rollers to acquire game pieces. Sets the position once (PID handles
+   * movement) and turns on rollers — finishes immediately so other commands can run.
+   *
+   * <p>Use with {@code whileTrue()} or pair with a trigger to stop rollers when done.
+   *
+   * @param intake The intake subsystem
+   * @return A command that extends and starts acquiring
+   */
+  public static Command dropKickerThenAcquireGamePiece(Intake intake) {
+    return setIntakeGoalPosition(intake, IntakePosition.OVEREXTENDED)
+        .andThen(spitIntakeRollers(intake))
+        .andThen(Commands.sequence(new WaitCommand(0.5), runIntakeRollers(intake)))
+        .withName("AcquireGamePiece");
+  }
+
   /**
    * Extends the intake and continuously runs rollers to acquire game pieces. Unlike {@link
    * #acquireGamePiece}, this command runs continuously every 20ms so it maintains the intake
